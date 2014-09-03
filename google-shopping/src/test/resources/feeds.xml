@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns='http://www.w3.org/2005/Atom' xmlns:openSearch='http://a9.com/-/spec/opensearch/1.1/'
+      xmlns:gd='http://schemas.google.com/g/2005' gd:etag='W/&quot;A0UGRnc6eSl7ImA9XRZTEEo.&quot;'>
+    <id>http://content.googleapis.com/content/v1/100571768/items/products/generic</id>
+    <updated>2014-05-14T14:53:47.911Z</updated>
+    <link rel='alternate' type='text/html' href='http://content.googleapis.com'/>
+    <link rel='http://schemas.google.com/g/2005#feed' type='application/atom+xml'
+          href='https://content.googleapis.com/content/v1/100571768/items/products/generic'/>
+    <link rel='http://schemas.google.com/g/2005#post' type='application/atom+xml'
+          href='https://content.googleapis.com/content/v1/100571768/items/products/generic'/>
+    <link rel='http://schemas.google.com/g/2005#batch' type='application/atom+xml'
+          href='https://content.googleapis.com/content/v1/100571768/items/products/generic/batch'/>
+    <link rel='self' type='application/atom+xml'
+          href='https://content.googleapis.com/content/v1/100571768/items/products/generic?max-results=25'/>
+    <author>
+        <name>Google Inc.</name>
+        <email>google-content-api-for-shopping@googlegroups.com</email>
+    </author>
+    <openSearch:itemsPerPage>25</openSearch:itemsPerPage>
+    <entry
+            xmlns:app='http://www.w3.org/2007/app'
+            xmlns:gd="http://schemas.google.com/g/2005"
+            xmlns:sc="http://schemas.google.com/structuredcontent/2009"
+            xmlns:scp="http://schemas.google.com/structuredcontent/2009/products">
+        <title>Camera</title>
+        <content type="text">A great compact body to make it easy to get a great shot everytime.</content>
+        <sc:attribute name="id">123456</sc:attribute>
+        <link rel="alternate" type="text/html" href="http://www.replace-with-your-homepage.com/item1-info-page.html"/>
+        <sc:attribute type="url" name="image link">http://www.example.com/image1.jpg</sc:attribute>
+        <sc:attribute name="target country">US</sc:attribute>
+        <sc:attribute name="content language">en</sc:attribute>
+        <sc:attribute name="brand">Acme</sc:attribute>
+        <sc:attribute name="condition">new</sc:attribute>
+        <sc:attribute name="gtin">00013803105384</sc:attribute>
+        <sc:attribute name="price" unit="usd">25</sc:attribute>
+        <sc:attribute name="product type">Cameras &amp; Optics &gt; Cameras &gt;&gt; Digital Cameras</sc:attribute>
+        <sc:attribute name="color">black</sc:attribute>
+        <sc:attribute name="availability">in stock</sc:attribute>
+        <sc:attribute name="shipping weight" unit="lb">0.1</sc:attribute>
+        <sc:attribute group="shipping">
+            <sc:attribute name="shipping country">US</sc:attribute>
+            <sc:attribute name="shipping region">MA</sc:attribute>
+            <sc:attribute name="shipping service">Speedy Shipping - Ground</sc:attribute>
+            <sc:attribute name="shipping price" unit="usd">5.95</sc:attribute>
+        </sc:attribute>
+        <!--
+        <scp:shipping>
+            <scp:shipping_country>US</scp:shipping_country>
+            <scp:shipping_region>024*</scp:shipping_region>
+            <scp:shipping_service>Speedy Shipping - Air</scp:shipping_service>
+            <scp:shipping_price unit="usd">7.95</scp:shipping_price>
+        </scp:shipping>
+        <scp:tax>
+            <scp:tax_country>US</scp:tax_country>
+            <scp:tax_region>CA</scp:tax_region>
+            <scp:tax_rate>8.25</scp:tax_rate>
+            <scp:tax_ship>true</scp:tax_ship>
+        </scp:tax>
+        <scp:tax>
+            <scp:tax_country>US</scp:tax_country>
+            <scp:tax_region>926*</scp:tax_region>
+            <scp:tax_rate>8.75</scp:tax_rate>
+            <scp:tax_ship>false</scp:tax_ship>
+        </scp:tax>
+        <app:control>
+            <sc:required_destination dest="ProductSearch"/>
+        </app:control>
+        //-->
+    </entry>
+</feed>

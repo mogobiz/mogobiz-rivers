@@ -71,6 +71,29 @@ final class ESRivers extends Rivers<ESRiver>{
                     config.languages as String[],
                     config.defaultLang)
         }
+        if(response.acknowledged) {
+            def history = config.clientConfig.store + '_history'
+            exists = client.indexExists(config.clientConfig.url, history)
+            if (!exists) {
+                response = client.createIndex(
+                        config.clientConfig.url,
+                        history,
+                        new ESIndexSettings(
+                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                refresh_interval: "1s"
+                        ),
+                        [
+                                new ESMapping(
+                                        timestamp: true,
+                                        type: 'history',
+                                        properties: []
+                                                << new ESProperty(name: 'productIds', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                )],
+                        [debug: config.debug],
+                        config.languages as String[],
+                        config.defaultLang)
+            }
+        }
         if(response.acknowledged){
             response = client.createIndex(
                     config.clientConfig.url,

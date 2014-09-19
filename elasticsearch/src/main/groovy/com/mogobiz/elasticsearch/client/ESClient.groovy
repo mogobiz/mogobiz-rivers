@@ -158,7 +158,7 @@ final class ESClient implements Client {
                                     index          : 'analyzed',
                                     index_analyzer : _index_analyzers[language],
                                     search_analyzer: _search_analyzers[language],
-//                                    copy_to        : 'raw',
+                                    copy_to        : 'raw',
                             ],
                             raw : [
                                     type : 'string',
@@ -178,7 +178,7 @@ final class ESClient implements Client {
                                 index          : 'analyzed',
                                 index_analyzer : _index_analyzers[language],
                                 search_analyzer: _search_analyzers[language],
-//                                copy_to        : 'raw',
+                                copy_to        : 'raw',
                             ],
                             raw : [
                                     type : 'string',
@@ -332,8 +332,31 @@ final class ESClient implements Client {
                     currentMap[property.name] << [index:property.index.name().toLowerCase()]
                 }
                 break
+            case TYPE.STRING :
+                def fieldMap = [:]
+                switch(property.index){
+                    case INDEX.ANALYZED:
+                        fieldMap['type'] = 'multi_field'
+                        fieldMap["fields"] = [
+                                "${property.name}" : [
+                                        type           : 'string',
+                                        index          : 'analyzed',
+                                        copy_to        : 'raw',
+                                ],
+                                'raw' : [
+                                        type : 'string',
+                                        index: 'not_analyzed'
+                                ]
+                        ]
+                        break
+                    default:
+                        fieldMap["type"] = type.name().toLowerCase()
+                        fieldMap["index"] = property.index.name().toLowerCase()
+                        break
+                }
+                currentMap[property.name] = fieldMap
+                break
             default :
-                boolean analyzed = INDEX.ANALYZED.equals(property.index)
                 def fieldMap = [type: type.name().toLowerCase(), index: property.index.name().toLowerCase()]
                 if (TYPE.DATE.equals(type)) {
                     fieldMap['format'] = property.format ? property.format : 'date_optional_time'

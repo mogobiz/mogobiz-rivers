@@ -154,15 +154,15 @@ final class ESClient implements Client {
                     type : 'multi_field',
                     fields:[
                             '{name}' : [
-                                    type           : 'string',
-                                    index          : 'analyzed',
-                                    index_analyzer : _index_analyzers[language],
-                                    search_analyzer: _search_analyzers[language],
-                                    copy_to        : 'raw',
+                                    type            : 'string',
+                                    index           : 'analyzed',
+                                    index_analyzer  : _index_analyzers[language],
+                                    search_analyzer : _search_analyzers[language],
+                                    copy_to         : 'raw',
                             ],
                             raw : [
-                                    type : 'string',
-                                    index: 'not_analyzed'
+                                    type       : 'string',
+                                    index      : 'not_analyzed'
                             ]
                     ]
             ]]
@@ -174,15 +174,15 @@ final class ESClient implements Client {
                     type : 'multi_field',
                     fields:[
                             '{name}' : [
-                                type           : 'string',
-                                index          : 'analyzed',
-                                index_analyzer : _index_analyzers[language],
-                                search_analyzer: _search_analyzers[language],
-                                copy_to        : 'raw',
+                                type            : 'string',
+                                index           : 'analyzed',
+                                index_analyzer  : _index_analyzers[language],
+                                search_analyzer : _search_analyzers[language],
+                                copy_to         : 'raw',
                             ],
                             raw : [
-                                    type : 'string',
-                                    index: 'not_analyzed'
+                                    type  : 'string',
+                                    index : 'not_analyzed'
                             ]
                     ]
             ]]
@@ -339,13 +339,13 @@ final class ESClient implements Client {
                         fieldMap['type'] = 'multi_field'
                         fieldMap["fields"] = [
                                 "${property.name}" : [
-                                        type           : 'string',
-                                        index          : 'analyzed',
-                                        copy_to        : 'raw',
+                                        type    : 'string',
+                                        index   : 'analyzed',
+                                        copy_to : 'raw',
                                 ],
                                 'raw' : [
-                                        type : 'string',
-                                        index: 'not_analyzed'
+                                        type  : 'string',
+                                        index : 'not_analyzed'
                                 ]
                         ]
                         break
@@ -447,12 +447,13 @@ final class ESClient implements Client {
             def map = [:]
             switch(item.action){
                 case([BulkAction.INDEX, BulkAction.INSERT]):
-                    action << [refresh:true]
+                    action << [refresh:false]
                     map << [index:action]
                     break
                 case(BulkAction.UPDATE):
-                    action << [_retry_on_conflict:3]
+                    action << [refresh:false, _retry_on_conflict:3]
                     map << [update:action]
+                    item.map = [doc:item.map, doc_as_upsert:true]
                     break
                 default:
                     break

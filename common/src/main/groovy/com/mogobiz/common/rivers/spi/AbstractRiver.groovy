@@ -32,7 +32,7 @@ abstract class AbstractRiver<E, T extends Client> implements River {
         }
         retrieveCatalogItems(config).flatMap({Object e ->
             def item = asItem(e as E, config)
-            def id = item.id as long
+            def id = item.id
             def previous = previousCatalogItems.get(id)
             item = updateItemWithPrevious(item, previous)
             item.map << [imported: formatToIso8601(new Date())]

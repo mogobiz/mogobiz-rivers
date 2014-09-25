@@ -72,6 +72,72 @@ final class ESRivers extends Rivers<ESRiver>{
                     config.defaultLang)
         }
         if(response.acknowledged) {
+            def wishlist = config.clientConfig.store + '_wishlist'
+            exists = client.indexExists(config.clientConfig.url, wishlist)
+            if (!exists) {
+                def ownerProperties = []
+                ownerProperties << new ESProperty(name: 'dayOfBirth', type: ESClient.TYPE.INTEGER, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                ownerProperties << new ESProperty(name: 'monthOfBirth', type: ESClient.TYPE.INTEGER, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                ownerProperties << new ESProperty(name: 'description', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                ownerProperties << new ESProperty(name: 'email', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                ownerProperties << new ESProperty(name: 'name', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+
+                def brandsProperties = []
+                brandsProperties << new ESProperty(name: 'uuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                brandsProperties << new ESProperty(name: 'name', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+
+                def categoriesProperties = []
+                categoriesProperties << new ESProperty(name: 'uuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                categoriesProperties << new ESProperty(name: 'name', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+
+                def ideasProperties = []
+                ideasProperties << new ESProperty(name: 'uuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                ideasProperties << new ESProperty(name: 'name', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+
+                def itemsProperties = []
+                itemsProperties << new ESProperty(name: 'uuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                itemsProperties << new ESProperty(name: 'name', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                itemsProperties << new ESProperty(name: 'product', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                itemsProperties << new ESProperty(name: 'sku', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+
+                def wishlistsProperties = []
+                wishlistsProperties << new ESProperty(name: 'uuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                wishlistsProperties << new ESProperty(name: 'dateCreated', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                wishlistsProperties << new ESProperty(name: 'lastUpdated', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                wishlistsProperties << new ESProperty(name: 'alert', type: ESClient.TYPE.BOOLEAN, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                wishlistsProperties << new ESProperty(name: 'default', type: ESClient.TYPE.BOOLEAN, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                wishlistsProperties << new ESProperty(name: 'name', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                wishlistsProperties << new ESProperty(name: 'token', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                wishlistsProperties << new ESProperty(name: 'visibility', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                wishlistsProperties << new ESProperty(name: 'brands', type: ESClient.TYPE.NESTED, properties: brandsProperties)
+                wishlistsProperties << new ESProperty(name: 'categories', type: ESClient.TYPE.NESTED, properties: categoriesProperties)
+                wishlistsProperties << new ESProperty(name: 'ideas', type: ESClient.TYPE.NESTED, properties: ideasProperties)
+                wishlistsProperties << new ESProperty(name: 'items', type: ESClient.TYPE.NESTED, properties: itemsProperties)
+
+                response = client.createIndex(
+                        config.clientConfig.url,
+                        wishlist,
+                        new ESIndexSettings(
+                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                refresh_interval: "1s"
+                        ),
+                        [
+                                new ESMapping(
+                                        timestamp: true,
+                                        type: 'wishlistlist',
+                                        properties: []
+                                                << new ESProperty(name: 'uuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                                << new ESProperty(name: 'dateCreated', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                                << new ESProperty(name: 'lastUpdated', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                                << new ESProperty(name: 'owner', type: ESClient.TYPE.NESTED, properties: ownerProperties)
+                                                << new ESProperty(name: 'wishlists', type: ESClient.TYPE.NESTED, properties: wishlistsProperties)
+                                )],
+                        [debug: config.debug],
+                        config.languages as String[],
+                        config.defaultLang)
+            }
+        }
+        if(response.acknowledged) {
             def history = config.clientConfig.store + '_history'
             exists = client.indexExists(config.clientConfig.url, history)
             if (!exists) {

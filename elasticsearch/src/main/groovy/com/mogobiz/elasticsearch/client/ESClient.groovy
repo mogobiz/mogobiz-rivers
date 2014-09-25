@@ -520,7 +520,7 @@ final class ESClient implements Client {
                     action: id && id.length() > 0 ? BulkAction.UPDATE : BulkAction.INSERT,
                     id: id,
                     parent: item.parent,
-                    map: id && id.length() > 0 ? [doc: item.map, doc_as_upsert : true] : item.map
+                    map: item.map
             )
         }, ec)
     }

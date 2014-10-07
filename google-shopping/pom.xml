@@ -11,7 +11,7 @@
 
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-google-shopping</artifactId>
-    <name>mogobiz google shopping</name>
+    <name>mogobiz google shopping rivers</name>
 
 
     <dependencies>

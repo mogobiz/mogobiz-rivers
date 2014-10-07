@@ -13,7 +13,7 @@
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-cfp</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>mogobiz cfp</name>
+    <name>mogobiz cfp client</name>
     <dependencies>
 
         <!-- scala -->

@@ -48,7 +48,6 @@ public class CfpClientTest {
             }
         }).onComplete(CfpClient.flowMaterializer(), new OnCompleteCallback(){
             public void onComplete(Throwable th){
-                System.err.println("OK");
                 CfpClient.system().shutdown();
             }
         });

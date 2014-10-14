@@ -4,7 +4,7 @@ name := "cfp"
 
 version := "1.0-SNAPSHOT"
 
-logLevel in Global := Level.Warn
+logLevel in Global := Level.Info
 
 val scalaV = "2.11.2"
 

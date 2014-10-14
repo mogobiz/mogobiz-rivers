@@ -18,7 +18,6 @@ abstract class AbstractRiver<E, T extends Client> implements River {
 
     protected AbstractRiver(){}
 
-    @Override
     final rx.Observable<Future<BulkResponse>> exportCatalogItems(
             final RiverConfig config,
             final ExecutionContext ec,

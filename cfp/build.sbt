@@ -2,7 +2,7 @@ organization := "com.mogobiz.rivers"
 
 name := "cfp"
 
-version := "1.0-SNAPSHOT"
+version := "0.1-SNAPSHOT"
 
 logLevel in Global := Level.Info
 

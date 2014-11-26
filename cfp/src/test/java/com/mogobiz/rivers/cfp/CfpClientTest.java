@@ -32,7 +32,7 @@ public class CfpClientTest {
                     assertEquals(208, param.speakers().size());
                     for (Iterator<CfpSchedule> it = asJavaIterator(param.schedules().iterator()); it.hasNext(); ) {
                         CfpSchedule schedule = it.next();
-                        List talks = new ArrayList<CfpTalk>();
+                        List<CfpTalk> talks = new ArrayList<CfpTalk>();
                         for (CfpSlot slot : asJavaCollection(schedule.slots())) {
                             if(slot.talk().isDefined()){
                                 CfpTalk talk = slot.talk().get();

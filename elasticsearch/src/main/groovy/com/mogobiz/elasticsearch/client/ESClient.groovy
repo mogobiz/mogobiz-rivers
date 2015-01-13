@@ -12,6 +12,7 @@ import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.common.client.BulkAction
 import com.mogobiz.common.client.BulkItem
 import groovy.json.JsonBuilder
+import groovy.util.logging.Log4j
 import rx.Observable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -22,6 +23,7 @@ import java.util.concurrent.Callable
 /**
  * Created by stephane.manciot@ebiznext.com on 02/02/2014.
  */
+@Log4j
 final class ESClient implements Client {
 
     HTTPClient client = HTTPClient.instance
@@ -158,8 +160,8 @@ final class ESClient implements Client {
                             '{name}' : [
                                     type            : 'string',
                                     index           : 'analyzed',
-                                    index_analyzer  : _index_analyzers[_language] ? _index_analyzers[_language] : defaultIndexAnalyzer,
-                                    search_analyzer : _search_analyzers[_language] ? _search_analyzers[_language] : defaultSearchAnalyzer,
+                                    index_analyzer  : _index_analyzers.containsKey(_language) ? _index_analyzers[_language] : defaultIndexAnalyzer,
+                                    search_analyzer : _search_analyzers.containsKey(_language) ? _search_analyzers[_language] : defaultSearchAnalyzer,
                                     copy_to         : 'raw',
                             ],
                             raw : [
@@ -178,8 +180,8 @@ final class ESClient implements Client {
                             '{name}' : [
                                 type            : 'string',
                                 index           : 'analyzed',
-                                index_analyzer  : _index_analyzers[_language] ? _index_analyzers[_language] : defaultIndexAnalyzer,
-                                search_analyzer : _search_analyzers[_language] ? _search_analyzers[_language] : defaultSearchAnalyzer,
+                                index_analyzer  : _index_analyzers.containsKey(_language) ? _index_analyzers[_language] : defaultIndexAnalyzer,
+                                search_analyzer : _search_analyzers.containsKey(_language) ? _search_analyzers[_language] : defaultSearchAnalyzer,
                                 copy_to         : 'raw',
                             ],
                             raw : [
@@ -192,6 +194,8 @@ final class ESClient implements Client {
         }
 
         def _defaultLanguage = defaultLanguage?.trim()?.toLowerCase()
+
+        log.info("default language for index -> $_defaultLanguage")
 
         mappings?.each{ mapping ->
             def m = [:]
@@ -207,8 +211,8 @@ final class ESClient implements Client {
                             enabled:mapping.source
                     ],
                     _all:[
-                            index_analyzer : _defaultLanguage && _index_analyzers[_defaultLanguage] ? _index_analyzers[_defaultLanguage] : defaultIndexAnalyzer,
-                            search_analyzer: _defaultLanguage && _search_analyzers[_defaultLanguage] ? _search_analyzers[_defaultLanguage] : defaultSearchAnalyzer
+                            index_analyzer : _defaultLanguage && _index_analyzers.containsKey(_defaultLanguage) ? _index_analyzers[_defaultLanguage] : defaultIndexAnalyzer,
+                            search_analyzer: _defaultLanguage && _search_analyzers.containsKey(_defaultLanguage) ? _search_analyzers[_defaultLanguage] : defaultSearchAnalyzer
                     ],
                     dynamic_templates : dynamicTemplates,
                     properties:m

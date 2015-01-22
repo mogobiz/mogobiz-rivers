@@ -161,6 +161,39 @@ final class ESRivers extends Rivers<ESRiver>{
             }
         }
         if(response.acknowledged){
+            def learning = config.clientConfig.store + '_learning'
+            exists = client.indexExists(config.clientConfig.url, learning)
+            if (!exists) {
+                response = client.createIndex(
+                        config.clientConfig.url,
+                        learning,
+                        new ESIndexSettings(
+                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                refresh_interval: "1s"
+                        ),
+                        [
+                                new ESMapping(
+                                        timestamp: true,
+                                        type: 'cartaction',
+                                        properties: []
+                                                << new ESProperty(name: 'trackingid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                                << new ESProperty(name: 'itemids', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                ),
+                                new ESMapping(
+                                        timestamp: true,
+                                        type: 'useritemaction',
+                                        properties: []
+                                                << new ESProperty(name: 'trackingid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                                << new ESProperty(name: 'itemid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                                << new ESProperty(name: 'action', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                )
+                        ],
+                        [debug: config.debug],
+                        config.languages as String[],
+                        config.defaultLang)
+            }
+        }
+        if(response.acknowledged){
             response = client.createIndex(
                     config.clientConfig.url,
                     config.clientConfig.config.index as String,

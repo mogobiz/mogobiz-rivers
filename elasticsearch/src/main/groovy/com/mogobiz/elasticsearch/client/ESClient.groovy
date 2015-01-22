@@ -194,13 +194,15 @@ final class ESClient implements Client {
         }
 
         def _defaultLanguage = defaultLanguage?.trim()?.toLowerCase()
+        def _indexAnalyzer = _defaultLanguage && _index_analyzers.containsKey(_defaultLanguage) ? _index_analyzers[_defaultLanguage] : defaultIndexAnalyzer
+        def _searchAnalyzer = _defaultLanguage && _search_analyzers.containsKey(_defaultLanguage) ? _search_analyzers[_defaultLanguage] : defaultSearchAnalyzer
 
         log.info("default language for index -> $_defaultLanguage")
 
         mappings?.each{ mapping ->
             def m = [:]
             mapping.properties?.each { property ->
-                handleMapping(m, property)
+                handleMapping(m, property, _indexAnalyzer, _searchAnalyzer)
             }
 
             _index['mappings'][mapping.type] = [
@@ -211,8 +213,8 @@ final class ESClient implements Client {
                             enabled:mapping.source
                     ],
                     _all:[
-                            index_analyzer : _defaultLanguage && _index_analyzers.containsKey(_defaultLanguage) ? _index_analyzers[_defaultLanguage] : defaultIndexAnalyzer,
-                            search_analyzer: _defaultLanguage && _search_analyzers.containsKey(_defaultLanguage) ? _search_analyzers[_defaultLanguage] : defaultSearchAnalyzer
+                            index_analyzer : _indexAnalyzer,
+                            search_analyzer: _searchAnalyzer
                     ],
                     dynamic_templates : dynamicTemplates,
                     properties:m
@@ -320,13 +322,15 @@ final class ESClient implements Client {
 
     private void handleMapping(
             Map currentMap,
-            final ESProperty property) {
+            final ESProperty property,
+            final String index_analyzer,
+            final String search_analyzer) {
         def type = property.type
         switch (type){
             case [TYPE.OBJECT, TYPE.NESTED] :
                 def properties = [:]
                 property.properties.each {ESProperty p ->
-                    handleMapping(properties, p)
+                    handleMapping(properties, p, index_analyzer, search_analyzer)
                 }
                 currentMap[property.name]  = [
                         type: type.name().toLowerCase(),
@@ -343,9 +347,11 @@ final class ESClient implements Client {
                         fieldMap['type'] = 'multi_field'
                         fieldMap["fields"] = [
                                 "${property.name}" : [
-                                        type    : 'string',
-                                        index   : 'analyzed',
-                                        copy_to : 'raw',
+                                        type            : 'string',
+                                        index           : 'analyzed',
+                                        index_analyzer  : "$index_analyzer",
+                                        search_analyzer : "$search_analyzer",
+                                        copy_to         : 'raw'
                                 ],
                                 'raw' : [
                                         type  : 'string',

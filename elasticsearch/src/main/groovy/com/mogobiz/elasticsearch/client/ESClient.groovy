@@ -37,7 +37,7 @@ final class ESClient implements Client {
     }
 
     static final enum TYPE{
-        STRING, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, NULL, DATE, OBJECT, NESTED
+        STRING, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, NULL, DATE, OBJECT, NESTED, BINARY
     }
 
     static final enum FILTER_TYPE{

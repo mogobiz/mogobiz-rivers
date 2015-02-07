@@ -6,6 +6,7 @@ import com.mogobiz.http.client.multipart.FilePart
 import com.mogobiz.http.client.multipart.ParamPart
 import com.mogobiz.http.client.multipart.Part
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
 import org.cyberneko.html.parsers.SAXParser
 import org.xml.sax.SAXParseException
@@ -20,18 +21,15 @@ import java.security.KeyManagementException
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import java.util.logging.Level
-import java.util.logging.Logger
 
 /**
  * @author stephane.manciot@ebiznext.com
  *
  */
+@Slf4j
 final class HTTPClient {
 
     static final String DEFAULT_CHARSET = 'utf-8'
-
-    private static final Logger logger = Logger.getLogger(HTTPClient.class.getName())
 
     private static HTTPClient client
 
@@ -129,9 +127,7 @@ final class HTTPClient {
                 conn.setRequestProperty('Content-Type', 'application/x-www-form-urlencoded')
             }
             final String b = params ? addParams(body, params, charset).toString() : body
-            if (debug) {
-                logger.info(b)
-            }
+            log.debug(b)
             byte[] bytes = b.getBytes(charset)
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
@@ -200,9 +196,7 @@ final class HTTPClient {
             String charset = config['charset'] ? config['charset'] : DEFAULT_CHARSET
             conn.setRequestProperty('Accept-Charset', charset)
             final def s = params ? addParams(content, params, charset).toString() : content
-            if (debug) {
-                logger.info(s)
-            }
+            log.debug(s)
             byte[] bytes = s.getBytes(charset)
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
@@ -320,7 +314,7 @@ final class HTTPClient {
             conn?.outputStream?.close()
             conn?.disconnect()
         }
-        catch (IOException io) {
+        catch (IOException ignored) {
             // rien à faire
         }
     }
@@ -331,7 +325,7 @@ final class HTTPClient {
                 conn.content?.getText(charset ? charset : DEFAULT_CHARSET)
         boolean debug = config['debug'] ? config['debug'] : false
         if (debug) {
-            logger.info(text)
+            log.debug(text)
         }
         return text
     }
@@ -343,7 +337,7 @@ final class HTTPClient {
             return slurper.parseText(text)
         }
         catch (SAXParseException e) {
-            logger.log(Level.SEVERE, text)
+            log.error("${e.message} -> $text")
             return null
         }
     }
@@ -353,7 +347,7 @@ final class HTTPClient {
             return new JsonSlurper().parseText(getText(config, conn)) as Map
         }
         catch (SAXParseException e) {
-            logger.log(Level.SEVERE, e.message)
+            log.error(e.message)
             return null
         }
     }
@@ -365,7 +359,7 @@ final class HTTPClient {
         return parser
     }
 
-    private addHeaders(HttpHeaders headers, List<String> excluded, HttpURLConnection conn) {
+    private static addHeaders(HttpHeaders headers, List<String> excluded, HttpURLConnection conn) {
         headers?.findAll { Header header ->
             !(header.headerName in excluded)
         }?.each { Header header ->
@@ -384,7 +378,7 @@ final class HTTPClient {
                 if (cookies) {
                     headers.setHeader('Cookie', cookies as String)
                 }
-                logger.log(Level.FINE, 'Perform redirection to -> ' + location)
+                log.debug('Perform redirection to -> ' + location)
                 switch (conn.requestMethod) {
                     case METHOD.GET:
                         return doGet(config, location, null, headers)
@@ -392,15 +386,15 @@ final class HTTPClient {
                         return doPost(config, location, null, null, headers)
                 }
             } else {
-                logger.log(Level.FINE, 'Redirection not handled')
+                log.warn('Redirection not handled')
             }
         }
         return conn
     }
 
-    private HttpURLConnection openConnection(Map config = [:], String url) {
-        def conn = null
-        logger.log(Level.FINE, 'Open connection to -> ' + url)
+    private static HttpURLConnection openConnection(Map config = [:], String url) {
+        def conn
+        log.debug('Open connection to -> ' + url)
         String proxyHost = config['proxyHost']
         String proxyPort = config['proxyPort']
         String proxyUser = config['proxyUser']
@@ -421,7 +415,7 @@ final class HTTPClient {
         return conn as HttpURLConnection
     }
 
-    private StringBuffer addParams(String s, Map<String, String> params, String charset) {
+    private static StringBuffer addParams(String s, Map<String, String> params, String charset) {
         StringBuffer buffer = new StringBuffer(s)
         boolean first = true
         params?.keySet()?.each { key ->
@@ -437,7 +431,7 @@ final class HTTPClient {
         buffer
     }
 
-    private void outputHeaders(HttpURLConnection conn) {
+    private static void outputHeaders(HttpURLConnection conn) {
         StringBuffer headers = new StringBuffer()
         headers.append('Request Headers -> {\r\n')
         Map<String, List<String>> requestProperties = conn.requestProperties
@@ -445,13 +439,13 @@ final class HTTPClient {
             headers.append('\t').append(key).append(': ').append(requestProperties.get(key).get(0)).append('\r\n')
         }
         headers.append('}')
-        logger.info(headers.toString())
+        log.debug(headers.toString())
     }
 
-    private void outputDuration(String url, String method, long before) {
+    private static void outputDuration(String url, String method, long before) {
         StringBuffer buffer = new StringBuffer()
         buffer.append('Perform ').append(method).append(' request to ').append(url).append(' within ').append((System.currentTimeMillis() - before)).append(' ms')
-        logger.info(buffer.toString())
+        log.info(buffer.toString())
     }
 
     /**
@@ -513,12 +507,11 @@ class UserPassword
  * @author stephane.manciot@ebiznext.com
  *
  */
+@Slf4j
 class AuthenticatorSelector extends Authenticator
 {
 
     private static Map < String, UserPassword > proxies = new HashMap < String, UserPassword >()
-
-    private static final Logger logger = Logger.getLogger(AuthenticatorSelector.class.getName())
 
     public static synchronized void setProxyAuth(String proxyHost, String proxyUser,
                                                  String proxyPass)
@@ -544,9 +537,9 @@ class AuthenticatorSelector extends Authenticator
         UserPassword up = proxies.get(proxy)
         if (up != null)
         {
-            logger.log(Level.FINE, "**************" + proxy + "**********************")
-            logger.log(Level.FINE, up.user + ":**********")
-            logger.log(Level.FINE, "**************" + proxy + "**********************")
+            log.debug("**************" + proxy + "**********************")
+            log.debug(up.user + ":**********")
+            log.debug("**************" + proxy + "**********************")
             return new PasswordAuthentication(up.user, up.pass.toCharArray())
         }
         else

@@ -58,6 +58,7 @@ final class ESRivers extends Rivers<ESRiver>{
                             type: 'comment',
                             properties : []
                                 << new ESProperty(name:'userUuid', type:ESClient.TYPE.STRING, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
+                                << new ESProperty(name:'externalCode', type:ESClient.TYPE.STRING, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
                                 << new ESProperty(name:'nickname', type:ESClient.TYPE.STRING, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
                                 << new ESProperty(name:'notation', type:ESClient.TYPE.INTEGER, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
                                 << new ESProperty(name:'subject', type:ESClient.TYPE.STRING, index:ESClient.INDEX.ANALYZED, multilang:false)

@@ -1,8 +1,10 @@
 package com.mogobiz.rivers.cfp
 
-import akka.stream.{MaterializerSettings, FlowMaterializer}
-import akka.stream.scaladsl.Flow
-import org.reactivestreams.api.Producer
+import java.io.{FileOutputStream, File}
+
+import akka.stream.{ActorFlowMaterializer, FlowMaterializer}
+import akka.stream.scaladsl._
+import org.reactivestreams.Subscriber
 
 import scala.concurrent.Future
 import scala.concurrent._
@@ -46,16 +48,79 @@ object CfpClient extends BootedCfpSystem {
     p.future
   }
 
-  val flowMaterializer: FlowMaterializer = FlowMaterializer(MaterializerSettings())
+  implicit val flowMaterializer: FlowMaterializer = ActorFlowMaterializer()
 
-  def loadAllConferences(url:String):Producer[Seq[CfpConferenceDetails]] = {
+  implicit val ec: ExecutionContext = system.dispatcher
 
-    implicit val ec: ExecutionContext = system.dispatcher
+  def subscribe[T]: Source[T] => Seq[Subscriber[T]] => Unit = source => subscribers => FlowGraph{implicit b =>
+    import FlowGraphImplicits._
+    if(subscribers.nonEmpty){
+      if(subscribers.size > 1){
+        val broadcast = Broadcast[T]
+        source ~> broadcast
+        for(subscriber <- subscribers){
+          broadcast ~> SubscriberSink(subscriber)
+        }
+      }
+      else{
+        source ~> SubscriberSink(subscribers.head)
+      }
+    }
+    else{
+      source ~> Sink.ignore
+    }
+  }.run()
 
-    implicit def links2Url(links:CfpLinks) : Seq[String] = links.links.map(_.href)
+  def loadAllConferences(url:String, subscriber: Subscriber[CfpConferenceDetails]): Unit = {
+    subscribe(loadAllConferences(url))(Seq(subscriber))
+  }
 
-    Flow(getObjects[CfpLinks](s"$url/api/conferences")).mapFuture(urls => Future.sequence(for(url <- urls) yield loadConference(url))).toProducer(flowMaterializer)
+  def loadAllConferences(url:String): Source[CfpConferenceDetails] = {
+    Source(getObjects[CfpLinks](s"$url/api/conferences"))
+      .map[List[String]](_.links.map(_.href).toList)
+      .mapConcat[String](identity)
+      .mapAsyncUnordered(loadConference)
+  }
 
+  def downloadAvatars(avatars: Seq[CfpAvatar], destination: File, subscriber: Subscriber[String]): Unit = {
+    subscribe(downloadAvatars(avatars, destination))(Seq(subscriber))
+  }
+
+  def downloadAvatars(avatars: Seq[CfpAvatar], destination: File): Source[String] = {
+    destination.mkdirs()
+    if(destination.exists() && destination.isDirectory && destination.canWrite){
+      Source(){implicit b =>
+        import FlowGraphImplicits._
+        import dispatch._
+        val source: Source[CfpAvatar] = Source(avatars.toList).transform(() => new LoggingStage[CfpAvatar]())
+        val balance = Balance[CfpAvatar]
+        val merge = Merge[String]
+        val read: Flow[CfpAvatar, (String, Option[Array[Byte]])] = Flow[CfpAvatar].map{ u =>
+          val req = url(u.url)
+          val res = Http(req > as.Bytes).option
+          (u.id, res())
+        }
+        val write: Flow[(String, Option[Array[Byte]]), String] = Flow[(String, Option[Array[Byte]])].map{u =>
+          val uuid = u._1
+          u._2.map {bytes =>
+            val file = new File(destination, uuid)
+            val fos = new FileOutputStream(file)
+            fos.write(bytes)
+            file.getAbsolutePath
+          }.getOrElse(s"*** avatar could not be downloaded for $uuid")
+        }
+        val sink = UndefinedSink[String]
+        source ~> balance
+        1 to 10 foreach {_ =>
+          balance ~> read ~> write ~> merge
+        }
+        merge ~> sink
+        sink
+      }
+    }
+    else{
+      Source.empty()
+    }
   }
 
   def loadConference(url:String)(implicit ec:ExecutionContext):Future[CfpConferenceDetails] = {
@@ -85,6 +150,29 @@ object CfpClient extends BootedCfpSystem {
 
     getFutureDetails[CfpSchedule, CfpLinks](url)
 
+  }
+
+  import akka.actor.ActorSystem
+  import akka.event.Logging
+  import akka.stream.stage._
+
+  // Logging elements of a stream
+  // mysource.transform(() => new LoggingStage(name))
+  class LoggingStage[T](private val name:String = "Logging")(implicit system:ActorSystem) extends PushStage[T, T] {
+    private val log = Logging(system, name)
+    override def onPush(elem: T, ctx: Context[T]): Directive = {
+      log.info(s"$name -> Element flowing through: {}", elem)
+      ctx.push(elem)
+    }
+    override def onUpstreamFailure(cause: Throwable,
+                                   ctx: Context[T]): TerminationDirective = {
+      log.error(cause, s"$name -> Upstream failed.")
+      super.onUpstreamFailure(cause, ctx)
+    }
+    override def onUpstreamFinish(ctx: Context[T]): TerminationDirective = {
+      log.info(s"$name -> Upstream finished")
+      super.onUpstreamFinish(ctx)
+    }
   }
 
 }

@@ -42,16 +42,16 @@ case class CfpSpeaker(uuid:String,
                       avatarURL: String) extends CfpObject
 
 case class CfpSpeakerDetails(
-                            uuid: String,
-                            firstName: String,
-                            lastName: String,
-                            avatarURL: String,
-                            bioAsHtml:String,
-                            company:String,
-                            bio:String,
-                            blog:String,
-                            twitter:String,
-                            lang:String) extends CfpObject {
+                              uuid: String,
+                              firstName: String,
+                              lastName: String,
+                              avatarURL: String,
+                              bioAsHtml:String,
+                              company:String,
+                              bio:String,
+                              blog:String,
+                              twitter:String,
+                              lang:String) extends CfpObject {
   lazy val name = s"$firstName $lastName"
 }
 
@@ -86,5 +86,6 @@ case class CfpTalkSpeaker(link: CfpLink, name: String) extends CfpObject {
 }
 
 case class CfpException(message:String) extends Exception(message)
-}
 
+case class CfpAvatar(id: String, url: String)
+}

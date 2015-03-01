@@ -4,6 +4,7 @@ import java.io.{FileOutputStream, File}
 
 import akka.stream.{ActorFlowMaterializer, FlowMaterializer}
 import akka.stream.scaladsl._
+import com.mogobiz.tools.MimeTypeTools
 import org.reactivestreams.Subscriber
 
 import scala.concurrent.Future
@@ -106,7 +107,20 @@ object CfpClient extends BootedCfpSystem {
             val file = new File(destination, uuid)
             val fos = new FileOutputStream(file)
             fos.write(bytes)
-            (uuid, Some(file.getAbsolutePath))
+
+            val from = file.getAbsolutePath
+            val format = MimeTypeTools.toFormat(file)
+            if(format != null){
+              val to = from + "." + format
+              import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+              import java.nio.file.Files._
+              import java.nio.file.Paths.get
+              move(get(from), get(to), REPLACE_EXISTING)
+              (uuid, Some(to))
+            }
+            else{
+              (uuid, Some(from))
+            }
           }.getOrElse((uuid, None))
         }
         val undefinedSink = UndefinedSink[(String, Option[String])]

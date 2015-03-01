@@ -16,9 +16,7 @@ import scala.collection.Seq;
 import scala.runtime.BoxedUnit;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -87,9 +85,11 @@ public class CfpClientTest {
                 List<CfpAvatar> avatars = new ArrayList<CfpAvatar>();
                 for (Iterator<CfpSpeakerDetails> it = asJavaIterator(speakers.iterator()); it.hasNext(); ) {
                     CfpSpeakerDetails speakerDetails = it.next();
-                    CfpAvatar avatar = new CfpAvatar(speakerDetails.uuid(), speakerDetails.avatarURL());
+                    final String uuid = speakerDetails.uuid();
+                    CfpAvatar avatar = new CfpAvatar(uuid, speakerDetails.avatarURL());
                     avatars.add(avatar);
                 }
+
                 Subscriber<Tuple2<String, scala.Option<String>>> sub = new Subscriber<Tuple2<String, scala.Option<String>>>() {
                     @Override
                     public void onCompleted() {
@@ -107,7 +107,7 @@ public class CfpClientTest {
 
                 CfpClient.downloadAvatars(
                         asScalaBuffer(avatars),
-                        new File(System.getProperty("java.io.tmpdir")),
+                        new File(System.getProperty("java.io.tmpdir") + "/cfp"),
                         new RxSubscriberToRsSubscriberAdapter<Tuple2<String, scala.Option<String>>>(sub));
 
                 final Seq<CfpSchedule> schedules = conference.schedules();

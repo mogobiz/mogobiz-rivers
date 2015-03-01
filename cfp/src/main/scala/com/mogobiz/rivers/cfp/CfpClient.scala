@@ -82,11 +82,11 @@ object CfpClient extends BootedCfpSystem {
       .mapAsyncUnordered(loadConference)
   }
 
-  def downloadAvatars(avatars: Seq[CfpAvatar], destination: File, subscriber: Subscriber[String]): Unit = {
+  def downloadAvatars(avatars: Seq[CfpAvatar], destination: File, subscriber: Subscriber[(String, Option[String])]): Unit = {
     subscribe(downloadAvatars(avatars, destination))(Seq(subscriber))
   }
 
-  def downloadAvatars(avatars: Seq[CfpAvatar], destination: File): Source[String] = {
+  def downloadAvatars(avatars: Seq[CfpAvatar], destination: File): Source[(String, Option[String])] = {
     destination.mkdirs()
     if(destination.exists() && destination.isDirectory && destination.canWrite){
       Source(){implicit b =>
@@ -94,28 +94,28 @@ object CfpClient extends BootedCfpSystem {
         import dispatch._
         val source: Source[CfpAvatar] = Source(avatars.toList).transform(() => new LoggingStage[CfpAvatar]())
         val balance = Balance[CfpAvatar]
-        val merge = Merge[String]
+        val merge = Merge[(String, Option[String])]
         val read: Flow[CfpAvatar, (String, Option[Array[Byte]])] = Flow[CfpAvatar].map{ u =>
           val req = url(u.url)
           val res = Http(req > as.Bytes).option
           (u.id, res())
         }
-        val write: Flow[(String, Option[Array[Byte]]), String] = Flow[(String, Option[Array[Byte]])].map{u =>
+        val write: Flow[(String, Option[Array[Byte]]), (String, Option[String])] = Flow[(String, Option[Array[Byte]])].map{u =>
           val uuid = u._1
           u._2.map {bytes =>
             val file = new File(destination, uuid)
             val fos = new FileOutputStream(file)
             fos.write(bytes)
-            file.getAbsolutePath
-          }.getOrElse(s"*** avatar could not be downloaded for $uuid")
+            (uuid, Some(file.getAbsolutePath))
+          }.getOrElse((uuid, None))
         }
-        val sink = UndefinedSink[String]
+        val undefinedSink = UndefinedSink[(String, Option[String])]
         source ~> balance
         1 to 10 foreach {_ =>
           balance ~> read ~> write ~> merge
         }
-        merge ~> sink
-        sink
+        merge ~> undefinedSink
+        undefinedSink
       }
     }
     else{

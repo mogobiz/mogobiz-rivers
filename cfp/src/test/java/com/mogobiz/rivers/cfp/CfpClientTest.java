@@ -9,6 +9,7 @@ import akka.stream.javadsl.japi.Procedure;
 import static scala.collection.JavaConversions.*;
 
 import org.junit.Test;
+import scala.Tuple2;
 import rx.Subscriber;
 import rx.internal.reactivestreams.RxSubscriberToRsSubscriberAdapter;
 import scala.collection.Seq;
@@ -89,7 +90,7 @@ public class CfpClientTest {
                     CfpAvatar avatar = new CfpAvatar(speakerDetails.uuid(), speakerDetails.avatarURL());
                     avatars.add(avatar);
                 }
-                Subscriber<String> sub = new Subscriber<String>() {
+                Subscriber<Tuple2<String, scala.Option<String>>> sub = new Subscriber<Tuple2<String, scala.Option<String>>>() {
                     @Override
                     public void onCompleted() {
                     }
@@ -99,15 +100,15 @@ public class CfpClientTest {
                     }
 
                     @Override
-                    public void onNext(String s) {
-                        System.out.println(s);
+                    public void onNext(Tuple2<String, scala.Option<String>> tuple2) {
+                        System.out.println(tuple2._1() + "->" +tuple2._2().get());
                     }
                 };
 
                 CfpClient.downloadAvatars(
                         asScalaBuffer(avatars),
                         new File(System.getProperty("java.io.tmpdir")),
-                        new RxSubscriberToRsSubscriberAdapter<String>(sub));
+                        new RxSubscriberToRsSubscriberAdapter<Tuple2<String, scala.Option<String>>>(sub));
 
                 final Seq<CfpSchedule> schedules = conference.schedules();
                 assertEquals(5, schedules.size());

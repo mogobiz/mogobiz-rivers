@@ -14,7 +14,7 @@ package object cfp {
 
   type CfpConsumer = CfpConference => Unit
 
-  def subscribe[T]: Source[T] => Seq[Subscriber[T]] => Unit = source => subscribers => FlowGraph{implicit b =>
+  def subscribe[T]: Source[T] => Seq[Subscriber[T]] => FlowGraph = source => subscribers => FlowGraph{implicit b =>
     import FlowGraphImplicits._
     if(subscribers.nonEmpty){
       if(subscribers.size > 1){
@@ -31,7 +31,7 @@ package object cfp {
     else{
       source ~> Sink.ignore
     }
-  }.run()
+  }
 
   def flatten[T] = Flow[Seq[T]].map(_.toList).mapConcat(identity)
 
@@ -97,7 +97,7 @@ case class CfpConferenceDetails(eventCode: String, label: String, speakers: Seq[
     case Some(_) => true
     case None => false
   }))
-  def avatarFile(uuid: String): Option[String] = avatars.find(_.uuid == uuid).map(_.file).getOrElse(None)
+  def avatarFile(uuid: String) = avatars.find(_.uuid == uuid).map(_.file).getOrElse(None)
 }
 
 trait Speaker extends CfpObject{

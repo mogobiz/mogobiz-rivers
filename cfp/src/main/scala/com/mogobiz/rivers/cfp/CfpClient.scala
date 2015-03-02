@@ -54,7 +54,7 @@ object CfpClient extends BootedCfpSystem {
   implicit val ec: ExecutionContext = system.dispatcher
 
   def loadAllConferences(url:String, subscriber: Subscriber[CfpConferenceDetails]): Unit = {
-    subscribe(loadAllConferences(url))(Seq(subscriber))
+    subscribe(loadAllConferences(url))(Seq(subscriber)).run()
   }
 
   def loadAllConferences(url:String): Source[CfpConferenceDetails] = {
@@ -93,7 +93,7 @@ object CfpClient extends BootedCfpSystem {
   }
 
   def downloadAvatars(speakers: Seq[Speaker], destination: Option[File], subscriber: Subscriber[Seq[CfpAvatar]]): Unit = {
-    subscribe(Source.single(speakers).via(downloadAvatars(destination)))(Seq(subscriber))
+    subscribe(Source.single(speakers).via(downloadAvatars(destination)))(Seq(subscriber)).run()
   }
 
   def downloadAvatars(destination: Option[File]) = Flow(){implicit b =>

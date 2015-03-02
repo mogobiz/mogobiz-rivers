@@ -10,7 +10,7 @@ import com.mogobiz.elasticsearch.client.ESMapping
 import com.mogobiz.elasticsearch.client.ESProperty
 import com.mogobiz.elasticsearch.client.ESClient
 import com.mogobiz.elasticsearch.rivers.spi.ESRiver
-import rx.util.functions.Action1
+import rx.functions.Action1
 import rx.Observable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future

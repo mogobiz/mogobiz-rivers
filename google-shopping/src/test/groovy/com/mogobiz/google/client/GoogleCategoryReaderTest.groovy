@@ -3,9 +3,9 @@ package com.mogobiz.google.client
 import akka.actor.ActorSystem
 import akka.dispatch.Futures
 import akka.dispatch.Mapper
-import rx.util.functions.Action0
-import rx.util.functions.Action1
-import rx.util.functions.Func1
+import rx.functions.Action0
+import rx.functions.Action1
+import rx.functions.Func1
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future

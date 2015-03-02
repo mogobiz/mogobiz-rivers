@@ -12,7 +12,6 @@ import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Item
 import com.mogobiz.common.client.SearchResponse
-import groovy.json.JsonBuilder
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import scala.concurrent.ExecutionContext
@@ -186,7 +185,7 @@ final class GoogleClient implements Client{
                         new BulkResponse(items: _items)
                     }
                     else{
-                        def text = client.getText([debug: debug], conn)
+                        client.getText([debug: debug], conn)
                         new BulkResponse(items: [])
                     }
                 }

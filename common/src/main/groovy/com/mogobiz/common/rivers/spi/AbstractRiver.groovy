@@ -5,7 +5,7 @@ import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Item
 import com.mogobiz.common.client.Client
-import rx.util.functions.Func1
+import rx.functions.Func1
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 

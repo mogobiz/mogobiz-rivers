@@ -6,8 +6,7 @@ import akka.dispatch.Mapper
 import com.mogobiz.common.rivers.spi.River
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.rivers.spi.RiverConfig
-import rx.util.functions.Action1
-import scala.Function1
+import rx.functions.Action1
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 

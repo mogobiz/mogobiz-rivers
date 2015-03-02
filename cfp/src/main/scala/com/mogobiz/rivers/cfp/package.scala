@@ -1,5 +1,8 @@
 package com.mogobiz.rivers
 
+import akka.stream.scaladsl._
+import org.reactivestreams.Subscriber
+
 import scala.util.Try
 
 
@@ -11,6 +14,66 @@ package object cfp {
 
   type CfpConsumer = CfpConference => Unit
 
+  def subscribe[T]: Source[T] => Seq[Subscriber[T]] => Unit = source => subscribers => FlowGraph{implicit b =>
+    import FlowGraphImplicits._
+    if(subscribers.nonEmpty){
+      if(subscribers.size > 1){
+        val broadcast = Broadcast[T]
+        source ~> broadcast
+        for(subscriber <- subscribers){
+          broadcast ~> SubscriberSink(subscriber)
+        }
+      }
+      else{
+        source ~> SubscriberSink(subscribers.head)
+      }
+    }
+    else{
+      source ~> Sink.ignore
+    }
+  }.run()
+
+  def flatten[T] = Flow[Seq[T]].map(_.toList).mapConcat(identity)
+
+  def regrouped[T] = Flow[T].transform(() => new Fold[T, Seq[T]](Seq.empty, (out, in) => out :+ in))
+
+  import akka.actor.ActorSystem
+  import akka.event.Logging
+  import akka.stream.stage._
+
+  // Logging elements of a stream
+  // mysource.transform(() => new LoggingStage(name))
+  private[cfp] final class LoggingStage[T](private val name:String = "Logging")(implicit system:ActorSystem) extends PushStage[T, T] {
+    private val log = Logging(system, name)
+    override def onPush(elem: T, ctx: Context[T]): Directive = {
+      log.info(s"$name -> Element flowing through: {}", elem)
+      ctx.push(elem)
+    }
+    override def onUpstreamFailure(cause: Throwable,
+                                   ctx: Context[T]): TerminationDirective = {
+      log.error(cause, s"$name -> Upstream failed.")
+      super.onUpstreamFailure(cause, ctx)
+    }
+    override def onUpstreamFinish(ctx: Context[T]): TerminationDirective = {
+      log.info(s"$name -> Upstream finished")
+      super.onUpstreamFinish(ctx)
+    }
+  }
+
+  private[cfp] final case class Fold[In, Out](zero: Out, f: (Out, In) ⇒ Out) extends PushPullStage[In, Out] {
+    private var aggregator = zero
+
+    override def onPush(elem: In, ctx: Context[Out]): Directive = {
+      aggregator = f(aggregator, elem)
+      ctx.pull()
+    }
+
+    override def onPull(ctx: Context[Out]): Directive =
+      if (ctx.isFinishing) ctx.pushAndFinish(aggregator)
+      else ctx.pull()
+
+    override def onUpstreamFinish(ctx: Context[Out]): TerminationDirective = ctx.absorbTermination()
+  }
 }
 
 package cfp {
@@ -29,17 +92,26 @@ case class CfpLink(href: String) extends CfpDetailsObject{
 
 case class CfpConference(eventCode: String, label: String) extends CfpObject
 
-case class CfpConferenceDetails(eventCode: String, label: String, speakers: Seq[CfpSpeakerDetails], schedules: Seq[CfpSchedule]) extends CfpObject{
+case class CfpConferenceDetails(eventCode: String, label: String, speakers: Seq[CfpSpeakerDetails], schedules: Seq[CfpSchedule], avatars: Seq[CfpAvatar]) extends CfpObject{
   lazy val slots: Seq[CfpSlot] = schedules.flatMap((s) => s.slots.filter(_.talk match {
     case Some(_) => true
     case None => false
   }))
+  def avatarFile(uuid: String): Option[String] = avatars.find(_.uuid == uuid).map(_.file).getOrElse(None)
+}
+
+trait Speaker extends CfpObject{
+  def uuid: String
+  def avatarURL: String
 }
 
 case class CfpSpeaker(uuid:String,
                       firstName: String,
                       lastName: String,
-                      avatarURL: String) extends CfpObject
+                      avatarURL: String,
+                      links: Seq[CfpLink]) extends CfpObject with Speaker{
+  lazy val url = links.headOption.map(_.href).getOrElse(avatarURL)
+}
 
 case class CfpSpeakerDetails(
                               uuid: String,
@@ -51,7 +123,7 @@ case class CfpSpeakerDetails(
                               bio:String,
                               blog:String,
                               twitter:String,
-                              lang:String) extends CfpObject {
+                              lang:String) extends CfpObject with Speaker {
   lazy val name = s"$firstName $lastName"
 }
 
@@ -87,5 +159,5 @@ case class CfpTalkSpeaker(link: CfpLink, name: String) extends CfpObject {
 
 case class CfpException(message:String) extends Exception(message)
 
-case class CfpAvatar(id: String, url: String)
+case class CfpAvatar(uuid: String, file: Option[String])
 }

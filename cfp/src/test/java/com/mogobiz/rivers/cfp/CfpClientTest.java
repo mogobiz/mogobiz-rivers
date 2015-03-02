@@ -9,13 +9,11 @@ import akka.stream.javadsl.japi.Procedure;
 import static scala.collection.JavaConversions.*;
 
 import org.junit.Test;
-import scala.Tuple2;
 import rx.Subscriber;
 import rx.internal.reactivestreams.RxSubscriberToRsSubscriberAdapter;
 import scala.collection.Seq;
 import scala.runtime.BoxedUnit;
 
-import java.io.File;
 import java.util.*;
 
 /**
@@ -74,7 +72,7 @@ public class CfpClientTest {
 
             @Override
             public void onError(Throwable throwable) {
-                System.out.println("KO");
+                throwable.printStackTrace(System.err);
             }
 
             @Override
@@ -82,33 +80,12 @@ public class CfpClientTest {
                 final Seq<CfpSpeakerDetails> speakers = conference.speakers();
                 assertEquals(184, speakers.size());
 
-                List<CfpAvatar> avatars = new ArrayList<CfpAvatar>();
-                for (Iterator<CfpSpeakerDetails> it = asJavaIterator(speakers.iterator()); it.hasNext(); ) {
-                    CfpSpeakerDetails speakerDetails = it.next();
-                    final String uuid = speakerDetails.uuid();
-                    CfpAvatar avatar = new CfpAvatar(uuid, speakerDetails.avatarURL());
-                    avatars.add(avatar);
-                }
-
-                Subscriber<Tuple2<String, scala.Option<String>>> sub = new Subscriber<Tuple2<String, scala.Option<String>>>() {
-                    @Override
-                    public void onCompleted() {
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                    }
-
-                    @Override
-                    public void onNext(Tuple2<String, scala.Option<String>> tuple2) {
-                        System.out.println(tuple2._1() + "->" +tuple2._2().get());
-                    }
-                };
-
-                CfpClient.downloadAvatars(
-                        asScalaBuffer(avatars),
-                        new File(System.getProperty("java.io.tmpdir") + "/cfp"),
-                        new RxSubscriberToRsSubscriberAdapter<Tuple2<String, scala.Option<String>>>(sub));
+                final Seq<CfpAvatar> avatars = conference.avatars();
+                assertEquals(184, avatars.size());
+//                for (Iterator<CfpAvatar> it = asJavaIterator(avatars.iterator()); it.hasNext(); ) {
+//                    CfpAvatar avatar = it.next();
+//                    System.out.println("avatar " + avatar.uuid() + " -> " + avatar.file().get());
+//                }
 
                 final Seq<CfpSchedule> schedules = conference.schedules();
                 assertEquals(5, schedules.size());
@@ -134,6 +111,6 @@ public class CfpClientTest {
             }
         };
         CfpClient.loadAllConferences("http://cfp.devoxx.be", new RxSubscriberToRsSubscriberAdapter<CfpConferenceDetails>(subscriber));
-        Thread.sleep(30000);
+        Thread.sleep(25000);
     }
 }

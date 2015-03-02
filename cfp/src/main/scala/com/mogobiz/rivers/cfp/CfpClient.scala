@@ -9,7 +9,7 @@ import org.reactivestreams.Subscriber
 
 import scala.concurrent.Future
 import scala.concurrent._
-import scala.util.{Failure, Success}
+import scala.util._
 
 /**
  *
@@ -53,101 +53,93 @@ object CfpClient extends BootedCfpSystem {
 
   implicit val ec: ExecutionContext = system.dispatcher
 
-  def subscribe[T]: Source[T] => Seq[Subscriber[T]] => Unit = source => subscribers => FlowGraph{implicit b =>
-    import FlowGraphImplicits._
-    if(subscribers.nonEmpty){
-      if(subscribers.size > 1){
-        val broadcast = Broadcast[T]
-        source ~> broadcast
-        for(subscriber <- subscribers){
-          broadcast ~> SubscriberSink(subscriber)
-        }
-      }
-      else{
-        source ~> SubscriberSink(subscribers.head)
-      }
-    }
-    else{
-      source ~> Sink.ignore
-    }
-  }.run()
-
   def loadAllConferences(url:String, subscriber: Subscriber[CfpConferenceDetails]): Unit = {
     subscribe(loadAllConferences(url))(Seq(subscriber))
   }
 
   def loadAllConferences(url:String): Source[CfpConferenceDetails] = {
-    Source(getObjects[CfpLinks](s"$url/api/conferences"))
-      .map[List[String]](_.links.map(_.href).toList)
-      .mapConcat[String](identity)
-      .mapAsyncUnordered(loadConference)
+    Source(){implicit b =>
+      import FlowGraphImplicits._
+
+      val source = Source(getObjects[CfpLinks](s"$url/api/conferences"))
+        .map[List[String]](_.links.map(_.href).toList)
+        .mapConcat[String](identity)
+      val broadcast = Broadcast[String]
+      val schedules = Flow[String].mapAsync[Seq[CfpSchedule]](u => loadSchedules(s"$u/schedules"))
+      val speakers = Flow[String].mapAsync[Seq[CfpSpeakerDetails]](u => loadSpeakers(s"$u/speakers"))
+      val zip1 = Zip[Seq[CfpSchedule], (Seq[CfpSpeakerDetails], Seq[CfpAvatar])]
+      val broadcast2 = Broadcast[Seq[CfpSpeakerDetails]]
+      val zip2 = Zip[Seq[CfpSpeakerDetails], Seq[CfpAvatar]]
+      val zip3 = ZipWith[
+        (Seq[CfpSchedule], (Seq[CfpSpeakerDetails], Seq[CfpAvatar])),
+        CfpConference,
+        CfpConferenceDetails]((t, s) => CfpConferenceDetails(s.eventCode, s.label, t._2._1, t._1, t._2._2))
+
+      val conference = Flow[String].mapAsync(getObjects[CfpConference])
+
+      val undefinedSink = UndefinedSink[CfpConferenceDetails]
+
+      source ~> broadcast ~> schedules ~> zip1.left
+                broadcast ~> speakers  ~> broadcast2 ~> zip2.left
+                                          broadcast2 ~> downloadAvatars(None) ~> zip2.right
+                broadcast ~> conference ~> zip3.right
+
+      zip2.out ~> zip1.right
+      zip1.out ~> zip3.left
+      zip3.out ~> undefinedSink
+
+      undefinedSink
+    }
   }
 
-  def downloadAvatars(avatars: Seq[CfpAvatar], destination: File, subscriber: Subscriber[(String, Option[String])]): Unit = {
-    subscribe(downloadAvatars(avatars, destination))(Seq(subscriber))
+  def downloadAvatars(speakers: Seq[Speaker], destination: Option[File], subscriber: Subscriber[Seq[CfpAvatar]]): Unit = {
+    subscribe(Source.single(speakers).via(downloadAvatars(destination)))(Seq(subscriber))
   }
 
-  def downloadAvatars(avatars: Seq[CfpAvatar], destination: File): Source[(String, Option[String])] = {
-    destination.mkdirs()
-    if(destination.exists() && destination.isDirectory && destination.canWrite){
-      Source(){implicit b =>
-        import FlowGraphImplicits._
-        import dispatch._
-        val source: Source[CfpAvatar] = Source(avatars.toList).transform(() => new LoggingStage[CfpAvatar]())
-        val balance = Balance[CfpAvatar]
-        val merge = Merge[(String, Option[String])]
-        val read: Flow[CfpAvatar, (String, Option[Array[Byte]])] = Flow[CfpAvatar].map{ u =>
-          val req = url(u.url)
-          val res = Http(req > as.Bytes).option
-          (u.id, res())
-        }
-        val write: Flow[(String, Option[Array[Byte]]), (String, Option[String])] = Flow[(String, Option[Array[Byte]])].map{u =>
-          val uuid = u._1
-          u._2.map {bytes =>
-            val file = new File(destination, uuid)
-            val fos = new FileOutputStream(file)
-            fos.write(bytes)
+  def downloadAvatars(destination: Option[File]) = Flow(){implicit b =>
+    import FlowGraphImplicits._
+    import dispatch._
+    val dir = destination.getOrElse(new File(s"${System.getProperty("java.io.tmpdir")}/cfp/${System.currentTimeMillis()}"))
+    dir.mkdirs()
+    val undefinedSource = UndefinedSource[Seq[Speaker]]
+    val balance = Balance[Speaker]
+    val merge = Merge[CfpAvatar]
+    val read: Flow[Speaker, (String, Option[Array[Byte]])] = Flow[Speaker].map{ u =>
+      val req = url(u.avatarURL)
+      val res = Try(Http(req > as.Bytes).option)
+      (u.uuid, res.map(r => r()).getOrElse(None))
+    }
+    val write: Flow[(String, Option[Array[Byte]]), CfpAvatar] = Flow[(String, Option[Array[Byte]])].map{u =>
+      val uuid = u._1
+      u._2.map {bytes =>
+        val file = new File(dir, uuid)
+        val fos = new FileOutputStream(file)
+        fos.write(bytes)
 
-            val from = file.getAbsolutePath
-            val format = MimeTypeTools.toFormat(file)
-            if(format != null){
-              val to = from + "." + format
-              import java.nio.file.StandardCopyOption.REPLACE_EXISTING
-              import java.nio.file.Files._
-              import java.nio.file.Paths.get
-              move(get(from), get(to), REPLACE_EXISTING)
-              (uuid, Some(to))
-            }
-            else{
-              (uuid, Some(from))
-            }
-          }.getOrElse((uuid, None))
+        val from = file.getAbsolutePath
+        val format = MimeTypeTools.toFormat(file)
+        if(format != null){
+          val to = from + "." + format
+          import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+          import java.nio.file.Files._
+          import java.nio.file.Paths.get
+          move(get(from), get(to), REPLACE_EXISTING)
+          CfpAvatar(uuid, Some(to))
         }
-        val undefinedSink = UndefinedSink[(String, Option[String])]
-        source ~> balance
-        1 to 10 foreach {_ =>
-          balance ~> read ~> write ~> merge
+        else{
+          CfpAvatar(uuid, Some(from))
         }
-        merge ~> undefinedSink
-        undefinedSink
+      }.getOrElse(CfpAvatar(uuid, None))
+    }.transform(() => new LoggingStage[CfpAvatar]("avatar"))
+    val undefinedSink = UndefinedSink[Seq[CfpAvatar]]
+    if(dir.exists() && dir.isDirectory && dir.canWrite) {
+      undefinedSource ~> flatten[Speaker] ~> balance
+      1 to 10 foreach { _ =>
+        balance ~> read ~> write ~> merge
       }
+      merge ~> regrouped[CfpAvatar] ~> undefinedSink
     }
-    else{
-      Source.empty()
-    }
-  }
-
-  def loadConference(url:String)(implicit ec:ExecutionContext):Future[CfpConferenceDetails] = {
-    val p = Promise[CfpConferenceDetails]()
-
-    for(schedules <- loadSchedules(s"$url/schedules");
-        speakers <- loadSpeakers(s"$url/speakers");
-        s <- getObjects[CfpConference](url)
-    ) {
-      p.trySuccess(CfpConferenceDetails(s.eventCode, s.label, speakers, schedules))
-    }
-
-    p.future
+    (undefinedSource, undefinedSink)
   }
 
   def loadSpeakers(url:String)(implicit ec:ExecutionContext):Future[Seq[CfpSpeakerDetails]] = {
@@ -166,27 +158,50 @@ object CfpClient extends BootedCfpSystem {
 
   }
 
-  import akka.actor.ActorSystem
-  import akka.event.Logging
-  import akka.stream.stage._
+//  val speakers = Flow(){implicit b =>
+//    import FlowGraphImplicits._
+//
+//    val undefinedSource = UndefinedSource[String]
+//
+//    val loadUuids = Flow[String].transform(() => new LoggingStage[String]("speakers")).mapAsync{u => getObjects[Seq[CfpSpeaker]](s"$u/speakers")}
+//    val balance = Balance[CfpSpeaker]
+//    val loadSpeaker = Flow[CfpSpeaker].transform(() => new LoggingStage[CfpSpeaker]("speaker")).mapAsync[CfpSpeakerDetails]{link => getObjects[CfpSpeakerDetails](link.url)}
+//    val merge = Merge[CfpSpeakerDetails]
+//
+//    val undefinedSink = UndefinedSink[Seq[CfpSpeakerDetails]]
+//
+//    undefinedSource ~> loadUuids ~> flatten[CfpSpeaker] ~> balance
+//
+//    1 to 5 foreach {_ =>
+//      balance ~> loadSpeaker ~> merge
+//    }
+//
+//    merge ~> regrouped[CfpSpeakerDetails] ~> undefinedSink
+//
+//    (undefinedSource, undefinedSink)
+//  }
 
-  // Logging elements of a stream
-  // mysource.transform(() => new LoggingStage(name))
-  class LoggingStage[T](private val name:String = "Logging")(implicit system:ActorSystem) extends PushStage[T, T] {
-    private val log = Logging(system, name)
-    override def onPush(elem: T, ctx: Context[T]): Directive = {
-      log.info(s"$name -> Element flowing through: {}", elem)
-      ctx.push(elem)
-    }
-    override def onUpstreamFailure(cause: Throwable,
-                                   ctx: Context[T]): TerminationDirective = {
-      log.error(cause, s"$name -> Upstream failed.")
-      super.onUpstreamFailure(cause, ctx)
-    }
-    override def onUpstreamFinish(ctx: Context[T]): TerminationDirective = {
-      log.info(s"$name -> Upstream finished")
-      super.onUpstreamFinish(ctx)
-    }
-  }
+//  val schedules = Flow(){implicit b =>
+//    import FlowGraphImplicits._
+//
+//    val undefinedSource = UndefinedSource[String]
+//
+//    val loadLinks = Flow[String].mapAsync{u => getObjects[CfpLinks](s"$u/schedules")}.map(_.links)
+//    val loadSchedule = Flow[CfpLink].transform(() => new LoggingStage[CfpLink]("schedule")).mapAsync[CfpSchedule]{link => getObjects[CfpSchedule](link.url)}
+//    val balance = Balance[CfpLink]
+//    val merge = Merge[CfpSchedule]
+//
+//    val undefinedSink = UndefinedSink[Seq[CfpSchedule]]
+//
+//    undefinedSource ~> loadLinks ~> flatten[CfpLink] ~> balance
+//
+//    1 to 5 foreach {_ =>
+//      balance ~> loadSchedule ~> merge
+//    }
+//
+//    merge ~> regrouped[CfpSchedule] ~> undefinedSink
+//
+//    (undefinedSource, undefinedSink)
+//  }
 
 }

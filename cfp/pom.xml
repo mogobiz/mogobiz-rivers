@@ -14,7 +14,7 @@
     <artifactId>mogobiz-cfp</artifactId>
     <version>0.1-SNAPSHOT</version>
     <name>mogobiz cfp client</name>
-    <!-- distributionManagement
+    <!-- distributionManagement -->
     <distributionManagement>
         <repository>
             <id>mogobiz.release</id>
@@ -51,7 +51,7 @@
             </snapshots>
         </repository>
     </repositories>
-     -->
+
     <dependencies>
 
         <dependency>

@@ -12,8 +12,6 @@ import scala.util.Try
  */
 package object cfp {
 
-  type CfpConsumer = CfpConference => Unit
-
   def subscribe[T]: Source[T] => Seq[Subscriber[T]] => FlowGraph = source => subscribers => FlowGraph{implicit b =>
     import FlowGraphImplicits._
     if(subscribers.nonEmpty){
@@ -60,7 +58,7 @@ package object cfp {
     }
   }
 
-  private[cfp] final case class Fold[In, Out](zero: Out, f: (Out, In) ⇒ Out) extends PushPullStage[In, Out] {
+  private[cfp] final case class Fold[In, Out](zero: Out, f: (Out, In) => Out) extends PushPullStage[In, Out] {
     private var aggregator = zero
 
     override def onPush(elem: In, ctx: Context[Out]): Directive = {

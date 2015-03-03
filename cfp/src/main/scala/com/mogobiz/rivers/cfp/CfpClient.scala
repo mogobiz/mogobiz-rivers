@@ -65,8 +65,8 @@ object CfpClient extends BootedCfpSystem {
         .map[List[String]](_.links.map(_.href).toList)
         .mapConcat[String](identity)
       val broadcast = Broadcast[String]
-      val schedules = Flow[String].mapAsync[Seq[CfpSchedule]](u => loadSchedules(s"$u/schedules"))
-      val speakers = Flow[String].mapAsync[Seq[CfpSpeakerDetails]](u => loadSpeakers(s"$u/speakers"))
+//      val schedules = Flow[String].mapAsync[Seq[CfpSchedule]](u => loadSchedules(s"$u/schedules"))
+//      val speakers = Flow[String].mapAsync[Seq[CfpSpeakerDetails]](u => loadSpeakers(s"$u/speakers"))
       val zip1 = Zip[Seq[CfpSchedule], (Seq[CfpSpeakerDetails], Seq[CfpAvatar])]
       val broadcast2 = Broadcast[Seq[CfpSpeakerDetails]]
       val zip2 = Zip[Seq[CfpSpeakerDetails], Seq[CfpAvatar]]
@@ -142,6 +142,7 @@ object CfpClient extends BootedCfpSystem {
     (undefinedSource, undefinedSink)
   }
 
+  @deprecated
   def loadSpeakers(url:String)(implicit ec:ExecutionContext):Future[Seq[CfpSpeakerDetails]] = {
 
     implicit val uuid2Pipeline : Seq[CfpSpeaker] => Seq[CfpDetailsObject] = cfpUuids => cfpUuids.map((u) => CfpLink(s"$url/${u.uuid}"))
@@ -150,6 +151,7 @@ object CfpClient extends BootedCfpSystem {
 
   }
 
+  @deprecated
   def loadSchedules(url:String)(implicit ec:ExecutionContext):Future[Seq[CfpSchedule]] = {
 
     implicit val links2Pipeline : CfpLinks => Seq[CfpDetailsObject] = cfpLinks => cfpLinks.links
@@ -158,50 +160,50 @@ object CfpClient extends BootedCfpSystem {
 
   }
 
-//  val speakers = Flow(){implicit b =>
-//    import FlowGraphImplicits._
-//
-//    val undefinedSource = UndefinedSource[String]
-//
-//    val loadUuids = Flow[String].transform(() => new LoggingStage[String]("speakers")).mapAsync{u => getObjects[Seq[CfpSpeaker]](s"$u/speakers")}
-//    val balance = Balance[CfpSpeaker]
-//    val loadSpeaker = Flow[CfpSpeaker].transform(() => new LoggingStage[CfpSpeaker]("speaker")).mapAsync[CfpSpeakerDetails]{link => getObjects[CfpSpeakerDetails](link.url)}
-//    val merge = Merge[CfpSpeakerDetails]
-//
-//    val undefinedSink = UndefinedSink[Seq[CfpSpeakerDetails]]
-//
-//    undefinedSource ~> loadUuids ~> flatten[CfpSpeaker] ~> balance
-//
-//    1 to 5 foreach {_ =>
-//      balance ~> loadSpeaker ~> merge
-//    }
-//
-//    merge ~> regrouped[CfpSpeakerDetails] ~> undefinedSink
-//
-//    (undefinedSource, undefinedSink)
-//  }
+  val speakers = Flow(){implicit b =>
+    import FlowGraphImplicits._
 
-//  val schedules = Flow(){implicit b =>
-//    import FlowGraphImplicits._
-//
-//    val undefinedSource = UndefinedSource[String]
-//
-//    val loadLinks = Flow[String].mapAsync{u => getObjects[CfpLinks](s"$u/schedules")}.map(_.links)
-//    val loadSchedule = Flow[CfpLink].transform(() => new LoggingStage[CfpLink]("schedule")).mapAsync[CfpSchedule]{link => getObjects[CfpSchedule](link.url)}
-//    val balance = Balance[CfpLink]
-//    val merge = Merge[CfpSchedule]
-//
-//    val undefinedSink = UndefinedSink[Seq[CfpSchedule]]
-//
-//    undefinedSource ~> loadLinks ~> flatten[CfpLink] ~> balance
-//
-//    1 to 5 foreach {_ =>
-//      balance ~> loadSchedule ~> merge
-//    }
-//
-//    merge ~> regrouped[CfpSchedule] ~> undefinedSink
-//
-//    (undefinedSource, undefinedSink)
-//  }
+    val undefinedSource = UndefinedSource[String]
+
+    val loadUuids = Flow[String].transform(() => new LoggingStage[String]("speakers")).mapAsync{u => getObjects[Seq[CfpSpeaker]](s"$u/speakers")}
+    val balance = Balance[CfpSpeaker]
+    val loadSpeaker = Flow[CfpSpeaker].transform(() => new LoggingStage[CfpSpeaker]("speaker")).mapAsync[CfpSpeakerDetails]{link => getObjects[CfpSpeakerDetails](link.url)}
+    val merge = Merge[CfpSpeakerDetails]
+
+    val undefinedSink = UndefinedSink[Seq[CfpSpeakerDetails]]
+
+    undefinedSource ~> loadUuids ~> flatten[CfpSpeaker] ~> balance
+
+    1 to 5 foreach {_ =>
+      balance ~> loadSpeaker ~> merge
+    }
+
+    merge ~> regrouped[CfpSpeakerDetails] ~> undefinedSink
+
+    (undefinedSource, undefinedSink)
+  }
+
+  val schedules = Flow(){implicit b =>
+    import FlowGraphImplicits._
+
+    val undefinedSource = UndefinedSource[String]
+
+    val loadLinks = Flow[String].mapAsync{u => getObjects[CfpLinks](s"$u/schedules")}.map(_.links)
+    val loadSchedule = Flow[CfpLink].transform(() => new LoggingStage[CfpLink]("schedule")).mapAsync[CfpSchedule]{link => getObjects[CfpSchedule](link.url)}
+    val balance = Balance[CfpLink]
+    val merge = Merge[CfpSchedule]
+
+    val undefinedSink = UndefinedSink[Seq[CfpSchedule]]
+
+    undefinedSource ~> loadLinks ~> flatten[CfpLink] ~> balance
+
+    1 to 5 foreach {_ =>
+      balance ~> loadSchedule ~> merge
+    }
+
+    merge ~> regrouped[CfpSchedule] ~> undefinedSink
+
+    (undefinedSource, undefinedSink)
+  }
 
 }

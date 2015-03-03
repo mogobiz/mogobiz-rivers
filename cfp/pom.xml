@@ -160,7 +160,7 @@
         <!-- rxjava-groovy -->
         <dependency>
             <groupId>com.netflix.rxjava</groupId>
-            <artifactId>rxjava-core</artifactId>
+            <artifactId>rxjava-groovy</artifactId>
             <version>0.20.7</version>
             <scope>compile</scope>
             <exclusions>

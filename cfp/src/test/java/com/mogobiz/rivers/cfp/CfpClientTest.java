@@ -59,7 +59,7 @@ public class CfpClientTest {
             }
         });
         source.runWith(sink, CfpClient.flowMaterializer());
-        Thread.sleep(10000);
+        Thread.sleep(15000);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class CfpClientTest {
 
             @Override
             public void onError(Throwable throwable) {
-                throwable.printStackTrace(System.err);
+                System.err.println(throwable.getMessage());
             }
 
             @Override
@@ -111,6 +111,6 @@ public class CfpClientTest {
             }
         };
         CfpClient.loadAllConferences("http://cfp.devoxx.be", new RxSubscriberToRsSubscriberAdapter<CfpConferenceDetails>(subscriber));
-        Thread.sleep(25000);
+        Thread.sleep(15000);
     }
 }

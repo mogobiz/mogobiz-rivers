@@ -2,6 +2,7 @@ package com.mogobiz.elasticsearch.rivers
 
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Item
+import com.mogobiz.common.rivers.AbstractRiverCache
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.common.rivers.Rivers
 import com.mogobiz.elasticsearch.client.ESIndexResponse
@@ -212,6 +213,8 @@ final class ESRivers extends Rivers<ESRiver>{
     Future<Collection<BulkResponse>> export(
             RiverConfig config,
             ExecutionContext ec){
+
+        AbstractRiverCache.purgeAll()
 
         ESIndexResponse response = createCompanyIndex(config)
 

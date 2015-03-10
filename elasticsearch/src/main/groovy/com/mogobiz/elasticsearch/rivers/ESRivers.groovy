@@ -141,6 +141,7 @@ final class ESRivers extends Rivers<ESRiver>{
                         config.defaultLang)
             }
         }
+
         if(response.acknowledged) {
             def history = config.clientConfig.store + '_history'
             exists = client.indexExists(config.clientConfig.url, history)
@@ -164,6 +165,7 @@ final class ESRivers extends Rivers<ESRiver>{
                         config.defaultLang)
             }
         }
+
         if(response.acknowledged){
             def learning = config.clientConfig.store + '_learning'
             exists = client.indexExists(config.clientConfig.url, learning)
@@ -198,18 +200,36 @@ final class ESRivers extends Rivers<ESRiver>{
             }
         }
 
-        def cart = config.clientConfig.store + '_cart'
-        exists = client.indexExists(config.clientConfig.url, cart)
-        if(!exists){
-            response = client.createIndex(
-                    config.clientConfig.url,
-                    cart,
-                    new ESIndexSettings(
-                            number_of_replicas: config.clientConfig.config.replicas ?: 1,
-                            refresh_interval: "1s"
-                    ),
-                    ESMappings.loadMappings("BOCart"),
-                    [debug:config.debug])
+        if(response.acknowledged){
+            def cart = config.clientConfig.store + '_cart'
+            exists = client.indexExists(config.clientConfig.url, cart)
+            if(!exists){
+                response = client.createIndex(
+                        config.clientConfig.url,
+                        cart,
+                        new ESIndexSettings(
+                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                refresh_interval: "1s"
+                        ),
+                        ESMappings.loadMappings("BOCart"),
+                        [debug:config.debug])
+            }
+        }
+
+        if(response.acknowledged){
+            def bo = config.clientConfig.store + '_bo'
+            exists = client.indexExists(config.clientConfig.url, bo)
+            if(!exists){
+                response = client.createIndex(
+                        config.clientConfig.url,
+                        bo,
+                        new ESIndexSettings(
+                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                refresh_interval: "1s"
+                        ),
+                        ESMappings.loadMappings("BOCart"),
+                        [debug:config.debug])
+            }
         }
 
         if(response.acknowledged){
@@ -222,6 +242,7 @@ final class ESRivers extends Rivers<ESRiver>{
                     config.languages as String[],
                     config.defaultLang)
         }
+
         response
     }
 

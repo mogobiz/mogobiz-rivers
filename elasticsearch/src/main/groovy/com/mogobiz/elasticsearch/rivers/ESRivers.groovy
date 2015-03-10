@@ -211,7 +211,7 @@ final class ESRivers extends Rivers<ESRiver>{
                                 number_of_replicas: config.clientConfig.config.replicas ?: 1,
                                 refresh_interval: "1s"
                         ),
-                        ESMappings.loadMappings("BOCart"),
+                        ESMappings.loadMappings("StoreCart"),
                         [debug:config.debug])
             }
         }

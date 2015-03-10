@@ -10,6 +10,7 @@ import com.mogobiz.elasticsearch.client.ESIndexSettings
 import com.mogobiz.elasticsearch.client.ESMapping
 import com.mogobiz.elasticsearch.client.ESProperty
 import com.mogobiz.elasticsearch.client.ESClient
+import com.mogobiz.elasticsearch.rivers.mappings.ESMappings
 import com.mogobiz.elasticsearch.rivers.spi.ESRiver
 import rx.functions.Action1
 import rx.Observable
@@ -196,6 +197,21 @@ final class ESRivers extends Rivers<ESRiver>{
                         config.defaultLang)
             }
         }
+
+        def cart = config.clientConfig.store + '_cart'
+        exists = client.indexExists(config.clientConfig.url, cart)
+        if(!exists){
+            response = client.createIndex(
+                    config.clientConfig.url,
+                    cart,
+                    new ESIndexSettings(
+                            number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                            refresh_interval: "1s"
+                    ),
+                    ESMappings.loadMappings("BOCart"),
+                    [debug:config.debug])
+        }
+
         if(response.acknowledged){
             response = client.createIndex(
                     config.clientConfig.url,
@@ -232,9 +248,13 @@ final class ESRivers extends Rivers<ESRiver>{
                 collection << (it as Future<BulkResponse>)
             }as Action1<Future<BulkResponse>>,
             {th -> th.printStackTrace(System.err)} as Action1<Throwable>)
+
+            collect(collection, ec)
+        }
+        else{
+            throw new Exception("an error occured while creating index ${response.error}");
         }
 
-        collect(collection, ec)
     }
 
 }

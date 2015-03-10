@@ -57,6 +57,50 @@ final class ESClient implements Client {
             final String url,
             final String index,
             final ESIndexSettings settings = new ESIndexSettings(),
+            final Map mappings = [:],
+            final Map config = [:]) {
+        Map _index = [
+                number_of_replicas:"${settings.number_of_replicas}",
+                refresh_interval:"${settings.refresh_interval}",
+                translog:[
+                        disable_flush:false,
+                        flush_threshold_size:"200mb",
+                        flush_threshold_period:"30m",
+                        interval:"5s"
+                ],
+                mappings:mappings
+        ]
+        ESIndexResponse response = new ESIndexResponse()
+        JsonBuilder builder = new JsonBuilder()
+        builder.call(_index)
+        final String content = builder.toString()
+        def conn = null
+        try{
+            conn = client.doPut(
+                    config,
+                    new StringBuffer(url).append('/').append(index?.toLowerCase()).append('/').toString(),
+                    null,
+                    content)
+            Map _m = client.parseTextAsJSON(
+                    config,
+                    conn
+            )
+            boolean acknowledged = _m['acknowledged'] ? _m['acknowledged'] : false
+            response =  new ESIndexResponse(acknowledged:acknowledged)
+            if(!acknowledged && _m['error']){
+                response.error = _m['error']
+            }
+        }
+        finally{
+            client.closeConnection(conn)
+        }
+        response
+    }
+
+    ESIndexResponse createIndex(
+            final String url,
+            final String index,
+            final ESIndexSettings settings = new ESIndexSettings(),
             final Collection<ESMapping> mappings,
             final Map config = [:],
             final String[] languages = ['fr', 'en', 'de', 'es'],

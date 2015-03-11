@@ -47,6 +47,7 @@ abstract class AbstractRiver<E, T extends Client> implements River {
      * @param count - bulk size
      * @return rx.Observable
      */
+    @Override
     final rx.Observable<Future<BulkResponse>> exportCatalogItems(
             final RiverConfig config,
             final ExecutionContext ec,
@@ -102,7 +103,16 @@ abstract class AbstractRiver<E, T extends Client> implements River {
     abstract Item asItem(E e, RiverConfig config)
 
     final RiverItem asRiverItem(E e, final Map<String, Item> previousCatalogItems = [:]){
+        final String type = getType()
+        final String uuid = getUuid(e)
+
         new RiverItem() {
+
+            @Override
+            String getKey(){
+                "$type::$uuid"
+            }
+
             @Override
             BulkItem asBulkItem(RiverConfig config) {
                 Item item = asItem(e as E, config)
@@ -119,6 +129,10 @@ abstract class AbstractRiver<E, T extends Client> implements River {
                 )
             }
         }
+    }
+
+    def String getUuid(E e){
+        e.toString()
     }
 
     protected Item updateItemWithPrevious(Item item, Item previous){

@@ -18,6 +18,7 @@ import com.mogobiz.elasticsearch.rivers.spi.ESRiver
 import org.reactivestreams.Publisher
 import rx.functions.Action1
 import rx.Observable
+import rx.functions.Func1
 import rx.internal.reactivestreams.ObservableToPublisherAdapter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -56,7 +57,7 @@ final class ESRivers extends Rivers<ESRiver>{
                     config.clientConfig.url,
                     comments,
                     new ESIndexSettings(
-                            number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                            number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
                             refresh_interval: "1s"
                     ),
                     [
@@ -127,7 +128,7 @@ final class ESRivers extends Rivers<ESRiver>{
                         config.clientConfig.url,
                         wishlist,
                         new ESIndexSettings(
-                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
                                 refresh_interval: "1s"
                         ),
                         [
@@ -155,7 +156,7 @@ final class ESRivers extends Rivers<ESRiver>{
                         config.clientConfig.url,
                         history,
                         new ESIndexSettings(
-                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
                                 refresh_interval: "1s"
                         ),
                         [
@@ -179,7 +180,7 @@ final class ESRivers extends Rivers<ESRiver>{
                         config.clientConfig.url,
                         learning,
                         new ESIndexSettings(
-                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
                                 refresh_interval: "1s"
                         ),
                         [
@@ -213,7 +214,7 @@ final class ESRivers extends Rivers<ESRiver>{
                         config.clientConfig.url,
                         cart,
                         new ESIndexSettings(
-                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
                                 refresh_interval: "1s"
                         ),
                         ESMappings.loadMappings("StoreCart"),
@@ -229,7 +230,7 @@ final class ESRivers extends Rivers<ESRiver>{
                         config.clientConfig.url,
                         bo,
                         new ESIndexSettings(
-                                number_of_replicas: config.clientConfig.config.replicas ?: 1,
+                                number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
                                 refresh_interval: "1s"
                         ),
                         ESMappings.loadMappings("BOCart"),
@@ -285,24 +286,28 @@ final class ESRivers extends Rivers<ESRiver>{
 
     @Override
     Publisher<RiverItem> publisher(final RiverConfig config){
-        new ObservableToPublisherAdapter<RiverItem>(
-                Observable.merge(
-                        loadRivers().collect {it -> it.exportCatalogItemsAsRiverItems(config)}.plus(Observable.from([new RiverItem() {
-                            @Override
-                            BulkItem asBulkItem(RiverConfig c) {
-                                def item = new Item(id:1L, type:'i18n', map: ['languages': c.languages])
-                                def id = item.id?.trim()
-                                new BulkItem(
-                                        type : item.type,
-                                        action: id && id.length() > 0 ? BulkAction.UPDATE : BulkAction.INSERT,
-                                        id: id,
-                                        parent: item.parent,
-                                        map: item.map
-                                )
-                            }
-                        }
-                        ]))
+        final Observable<RiverItem>  i18n = Observable.just(new RiverItem() {
+
+            @Override
+            String getKey() {
+                return "i18n::1"
+            }
+
+            @Override
+            BulkItem asBulkItem(RiverConfig c) {
+                def item = new Item(id:1L, type:'i18n', map: ['languages': c.languages])
+                def id = item.id?.trim()
+                new BulkItem(
+                        type : item.type,
+                        action: id && id.length() > 0 ? BulkAction.UPDATE : BulkAction.INSERT,
+                        id: id,
+                        parent: item.parent,
+                        map: item.map
                 )
-        )
+            }
+        })
+        final Collection<Observable<RiverItem>> rivers = loadRivers().collect {it -> it.exportCatalogItemsAsRiverItems(config)}
+        rivers.add(i18n)
+        new ObservableToPublisherAdapter<RiverItem>(Observable.merge(rivers).distinct({RiverItem item -> item.key}as Func1<RiverItem, String>))
     }
 }

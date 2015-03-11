@@ -8,5 +8,7 @@ import com.mogobiz.common.client.BulkItem
  */
 interface RiverItem {
 
+	String getKey()
+
     BulkItem asBulkItem(RiverConfig config)
 }

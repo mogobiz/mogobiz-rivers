@@ -5,7 +5,12 @@ import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Item
 import com.mogobiz.common.client.Client
+
 import rx.functions.Func1
+import rx.internal.reactivestreams.ObservableToPublisherAdapter
+
+import org.reactivestreams.Publisher
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -18,6 +23,30 @@ abstract class AbstractRiver<E, T extends Client> implements River {
 
     protected AbstractRiver(){}
 
+    final Publisher<RiverItem> exportCatalogItemsAsPublisher(final RiverConfig config){
+        new ObservableToPublisherAdapter<RiverItem>(exportCatalogItemsAsRiverItems(config))
+    }
+
+    final rx.Observable<RiverItem> exportCatalogItemsAsRiverItems(final RiverConfig config){
+        final Map<String, Item> previousCatalogItems = [:]
+        retrieveCatalogPreviousItems(config)?.hits?.each {item ->
+            def id = item.id
+            if(id){
+                previousCatalogItems.put(id, item)
+            }
+        }
+        retrieveCatalogItems(config).flatMap({Object e ->
+            rx.Observable.just(asRiverItem(e as E, previousCatalogItems))
+        }as Func1<Object, rx.Observable<RiverItem>>)
+    }
+
+    /**
+     * @deprecated
+     * @param config - river configuration
+     * @param ec - execution context
+     * @param count - bulk size
+     * @return rx.Observable
+     */
     final rx.Observable<Future<BulkResponse>> exportCatalogItems(
             final RiverConfig config,
             final ExecutionContext ec,
@@ -71,6 +100,26 @@ abstract class AbstractRiver<E, T extends Client> implements River {
     abstract rx.Observable<E> retrieveCatalogItems(final RiverConfig config)
 
     abstract Item asItem(E e, RiverConfig config)
+
+    final RiverItem asRiverItem(E e, final Map<String, Item> previousCatalogItems = [:]){
+        new RiverItem() {
+            @Override
+            BulkItem asBulkItem(RiverConfig config) {
+                Item item = asItem(e as E, config)
+                def id = item.id
+                def previous = previousCatalogItems.get(id)
+                item = updateItemWithPrevious(item, previous)
+                item.map << [imported: formatToIso8601(new Date())]
+                return new BulkItem(
+                        action: previous ? BulkAction.UPDATE : BulkAction.INSERT,
+                        type : getType(),
+                        id : id,
+                        parent: item.parent,
+                        map : item.map
+                )
+            }
+        }
+    }
 
     protected Item updateItemWithPrevious(Item item, Item previous){
         previous?.map?.each {k, v ->

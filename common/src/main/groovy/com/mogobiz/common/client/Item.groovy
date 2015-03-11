@@ -8,5 +8,5 @@ class Item {
     Item parent
     List<Item> children = []
     String type
-    Map map
+    Map<String, Object> map
 }

@@ -41,7 +41,7 @@ final class GoogleClient implements Client{
     }
 
     @Override
-    rx.Observable<Future<BulkResponse>> bulk(
+    Future<BulkResponse> bulk(
             final RiverConfig config,
             final List<BulkItem> items,
             ExecutionContext ec){
@@ -145,7 +145,7 @@ final class GoogleClient implements Client{
             }
         }
         final String body = writer.toString()
-        Future<BulkResponse> f = Futures.future(new Callable<BulkResponse>() {
+        Futures.future(new Callable<BulkResponse>() {
             @Override
             BulkResponse call() throws Exception {
                 def conn = null
@@ -194,7 +194,6 @@ final class GoogleClient implements Client{
                 }
             }
         }, ec)
-        rx.Observable.from(f)
     }
 
     @Override

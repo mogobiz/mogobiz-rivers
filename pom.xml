@@ -9,7 +9,9 @@
     <modules>
         <module>http-client</module>
         <module>common</module>
+        <module>common-flow</module>
         <module>elasticsearch</module>
+        <module>elasticsearch-flow</module>
         <module>google-shopping</module>
         <module>cfp</module>
     </modules>
@@ -63,6 +65,12 @@
                 <groupId>com.netflix.rxjava</groupId>
                 <artifactId>rxjava-groovy</artifactId>
                 <version>0.20.7</version>
+            </dependency>
+            <!-- reactive-streams -->
+            <dependency>
+                <groupId>org.reactivestreams</groupId>
+                <artifactId>reactive-streams</artifactId>
+                <version>0.4.0</version>
             </dependency>
             <!-- scala -->
             <dependency>
@@ -152,6 +160,28 @@
                         </dependency>
                     </dependencies>
                 </plugin>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.1.6</version>
+                    <executions>
+                        <execution>
+                            <id>scala-compile</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>add-source</goal>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>scala-test-compile</id>
+                            <phase>process-test-resources</phase>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -161,7 +191,7 @@
         <compiler.target>${compiler.source}</compiler.target>
         <scala.major.version>2.11</scala.major.version>
         <scala.version>${scala.major.version}.2</scala.version>
-        <akka.version>2.3.3</akka.version>
+        <akka.version>2.3.9</akka.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 </project>

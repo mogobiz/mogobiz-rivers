@@ -6,7 +6,10 @@ import akka.dispatch.Mapper
 import com.mogobiz.common.rivers.spi.River
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.rivers.spi.RiverConfig
+import com.mogobiz.common.rivers.spi.RiverItem
+import org.reactivestreams.Publisher
 import rx.functions.Action1
+import rx.internal.reactivestreams.ObservableToPublisherAdapter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -97,4 +100,11 @@ abstract class Rivers<T extends River> {
         futureResult
     }
 
+    Publisher<RiverItem> publisher(RiverConfig config){
+        new ObservableToPublisherAdapter<RiverItem>(
+                rx.Observable.merge(
+                        rivers.values().collect {it -> it.exportCatalogItemsAsRiverItems(config)}
+                )
+        )
+    }
 }

@@ -246,7 +246,7 @@ final class ESClient implements Client {
         mappings?.each{ mapping ->
             def m = [:]
             mapping.properties?.each { property ->
-                handleMapping(m, property, _indexAnalyzer, _searchAnalyzer)
+                handleMapping(m, property, _indexAnalyzer as String, _searchAnalyzer as String)
             }
 
             _index['mappings'][mapping.type] = [
@@ -478,7 +478,7 @@ final class ESClient implements Client {
 //        }
 //    }
 
-    Observable<Future<BulkResponse>> bulk(
+    Future<BulkResponse> bulk(
             final RiverConfig config,
             final List<BulkItem> items,
             ExecutionContext ec){
@@ -560,7 +560,6 @@ final class ESClient implements Client {
                 }
             }
         }, ec)
-        Observable.from(f)
     }
 
     Observable<Future<BulkResponse>> upsert(

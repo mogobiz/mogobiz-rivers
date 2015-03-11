@@ -9,7 +9,7 @@ import scala.concurrent.Future
  */
 interface Client {
 
-    rx.Observable<Future<BulkResponse>> bulk(
+    Future<BulkResponse> bulk(
             final RiverConfig config,
             final List<BulkItem> items,
             ExecutionContext ec)

@@ -1,10 +1,13 @@
 package com.mogobiz.elasticsearch.rivers
 
+import com.mogobiz.common.client.BulkAction
+import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Item
 import com.mogobiz.common.rivers.AbstractRiverCache
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.common.rivers.Rivers
+import com.mogobiz.common.rivers.spi.RiverItem
 import com.mogobiz.elasticsearch.client.ESIndexResponse
 import com.mogobiz.elasticsearch.client.ESIndexSettings
 import com.mogobiz.elasticsearch.client.ESMapping
@@ -12,8 +15,10 @@ import com.mogobiz.elasticsearch.client.ESProperty
 import com.mogobiz.elasticsearch.client.ESClient
 import com.mogobiz.elasticsearch.rivers.mappings.ESMappings
 import com.mogobiz.elasticsearch.rivers.spi.ESRiver
+import org.reactivestreams.Publisher
 import rx.functions.Action1
 import rx.Observable
+import rx.internal.reactivestreams.ObservableToPublisherAdapter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -255,9 +260,9 @@ final class ESRivers extends Rivers<ESRiver>{
 
         ESIndexResponse response = createCompanyIndex(config)
 
-        Collection<Future<BulkResponse>> collection = []
-
         if(response.acknowledged){
+            Collection<Future<BulkResponse>> collection = []
+
             Collection<Observable<Future<BulkResponse>>> iterable = []
 
             iterable << client.upsert(config, [new Item(id:1L, type:'i18n', map: ['languages':config.languages])], ec)
@@ -278,4 +283,26 @@ final class ESRivers extends Rivers<ESRiver>{
 
     }
 
+    @Override
+    Publisher<RiverItem> publisher(final RiverConfig config){
+        new ObservableToPublisherAdapter<RiverItem>(
+                Observable.merge(
+                        loadRivers().collect {it -> it.exportCatalogItemsAsRiverItems(config)}.plus(Observable.from([new RiverItem() {
+                            @Override
+                            BulkItem asBulkItem(RiverConfig c) {
+                                def item = new Item(id:1L, type:'i18n', map: ['languages': c.languages])
+                                def id = item.id?.trim()
+                                new BulkItem(
+                                        type : item.type,
+                                        action: id && id.length() > 0 ? BulkAction.UPDATE : BulkAction.INSERT,
+                                        id: id,
+                                        parent: item.parent,
+                                        map: item.map
+                                )
+                            }
+                        }
+                        ]))
+                )
+        )
+    }
 }

@@ -19,7 +19,7 @@ class ClientConfig {
      */
     String merchant_url
     Credentials credentials
-    Map config
+    Map<String, Object> config
 }
 
 class Credentials{

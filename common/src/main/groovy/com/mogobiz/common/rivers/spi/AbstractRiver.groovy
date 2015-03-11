@@ -72,7 +72,7 @@ abstract class AbstractRiver<E, T extends Client> implements River {
                     map : item.map
             )])
         }as Func1<Object, rx.Observable<BulkItem>>).buffer(count).flatMap({items ->
-            getClient().bulk(config, items as List<BulkItem>, ec)
+            rx.Observable.just(getClient().bulk(config, items as List<BulkItem>, ec))
         }as Func1<List<BulkItem>, rx.Observable<Future<BulkResponse>>>)
     }
 
@@ -93,7 +93,7 @@ abstract class AbstractRiver<E, T extends Client> implements River {
                     map: id && id > 0 ? [doc: item.map, doc_as_upsert : true] : item.map
             )])
         }as Func1<Object, rx.Observable<BulkItem>>).buffer(count).flatMap({items ->
-            getClient().bulk(config, items as List<BulkItem>, ec)
+            rx.Observable.just(getClient().bulk(config, items as List<BulkItem>, ec))
         }as Func1<List<BulkItem>, rx.Observable<Future<BulkResponse>>>)
     }
 

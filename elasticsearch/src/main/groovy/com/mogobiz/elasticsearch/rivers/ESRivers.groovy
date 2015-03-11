@@ -220,6 +220,11 @@ final class ESRivers extends Rivers<ESRiver>{
                         ESMappings.loadMappings("StoreCart"),
                         [debug:config.debug])
             }
+            def url = config.clientConfig.url
+            Set<String> indexes = client.retrieveAliasIndexes(url, 'mogobiz_carts', [debug: true])
+            if(!indexes.contains(cart)){
+                client.createAlias([debug: true], url, 'mogobiz_carts', cart)
+            }
         }
 
         if(response.acknowledged){

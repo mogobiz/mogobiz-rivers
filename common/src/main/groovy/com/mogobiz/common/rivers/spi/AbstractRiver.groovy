@@ -65,13 +65,13 @@ abstract class AbstractRiver<E, T extends Client> implements River {
             def previous = previousCatalogItems.get(id)
             item = updateItemWithPrevious(item, previous)
             item.map << [imported: formatToIso8601(new Date())]
-            rx.Observable.from([new BulkItem(
+            rx.Observable.just(new BulkItem(
                     action: previous ? BulkAction.UPDATE : BulkAction.INSERT,
                     type : getType(),
                     id : id,
                     parent: item.parent,
                     map : item.map
-            )])
+            ))
         }as Func1<Object, rx.Observable<BulkItem>>).buffer(count).flatMap({items ->
             rx.Observable.just(getClient().bulk(config, items as List<BulkItem>, ec))
         }as Func1<List<BulkItem>, rx.Observable<Future<BulkResponse>>>)
@@ -82,17 +82,17 @@ abstract class AbstractRiver<E, T extends Client> implements River {
             final Collection<E> objects,
             final ExecutionContext ec = null,
             final int count = 100){
-        rx.Observable.from(objects).flatMap({e ->
+        rx.Observable.from(objects).map({e ->
             def item = asItem(e as E, config)
             item.map << [imported: formatToIso8601(new Date())]
             def id = item.id as Long
-            rx.Observable.from([new BulkItem(
+            rx.Observable.just(new BulkItem(
                     type : getType(),
                     action: id && id > 0 ? BulkAction.UPDATE : BulkAction.INSERT,
                     id: id,
                     parent: item.parent,
                     map: id && id > 0 ? [doc: item.map, doc_as_upsert : true] : item.map
-            )])
+            ))
         }as Func1<Object, rx.Observable<BulkItem>>).buffer(count).flatMap({items ->
             rx.Observable.just(getClient().bulk(config, items as List<BulkItem>, ec))
         }as Func1<List<BulkItem>, rx.Observable<Future<BulkResponse>>>)

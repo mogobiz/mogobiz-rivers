@@ -8,7 +8,10 @@ import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.common.rivers.spi.RiverItem
 import org.reactivestreams.Publisher
+import rx.Observable
 import rx.functions.Action1
+import rx.functions.Func0
+import rx.functions.Func1
 import rx.internal.reactivestreams.ObservableToPublisherAdapter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -60,7 +63,7 @@ abstract class Rivers<T extends River> {
     }
 
     Future<Collection<BulkResponse>> export(RiverConfig config, ExecutionContext ec = dispatcher()){
-        Collection<rx.Observable<Future<BulkResponse>>> iterable = []
+        Collection<Observable<Future<BulkResponse>>> iterable = []
 
         rivers.values().each {river ->
             iterable << river.exportCatalogItems(config, ec, 100)
@@ -68,7 +71,7 @@ abstract class Rivers<T extends River> {
 
         Collection<Future<BulkResponse>> collection = []
 
-        rx.Observable.merge(iterable).subscribe(
+        Observable.merge(iterable).subscribe(
                 {Future<BulkResponse> response ->
                     collection << response
                 } as Action1<Future<BulkResponse>>,
@@ -102,8 +105,16 @@ abstract class Rivers<T extends River> {
 
     Publisher<RiverItem> publisher(RiverConfig config){
         new ObservableToPublisherAdapter<RiverItem>(
-                rx.Observable.merge(
-                        rivers.values().collect {it -> it.exportCatalogItemsAsRiverItems(config)}
+                Observable.defer(
+                        {
+                            Observable.merge(
+                                    loadRivers().collect {river ->
+                                        river.exportCatalogItemsAsRiverItems(config)
+                                    }
+                            ).distinct(
+                                    { RiverItem item -> item.key }as Func1<RiverItem, String>
+                            )
+                        }as Func0<Observable<RiverItem>>
                 )
         )
     }

@@ -18,6 +18,7 @@ import com.mogobiz.elasticsearch.rivers.spi.ESRiver
 import org.reactivestreams.Publisher
 import rx.functions.Action1
 import rx.Observable
+import rx.functions.Func0
 import rx.functions.Func1
 import rx.internal.reactivestreams.ObservableToPublisherAdapter
 import scala.concurrent.ExecutionContext
@@ -291,7 +292,7 @@ final class ESRivers extends Rivers<ESRiver>{
 
     @Override
     Publisher<RiverItem> publisher(final RiverConfig config){
-        final Observable<RiverItem>  i18n = Observable.just(new RiverItem() {
+        final RiverItem i18n = new RiverItem() {
 
             @Override
             String getKey() {
@@ -300,19 +301,28 @@ final class ESRivers extends Rivers<ESRiver>{
 
             @Override
             BulkItem asBulkItem(RiverConfig c) {
-                def item = new Item(id:1L, type:'i18n', map: ['languages': c.languages])
-                def id = item.id?.trim()
                 new BulkItem(
-                        type : item.type,
-                        action: id && id.length() > 0 ? BulkAction.UPDATE : BulkAction.INSERT,
-                        id: id,
-                        parent: item.parent,
-                        map: item.map
+                        type : 'i18n',
+                        action: BulkAction.UPDATE,
+                        id: 1L,
+                        parent: null,
+                        map: ['languages': c.languages]
                 )
             }
-        })
-        final Collection<Observable<RiverItem>> rivers = loadRivers().collect {it -> it.exportCatalogItemsAsRiverItems(config)}
-        rivers.add(i18n)
-        new ObservableToPublisherAdapter<RiverItem>(Observable.merge(rivers).distinct({RiverItem item -> item.key}as Func1<RiverItem, String>))
+        }
+        new ObservableToPublisherAdapter<RiverItem>(
+                Observable.defer(
+                        {
+                            Observable.merge(
+                                    loadRivers().collect {river ->
+                                        river.exportCatalogItemsAsRiverItems(config)
+                                    }
+                            ).distinct(
+                                    { RiverItem item -> item.key }as Func1<RiverItem, String>
+                            ).startWith(i18n)
+                        }as Func0<Observable<RiverItem>>
+                )
+        )
     }
+
 }

@@ -30,7 +30,7 @@ final class ESClient implements Client {
 
     private static ESClient instance
 
-    private static ESAnalysis defaultAnalysis
+    private static ESAnalysis defaultAnalysis = createDefaultAnalysis()
 
     static final enum INDEX{
         NO, ANALYZED, NOT_ANALYZED
@@ -105,7 +105,7 @@ final class ESClient implements Client {
             final Map config = [:],
             final String[] languages = ['fr', 'en', 'de', 'es'],
             final String defaultLanguage = 'fr',
-            final ESAnalysis analysis = defaultAnalysis()){
+            final ESAnalysis analysis = defaultAnalysis){
 
         ESIndexResponse response = new ESIndexResponse()
 
@@ -582,153 +582,151 @@ final class ESClient implements Client {
         return HTTPClient.instance.doHead([debug:true], url + '/' + index).responseCode == 200
     }
 
-    static ESAnalysis defaultAnalysis(){
-        if(!defaultAnalysis){
-            defaultAnalysis = new ESAnalysis(
-                    filters : [],
-                    index_analyzers: [],
-                    search_analyzers: [],
-                    tokenizers: []
-            )
+    static ESAnalysis createDefaultAnalysis(){
+        ESAnalysis analysis = new ESAnalysis(
+                filters : [],
+                index_analyzers: [],
+                search_analyzers: [],
+                tokenizers: []
+        )
 
-            // nGram
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'nGram_filter',
-                    type:FILTER_TYPE.NGRAM,
-                    options:[min_gram:2, max_gram:20]
-            )
+        // nGram
+        analysis.filters << new ESFilter(
+                id: 'nGram_filter',
+                type:FILTER_TYPE.NGRAM,
+                options:[min_gram:2, max_gram:20]
+        )
 
-            defaultAnalysis.index_analyzers << new ESAnalyzer(
-                    id: 'default_index_analyzer',
-                    type: 'custom',
-                    lang: '*',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "nGram_filter"],
-                    charFilters: ["html_strip"]
-            )
-            defaultAnalysis.search_analyzers << new ESAnalyzer(
-                    id: 'default_search_analyzer',
-                    type: 'custom',
-                    lang: '*',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer"],
-                    charFilters: ["html_strip"]
-            )
+        analysis.index_analyzers << new ESAnalyzer(
+                id: 'default_index_analyzer',
+                type: 'custom',
+                lang: '*',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "nGram_filter"],
+                charFilters: ["html_strip"]
+        )
+        analysis.search_analyzers << new ESAnalyzer(
+                id: 'default_search_analyzer',
+                type: 'custom',
+                lang: '*',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer"],
+                charFilters: ["html_strip"]
+        )
 
-            // en
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'en_stop_filter',
-                    type:FILTER_TYPE.STOP,
-                    stopwords: ['_english_']
-            )
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'en_stem_filter',
-                    type:FILTER_TYPE.STEM,
-                    name: 'minimal_english'
-            )
-            defaultAnalysis.index_analyzers << new ESAnalyzer(
-                    id: 'en_index_analyzer',
-                    lang: 'en',
-                    type: 'custom',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "en_stop_filter", "en_stem_filter", "nGram_filter"],
-                    charFilters: ["html_strip"]
-            )
-            defaultAnalysis.search_analyzers << new ESAnalyzer(
-                    id: 'en_search_analyzer',
-                    lang: 'en',
-                    type: 'custom',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "en_stop_filter", "en_stem_filter"],
-                    charFilters: ["html_strip"]
-            )
+        // en
+        analysis.filters << new ESFilter(
+                id: 'en_stop_filter',
+                type:FILTER_TYPE.STOP,
+                stopwords: ['_english_']
+        )
+        analysis.filters << new ESFilter(
+                id: 'en_stem_filter',
+                type:FILTER_TYPE.STEM,
+                name: 'minimal_english'
+        )
+        analysis.index_analyzers << new ESAnalyzer(
+                id: 'en_index_analyzer',
+                lang: 'en',
+                type: 'custom',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "en_stop_filter", "en_stem_filter", "nGram_filter"],
+                charFilters: ["html_strip"]
+        )
+        analysis.search_analyzers << new ESAnalyzer(
+                id: 'en_search_analyzer',
+                lang: 'en',
+                type: 'custom',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "en_stop_filter", "en_stem_filter"],
+                charFilters: ["html_strip"]
+        )
 
-            // es
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'es_stop_filter',
-                    type:FILTER_TYPE.STOP,
-                    stopwords: ['_spanish_']
-            )
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'es_stem_filter',
-                    type:FILTER_TYPE.STEM,
-                    name: 'light_spanish'
-            )
-            defaultAnalysis.index_analyzers << new ESAnalyzer(
-                    id: 'es_index_analyzer',
-                    lang: 'es',
-                    type: 'custom',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "es_stop_filter", "es_stem_filter", "nGram_filter"],
-                    charFilters: ["html_strip"]
-            )
-            defaultAnalysis.search_analyzers << new ESAnalyzer(
-                    id: 'es_search_analyzer',
-                    lang: 'es',
-                    type: 'custom',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "es_stop_filter", "es_stem_filter"],
-                    charFilters: ["html_strip"]
-            )
+        // es
+        analysis.filters << new ESFilter(
+                id: 'es_stop_filter',
+                type:FILTER_TYPE.STOP,
+                stopwords: ['_spanish_']
+        )
+        analysis.filters << new ESFilter(
+                id: 'es_stem_filter',
+                type:FILTER_TYPE.STEM,
+                name: 'light_spanish'
+        )
+        analysis.index_analyzers << new ESAnalyzer(
+                id: 'es_index_analyzer',
+                lang: 'es',
+                type: 'custom',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "es_stop_filter", "es_stem_filter", "nGram_filter"],
+                charFilters: ["html_strip"]
+        )
+        analysis.search_analyzers << new ESAnalyzer(
+                id: 'es_search_analyzer',
+                lang: 'es',
+                type: 'custom',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "es_stop_filter", "es_stem_filter"],
+                charFilters: ["html_strip"]
+        )
 
-            // fr
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'fr_stop_filter',
-                    type:FILTER_TYPE.STOP,
-                    stopwords: ['_french_']
-            )
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'fr_stem_filter',
-                    type:FILTER_TYPE.STEM,
-                    name: 'minimal_french'
-            )
-            defaultAnalysis.index_analyzers << new ESAnalyzer(
-                    id: 'fr_index_analyzer',
-                    lang: 'fr',
-                    type: 'custom',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "fr_stop_filter", "fr_stem_filter", "nGram_filter"],
-                    charFilters: ["html_strip"]
-            )
-            defaultAnalysis.search_analyzers << new ESAnalyzer(
-                    id: 'fr_search_analyzer',
-                    lang: 'fr',
-                    type: 'custom',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "fr_stop_filter", "fr_stem_filter"],
-                    charFilters: ["html_strip"]
-            )
+        // fr
+        analysis.filters << new ESFilter(
+                id: 'fr_stop_filter',
+                type:FILTER_TYPE.STOP,
+                stopwords: ['_french_']
+        )
+        analysis.filters << new ESFilter(
+                id: 'fr_stem_filter',
+                type:FILTER_TYPE.STEM,
+                name: 'minimal_french'
+        )
+        analysis.index_analyzers << new ESAnalyzer(
+                id: 'fr_index_analyzer',
+                lang: 'fr',
+                type: 'custom',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "fr_stop_filter", "fr_stem_filter", "nGram_filter"],
+                charFilters: ["html_strip"]
+        )
+        analysis.search_analyzers << new ESAnalyzer(
+                id: 'fr_search_analyzer',
+                lang: 'fr',
+                type: 'custom',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "fr_stop_filter", "fr_stem_filter"],
+                charFilters: ["html_strip"]
+        )
 
-            // ge
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'de_stop_filter',
-                    type:FILTER_TYPE.STOP,
-                    stopwords: ['_german_']
-            )
-            defaultAnalysis.filters << new ESFilter(
-                    id: 'de_stem_filter',
-                    type:FILTER_TYPE.STEM,
-                    name: 'minimal_german'
-            )
-            defaultAnalysis.index_analyzers << new ESAnalyzer(
-                    id: 'de_index_analyzer',
-                    lang: 'de',
-                    type: 'custom',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "de_stop_filter", "de_stem_filter", "nGram_filter"],
-                    charFilters: ["html_strip"]
-            )
-            defaultAnalysis.search_analyzers << new ESAnalyzer(
-                    id: 'de_search_analyzer',
-                    lang: 'de',
-                    type: 'custom',
-                    tokenizer: 'icu_tokenizer',
-                    filters: ["icu_folding", "icu_normalizer", "de_stop_filter", "de_stem_filter"],
-                    charFilters: ["html_strip"]
-            )
+        // ge
+        analysis.filters << new ESFilter(
+                id: 'de_stop_filter',
+                type:FILTER_TYPE.STOP,
+                stopwords: ['_german_']
+        )
+        analysis.filters << new ESFilter(
+                id: 'de_stem_filter',
+                type:FILTER_TYPE.STEM,
+                name: 'minimal_german'
+        )
+        analysis.index_analyzers << new ESAnalyzer(
+                id: 'de_index_analyzer',
+                lang: 'de',
+                type: 'custom',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "de_stop_filter", "de_stem_filter", "nGram_filter"],
+                charFilters: ["html_strip"]
+        )
+        analysis.search_analyzers << new ESAnalyzer(
+                id: 'de_search_analyzer',
+                lang: 'de',
+                type: 'custom',
+                tokenizer: 'icu_tokenizer',
+                filters: ["icu_folding", "icu_normalizer", "de_stop_filter", "de_stem_filter"],
+                charFilters: ["html_strip"]
+        )
 
-        }
-        defaultAnalysis
+        analysis
     }
 
     /**
@@ -849,10 +847,10 @@ class ESTokenizer{
 }
 
 class ESAnalysis{
-    Collection<ESFilter> filters
-    Collection<ESAnalyzer> index_analyzers
-    Collection<ESAnalyzer> search_analyzers
-    Collection<ESTokenizer> tokenizers
+    Collection<ESFilter> filters = []
+    Collection<ESAnalyzer> index_analyzers = []
+    Collection<ESAnalyzer> search_analyzers = []
+    Collection<ESTokenizer> tokenizers = []
 }
 
 class ESIndexResponse extends Response{

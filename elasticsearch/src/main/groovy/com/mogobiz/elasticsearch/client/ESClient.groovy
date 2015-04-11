@@ -21,6 +21,7 @@ import akka.dispatch.Futures
 import java.util.concurrent.Callable
 
 /**
+ *
  * Created by stephane.manciot@ebiznext.com on 02/02/2014.
  */
 @Log4j
@@ -37,7 +38,7 @@ final class ESClient implements Client {
     }
 
     static final enum TYPE{
-        STRING, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, NULL, DATE, OBJECT, NESTED, BINARY
+        STRING, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, NULL, DATE, OBJECT, NESTED, BINARY, ATTACHMENT
     }
 
     static final enum FILTER_TYPE{
@@ -560,13 +561,14 @@ final class ESClient implements Client {
                 }
             }
         }, ec)
+        f
     }
 
     Observable<Future<BulkResponse>> upsert(
             final RiverConfig config,
             final List<Item> items,
             ExecutionContext ec){
-        bulk(config, items.collect {item ->
+        Observable.just(bulk(config, items.collect {item ->
             def id = item.id?.trim()
             new BulkItem(
                     type : item.type,
@@ -575,7 +577,7 @@ final class ESClient implements Client {
                     parent: item.parent,
                     map: item.map
             )
-        }, ec)
+        }, ec))
     }
 
     static boolean indexExists(String url, String index){
@@ -801,7 +803,8 @@ final class ESClient implements Client {
     }
 
     SearchResponse search(Request request) {
-        search(new ESRequest(request.properties))
+        ESSearchResponse response = search(new ESRequest(request.properties))
+        new SearchResponse(total: response.total, hits: response.hits.collect {hit -> new Item(id: hit.id, map: hit)})
     }
 }
 

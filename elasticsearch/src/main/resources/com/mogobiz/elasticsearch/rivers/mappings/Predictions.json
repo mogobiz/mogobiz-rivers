@@ -1,0 +1,21 @@
+{
+  "Prediction": {
+    "properties": {
+      "purchase": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "timestamp": {
+        "type": "long"
+      },
+      "uid": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "view": {
+        "type": "string",
+        "index": "not_analyzed"
+      }
+    }
+  }
+}

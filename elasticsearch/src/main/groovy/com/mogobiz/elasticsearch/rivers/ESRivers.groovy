@@ -27,7 +27,7 @@ import scala.concurrent.Future
 /**
  * Created by stephane.manciot@ebiznext.com on 16/02/2014.
  */
-final class ESRivers extends Rivers<ESRiver>{
+final class ESRivers extends Rivers<ESRiver> {
 
     static ESRivers instance
 
@@ -36,24 +36,24 @@ final class ESRivers extends Rivers<ESRiver>{
     /**
      *
      */
-    private ESRivers(){super(ESRiver.class)}
+    private ESRivers() { super(ESRiver.class) }
 
-    static ESRivers getInstance(){
-        if(instance == null){
+    static ESRivers getInstance() {
+        if (instance == null) {
             instance = new ESRivers()
         }
         instance
     }
 
-    ESIndexResponse createCompanyIndex(RiverConfig config){
+    ESIndexResponse createCompanyIndex(RiverConfig config) {
         def mappings = []
-        loadRivers().each {river ->
+        loadRivers().each { river ->
             mappings << river.defineESMapping()
         }
         ESIndexResponse response = new ESIndexResponse(acknowledged: true, error: null)
         def comments = config.clientConfig.store + '_comment'
         def exists = client.indexExists(config.clientConfig.url, comments)
-        if(!exists){
+        if (!exists) {
             response = client.createIndex(
                     config.clientConfig.url,
                     comments,
@@ -62,26 +62,26 @@ final class ESRivers extends Rivers<ESRiver>{
                             refresh_interval: "1s"
                     ),
                     [
-                        new ESMapping(
-                            timestamp: true,
-                            type: 'comment',
-                            properties : []
-                                << new ESProperty(name:'userUuid', type:ESClient.TYPE.STRING, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
-                                << new ESProperty(name:'externalCode', type:ESClient.TYPE.STRING, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
-                                << new ESProperty(name:'nickname', type:ESClient.TYPE.STRING, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
-                                << new ESProperty(name:'notation', type:ESClient.TYPE.INTEGER, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
-                                << new ESProperty(name:'subject', type:ESClient.TYPE.STRING, index:ESClient.INDEX.ANALYZED, multilang:false)
-                                << new ESProperty(name:'comment', type:ESClient.TYPE.STRING, index:ESClient.INDEX.ANALYZED, multilang:false)
-                                << new ESProperty(name:'productUuid', type:ESClient.TYPE.STRING, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
-                                << new ESProperty(name:'useful', type:ESClient.TYPE.LONG, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
-                                << new ESProperty(name:'notuseful', type:ESClient.TYPE.LONG, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
-                                << new ESProperty(name:'created', type:ESClient.TYPE.DATE, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
-                        )],
-                    [debug:config.debug],
+                            new ESMapping(
+                                    timestamp: true,
+                                    type: 'comment',
+                                    properties: []
+                                            << new ESProperty(name: 'userUuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'externalCode', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'nickname', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'notation', type: ESClient.TYPE.INTEGER, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'subject', type: ESClient.TYPE.STRING, index: ESClient.INDEX.ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'comment', type: ESClient.TYPE.STRING, index: ESClient.INDEX.ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'productUuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'useful', type: ESClient.TYPE.LONG, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'notuseful', type: ESClient.TYPE.LONG, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'created', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                            )],
+                    [debug: config.debug],
                     config.languages as String[],
                     config.defaultLang)
         }
-        if(response.acknowledged) {
+        if (response.acknowledged) {
             def wishlist = config.clientConfig.store + '_wishlist'
             exists = client.indexExists(config.clientConfig.url, wishlist)
             if (!exists) {
@@ -112,7 +112,7 @@ final class ESRivers extends Rivers<ESRiver>{
 
                 def wishlistsProperties = []
                 wishlistsProperties << new ESProperty(name: 'uuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
-                wishlistsProperties << new ESProperty(name:'externalCode', type:ESClient.TYPE.STRING, index:ESClient.INDEX.NOT_ANALYZED, multilang:false)
+                wishlistsProperties << new ESProperty(name: 'externalCode', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                 wishlistsProperties << new ESProperty(name: 'dateCreated', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                 wishlistsProperties << new ESProperty(name: 'lastUpdated', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                 wishlistsProperties << new ESProperty(name: 'alert', type: ESClient.TYPE.BOOLEAN, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
@@ -149,7 +149,7 @@ final class ESRivers extends Rivers<ESRiver>{
             }
         }
 
-        if(response.acknowledged) {
+        if (response.acknowledged) {
             def history = config.clientConfig.store + '_history'
             exists = client.indexExists(config.clientConfig.url, history)
             if (!exists) {
@@ -173,7 +173,7 @@ final class ESRivers extends Rivers<ESRiver>{
             }
         }
 
-        if(response.acknowledged){
+        if (response.acknowledged) {
             def learning = config.clientConfig.store + '_learning'
             exists = client.indexExists(config.clientConfig.url, learning)
             if (!exists) {
@@ -207,10 +207,10 @@ final class ESRivers extends Rivers<ESRiver>{
             }
         }
 
-        if(response.acknowledged){
+        if (response.acknowledged) {
             def cart = config.clientConfig.store + '_cart'
             exists = client.indexExists(config.clientConfig.url, cart)
-            if(!exists){
+            if (!exists) {
                 response = client.createIndex(
                         config.clientConfig.url,
                         cart,
@@ -219,19 +219,66 @@ final class ESRivers extends Rivers<ESRiver>{
                                 refresh_interval: "1s"
                         ),
                         ESMappings.loadMappings("StoreCart"),
-                        [debug:config.debug])
+                        [debug: config.debug])
             }
             def url = config.clientConfig.url
             Set<String> indexes = client.retrieveAliasIndexes(url, 'mogobiz_carts', [debug: true])
-            if(!indexes.contains(cart)){
+            if (!indexes.contains(cart)) {
                 client.createAlias([debug: true], url, 'mogobiz_carts', cart)
             }
         }
 
-        if(response.acknowledged){
+        if (response.acknowledged) {
+            def cart = config.clientConfig.store + '_predictions_view'
+            exists = client.indexExists(config.clientConfig.url, cart)
+            if (!exists) {
+                Map preditionsMap = ESMappings.loadMappings("Predictions")
+                Map fisMap = ESMappings.loadMappings("FrequentPattern")
+                Map allMap = new HashMap()
+                allMap.putAll(preditionsMap)
+                allMap.putAll(fisMap)
+                response = client.createIndex(
+                        config.clientConfig.url,
+                        cart,
+                        new ESIndexSettings(
+                                number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
+                                refresh_interval: "1s"
+                        ),
+                        allMap,
+                        [debug: config.debug])
+            }
+        }
+
+        if (response.acknowledged) {
+            def cart = config.clientConfig.store + '_predictions_purchase'
+            exists = client.indexExists(config.clientConfig.url, cart)
+            if (!exists) {
+                Map preditionsMap = ESMappings.loadMappings("Predictions")
+                Map fisMap = ESMappings.loadMappings("FrequentPattern")
+                Map allMap = new HashMap()
+                allMap.putAll(preditionsMap)
+                allMap.putAll(fisMap)
+                response = client.createIndex(
+                        config.clientConfig.url,
+                        cart,
+                        new ESIndexSettings(
+                                number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
+                                refresh_interval: "1s"
+                        ),
+                        allMap,
+                        [debug: config.debug])
+            }
+        }
+
+        if (response.acknowledged) {
             def bo = config.clientConfig.store + '_bo'
             exists = client.indexExists(config.clientConfig.url, bo)
-            if(!exists){
+            if (!exists) {
+                Map cartMap = ESMappings.loadMappings("BOCart")
+                Map itemMap = ESMappings.loadMappings("BOCartItemEx")
+                Map allMap = new HashMap()
+                allMap.putAll(cartMap)
+                allMap.putAll(itemMap)
                 response = client.createIndex(
                         config.clientConfig.url,
                         bo,
@@ -239,18 +286,18 @@ final class ESRivers extends Rivers<ESRiver>{
                                 number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
                                 refresh_interval: "1s"
                         ),
-                        ESMappings.loadMappings("BOCart"),
-                        [debug:config.debug])
+                        allMap,
+                        [debug: config.debug])
             }
         }
 
-        if(response.acknowledged){
+        if (response.acknowledged) {
             response = client.createIndex(
                     config.clientConfig.url,
                     config.clientConfig.config.index as String,
                     new ESIndexSettings(number_of_replicas: 0, refresh_interval: "-1"),
                     mappings,
-                    [debug:config.debug],
+                    [debug: config.debug],
                     config.languages as String[],
                     config.defaultLang)
         }
@@ -261,37 +308,36 @@ final class ESRivers extends Rivers<ESRiver>{
     @Override
     Future<Collection<BulkResponse>> export(
             RiverConfig config,
-            ExecutionContext ec){
+            ExecutionContext ec) {
 
         AbstractRiverCache.purgeAll()
 
         ESIndexResponse response = createCompanyIndex(config)
 
-        if(response.acknowledged){
+        if (response.acknowledged) {
             Collection<Future<BulkResponse>> collection = []
 
             Collection<Observable<Future<BulkResponse>>> iterable = []
 
-            iterable << client.upsert(config, [new Item(id:1L, type:'i18n', map: ['languages':config.languages])], ec)
+            iterable << client.upsert(config, [new Item(id: 1L, type: 'i18n', map: ['languages': config.languages])], ec)
 
-            loadRivers().each {river ->
+            loadRivers().each { river ->
                 iterable << river.exportCatalogItems(config, ec, 100)
             }
             Observable.merge(iterable).subscribe({
                 collection << (it as Future<BulkResponse>)
-            }as Action1<Future<BulkResponse>>,
-            {th -> th.printStackTrace(System.err)} as Action1<Throwable>)
+            } as Action1<Future<BulkResponse>>,
+                    { th -> th.printStackTrace(System.err) } as Action1<Throwable>)
 
             collect(collection, ec)
-        }
-        else{
+        } else {
             throw new Exception("an error occured while creating index ${response.error}");
         }
 
     }
 
     @Override
-    Publisher<RiverItem> publisher(final RiverConfig config){
+    Publisher<RiverItem> publisher(final RiverConfig config) {
         final RiverItem i18n = new RiverItem() {
 
             @Override
@@ -302,7 +348,7 @@ final class ESRivers extends Rivers<ESRiver>{
             @Override
             BulkItem asBulkItem(RiverConfig c) {
                 new BulkItem(
-                        type : 'i18n',
+                        type: 'i18n',
                         action: BulkAction.UPDATE,
                         id: 1L,
                         parent: null,
@@ -314,13 +360,13 @@ final class ESRivers extends Rivers<ESRiver>{
                 Observable.defer(
                         {
                             Observable.merge(
-                                    loadRivers().collect {river ->
+                                    loadRivers().collect { river ->
                                         river.exportCatalogItemsAsRiverItems(config)
                                     }
                             ).distinct(
-                                    { RiverItem item -> item.key }as Func1<RiverItem, String>
+                                    { RiverItem item -> item.key } as Func1<RiverItem, String>
                             ).startWith(i18n)
-                        }as Func0<Observable<RiverItem>>
+                        } as Func0<Observable<RiverItem>>
                 )
         )
     }

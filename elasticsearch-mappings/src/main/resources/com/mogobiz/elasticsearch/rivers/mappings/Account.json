@@ -1,0 +1,322 @@
+{
+  "Account": {
+    "properties": {
+      "address": {
+        "properties": {
+          "admin1": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "admin2": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "city": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "civility": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "country": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "firstName": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "lastName": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "company": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "road": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "extra": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "road2": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "telephone": {
+            "properties": {
+              "isoCode": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "lphone": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "phone": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "pinCode3": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "status": {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
+          },
+          "zipCode": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+      "birthDate": {
+        "type": "date",
+        "format": "dateOptionalTime"
+      },
+      "civility": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "company": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "country": {
+        "properties": {
+          "billing": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "currencyCode": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "currencyName": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "currencyNumericCode": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "dateCreated": {
+            "type": "long"
+          },
+          "lastUpdated": {
+            "type": "long"
+          },
+          "name": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "phoneCode": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "shipping": {
+            "type": "boolean"
+          },
+          "uuid": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "zipCodeRegex": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+      "dateCreated": {
+        "type": "date",
+        "format": "dateOptionalTime"
+      },
+      "email": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "lastUpdated": {
+        "type": "date",
+        "format": "dateOptionalTime"
+      },
+      "loginFailedCount": {
+        "type": "long"
+      },
+      "owner": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "password": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "paymentConfig": {
+        "properties": {
+          "cbParam": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "cbProvider": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "dateCreated": {
+            "type": "long"
+          },
+          "emailField": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "kwixoParam": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "lastUpdated": {
+            "type": "long"
+          },
+          "passwordField": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "passwordPattern": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "paypalParam": {
+            "type": "string",
+            "index": "not_analyzed"
+          }
+        }
+      },
+      "roles": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "secret": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "shippingAddresses": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "uuid": {
+            "type": "string",
+            "index": "not_analyzed"
+          },
+          "address": {
+            "properties": {
+              "admin1": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "admin2": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "city": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "civility": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "country": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "firstName": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "lastName": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "road": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "extra": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "road2": {
+                "type": "string",
+                "index": "not_analyzed"
+              },
+              "telephone": {
+                "properties": {
+                  "isoCode": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                  },
+                  "lphone": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                  },
+                  "pinCode3": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                  },
+                  "status": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                  }
+                }
+              },
+              "zipCode": {
+                "type": "string",
+                "index": "not_analyzed"
+              }
+            }
+          }
+        }
+      },
+      "status": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "uuid": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "waitingEmailSince": {
+        "type": "long"
+      },
+      "waitingPhoneSince": {
+        "type": "long"
+      },
+      "website": {
+        "type": "string",
+        "index": "not_analyzed"
+      }
+    }
+  }
+}

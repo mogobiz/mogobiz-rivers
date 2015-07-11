@@ -25,13 +25,12 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 /**
+ *
  * Created by stephane.manciot@ebiznext.com on 16/02/2014.
  */
-final class ESRivers extends Rivers<ESRiver> {
+final class ESRivers extends AbstractESRivers<ESRiver> {
 
     static ESRivers instance
-
-    static final ESClient client = ESClient.instance
 
     /**
      *
@@ -45,7 +44,8 @@ final class ESRivers extends Rivers<ESRiver> {
         instance
     }
 
-    ESIndexResponse createCompanyIndex(RiverConfig config) {
+    @Override
+    protected ESIndexResponse createCompanyIndex(RiverConfig config) {
         def mappings = []
         loadRivers().each { river ->
             mappings << river.defineESMapping()
@@ -306,69 +306,13 @@ final class ESRivers extends Rivers<ESRiver> {
     }
 
     @Override
-    Future<Collection<BulkResponse>> export(
-            RiverConfig config,
-            ExecutionContext ec) {
-
-        AbstractRiverCache.purgeAll()
-
-        ESIndexResponse response = createCompanyIndex(config)
-
-        if (response.acknowledged) {
-            Collection<Future<BulkResponse>> collection = []
-
-            Collection<Observable<Future<BulkResponse>>> iterable = []
-
-            iterable << client.upsert(config, [new Item(id: 1L, type: 'i18n', map: ['languages': config.languages])], ec)
-
-            loadRivers().each { river ->
-                iterable << river.exportCatalogItems(config, ec, 100)
-            }
-            Observable.merge(iterable).subscribe({
-                collection << (it as Future<BulkResponse>)
-            } as Action1<Future<BulkResponse>>,
-                    { th -> th.printStackTrace(System.err) } as Action1<Throwable>)
-
-            collect(collection, ec)
-        } else {
-            throw new Exception("an error occured while creating index ${response.error}");
+    protected Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, ExecutionContext ec) {
+        Collection<Observable<Future<BulkResponse>>> iterable = []
+        iterable << client.upsert(config, [new Item(id: 1L, type: 'i18n', map: ['languages': config.languages])], ec)
+        loadRivers().each { river ->
+            iterable << river.exportCatalogItems(config, ec, 100)
         }
-
-    }
-
-    @Override
-    Publisher<RiverItem> publisher(final RiverConfig config) {
-        final RiverItem i18n = new RiverItem() {
-
-            @Override
-            String getKey() {
-                return "i18n::1"
-            }
-
-            @Override
-            BulkItem asBulkItem(RiverConfig c) {
-                new BulkItem(
-                        type: 'i18n',
-                        action: BulkAction.UPDATE,
-                        id: 1L,
-                        parent: null,
-                        map: ['languages': c.languages]
-                )
-            }
-        }
-        new ObservableToPublisherAdapter<RiverItem>(
-                Observable.defer(
-                        {
-                            Observable.merge(
-                                    loadRivers().collect { river ->
-                                        river.exportCatalogItemsAsRiverItems(config)
-                                    }
-                            ).distinct(
-                                    { RiverItem item -> item.key } as Func1<RiverItem, String>
-                            ).startWith(i18n)
-                        } as Func0<Observable<RiverItem>>
-                )
-        )
+        iterable
     }
 
 }

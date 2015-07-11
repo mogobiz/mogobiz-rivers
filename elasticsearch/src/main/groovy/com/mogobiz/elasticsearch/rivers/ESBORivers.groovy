@@ -1,20 +1,10 @@
 package com.mogobiz.elasticsearch.rivers
 
-import com.mogobiz.common.client.BulkAction
-import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
-import com.mogobiz.common.rivers.AbstractRiverCache
-import com.mogobiz.common.rivers.Rivers
 import com.mogobiz.common.rivers.spi.RiverConfig
-import com.mogobiz.common.rivers.spi.RiverItem
 import com.mogobiz.elasticsearch.client.*
 import com.mogobiz.elasticsearch.rivers.spi.ESBORiver
-import org.reactivestreams.Publisher
 import rx.Observable
-import rx.functions.Action1
-import rx.functions.Func0
-import rx.functions.Func1
-import rx.internal.reactivestreams.ObservableToPublisherAdapter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -39,7 +29,7 @@ final class ESBORivers extends AbstractESRivers<ESBORiver> {
     }
 
     @Override
-    protected ESIndexResponse createCompanyIndex(RiverConfig config) {
+    ESIndexResponse createCompanyIndex(RiverConfig config) {
         ESIndexResponse response = new ESIndexResponse(acknowledged: true, error: null)
         def mappings = [:]
         loadRivers().each { river ->

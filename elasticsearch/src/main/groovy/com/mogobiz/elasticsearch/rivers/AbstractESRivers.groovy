@@ -34,7 +34,7 @@ abstract class AbstractESRivers<R extends River> extends Rivers<R>{
         super(riverType)
     }
 
-    protected abstract ESIndexResponse createCompanyIndex(RiverConfig config)
+    abstract ESIndexResponse createCompanyIndex(RiverConfig config)
 
     protected abstract Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, ExecutionContext ec)
 

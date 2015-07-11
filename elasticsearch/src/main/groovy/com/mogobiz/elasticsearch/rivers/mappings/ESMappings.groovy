@@ -11,6 +11,7 @@ final class ESMappings {
     private ESMappings(){}
 
     public static Map loadMappings(String name){
-        new JsonSlurper().parse(new InputStreamReader(ESMappings.class.getResourceAsStream("${name}.json"))) as Map
+        final stream = ESMappings.class.getResourceAsStream("${name}.json")
+        stream ? new JsonSlurper().parse(new InputStreamReader(stream)) as Map : null
     }
 }

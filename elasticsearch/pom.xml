@@ -13,6 +13,11 @@
     <dependencies>
         <dependency>
             <groupId>com.mogobiz.rivers</groupId>
+            <artifactId>mogobiz-elasticsearch-mappings</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mogobiz.rivers</groupId>
             <artifactId>mogobiz-http-client</artifactId>
             <version>${project.version}</version>
         </dependency>

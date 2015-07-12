@@ -35,7 +35,7 @@ final class ESBORivers extends AbstractESRivers<ESBORiver> {
         loadRivers().each { river ->
             mappings.putAll(river.defineESMappingAsMap())
         }
-        def index = config.clientConfig.store ?: "mogopay"
+        def index = config.clientConfig.config.index as String
         def exists = client.indexExists(config.clientConfig.url, index)
         if (!exists) {
             response = client.createIndex(

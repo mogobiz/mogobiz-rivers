@@ -12,24 +12,33 @@ import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Item
 import com.mogobiz.common.client.SearchResponse
+import groovy.json.JsonBuilder
+import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
+import org.apache.commons.codec.binary.Base64
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import java.security.GeneralSecurityException
+import java.security.KeyFactory
+import java.security.PrivateKey
+import java.security.Signature
+import java.security.spec.PKCS8EncodedKeySpec
 import java.util.concurrent.Callable
 
 /**
+ *
  * Created by stephane.manciot@ebiznext.com on 06/05/2014.
  */
+@Slf4j
 final class GoogleClient implements Client{
 
     private static GoogleClient instance
 
     private static final HTTPClient client = HTTPClient.getInstance()
-    public static final String CONTENT_API_SERVICE = 'structuredcontent'
-    public static final String APP = 'ebiznext-mogobiz-0.1'
+    public static final String CONTENT_API_SERVICE = 'https://www.googleapis.com/auth/content'
+    public static final String APP = 'mogobiz'//'ebiznext-mogobiz-0.1'
 
     private GoogleClient(){}
 
@@ -229,6 +238,22 @@ final class GoogleClient implements Client{
         response
     }
 
+    static String requestOAuth2AccessToken(ClientConfig config, String scope = "https://www.googleapis.com/auth/prediction") {
+        def params = [grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: generateJWT(config, scope)]
+        def conn = null
+        def map = [:]
+        try{
+            boolean debug = config.debug
+            conn = client.doPost([debug:debug], 'https://www.googleapis.com/oauth2/v3/token', params)
+            map = client.parseTextAsJSON([debug:debug], conn)
+        }
+        finally{
+            client.closeConnection(conn)
+        }
+        map['access_token'] as String
+    }
+
+    @Deprecated
     static String requestAccessToken(ClientConfig config) throws GeneralSecurityException, IOException {
         def params = [
                 accountType:'GOOGLE',
@@ -290,6 +315,43 @@ final class GoogleClient implements Client{
             properties.put(k, m)
         }
         properties
+    }
+
+    static String generateJWT(ClientConfig config, String scope = "https://www.googleapis.com/auth/prediction"){
+        final alg = "RS256"
+        final clientId = config.credentials?.client_id
+        final clientSecret = config.credentials?.client_secret
+
+        def json = new JsonBuilder()
+        json alg: alg, typ: "JWT"
+        final headerAsString = json.toString()
+        log.debug(headerAsString)
+        final header = Base64.encodeBase64(headerAsString.getBytes("UTF-8"))
+
+        final iat = (Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime().getTime() / 1000) as int
+        json = new JsonBuilder()
+        json iss: clientId,
+                scope: scope,
+                aud: "https://www.googleapis.com/oauth2/v3/token",
+                exp: iat + 3600,
+                iat: iat
+        final claimsAsString = json.toString()
+        log.debug(claimsAsString)
+        final claims = Base64.encodeBase64(claimsAsString.getBytes("UTF-8"))
+
+        def key = clientSecret.replace("-----BEGIN PRIVATE KEY-----\n", "").replace("\n-----END PRIVATE KEY-----\n", "")
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.decodeBase64(key.bytes))
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA")
+        PrivateKey privateKey = keyFactory.generatePrivate(keySpec)
+
+        def input = new StringBuilder(new String(header)).append(".").append(new String(claims)).toString()
+        Signature sig = Signature.getInstance("SHA256withRSA")
+        sig.initSign(privateKey)
+        sig.update(input.bytes)
+        byte[] signature = Base64.encodeBase64(sig.sign())
+
+        def jwt = new StringBuilder(input).append(".").append(new String(signature))
+        jwt.toString()
     }
 }
 

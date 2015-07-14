@@ -4,6 +4,7 @@ import rx.Subscription
 import rx.subscriptions.Subscriptions
 
 /**
+ *
  * Created by smanciot on 03/06/14.
  */
 final class GoogleCategoryReader {

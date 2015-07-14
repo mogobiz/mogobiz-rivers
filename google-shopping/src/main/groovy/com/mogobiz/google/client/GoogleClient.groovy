@@ -160,14 +160,14 @@ final class GoogleClient implements Client{
                 def conn = null
                 try{
                     HttpHeaders headers = new HttpHeaders()
-                    String token =  clientConfig.credentials?.client_token
-                    String authz = token ? 'Bearer ' + token : 'GoogleLogin auth=' + requestAccessToken(clientConfig)
+                    String token =  clientConfig.credentials?.client_token ?: requestAccessToken(clientConfig)
+                    String authz = 'Bearer ' + token
                     headers.setHeader('Authorization', authz)
                     headers.setHeader('Content-Type', version == 2 ? 'application/xml' : 'application/atom+xml')
                     boolean debug = config.clientConfig.debug
                     String url = 'https://www.googleapis.com/content/v2/products/batch?dryRun=' + config.dry_run
                     if(version != 2){
-                        url = new StringBuffer('https://content.googleapis.com/content/v1/')
+                        url = new StringBuffer('https://content.googleapis.com/content/v2/')
                                 .append(config.clientConfig.merchant_id)
                                 .append('/items/products/generic/batch?')
                                 .append(config.dry_run?'dry-run':'')
@@ -210,13 +210,13 @@ final class GoogleClient implements Client{
         SearchResponse response = null
         def clientConfig = request.clientConfig
         boolean debug = clientConfig.debug
-        StringBuffer buffer = new StringBuffer('https://content.googleapis.com/content/v1/')
+        StringBuffer buffer = new StringBuffer('https://content.googleapis.com/content/v2/')
                 .append(clientConfig.merchant_id).append('/items/products/generic')
         def conn = null
         try{
             HttpHeaders headers = new HttpHeaders()
-            String token =  clientConfig.credentials?.client_token
-            String authz = token ? 'Bearer ' + token : 'GoogleLogin auth=' + requestAccessToken(clientConfig)
+            String token =  clientConfig.credentials?.client_token ?: requestAccessToken(clientConfig)
+            String authz = 'Bearer ' + token
             headers.setHeader('Authorization', authz)
             conn = client.doGet([debug:debug], buffer.toString(), [:], headers)
             if(conn.responseCode == 200){
@@ -238,7 +238,7 @@ final class GoogleClient implements Client{
         response
     }
 
-    static String requestOAuth2AccessToken(ClientConfig config, String scope = CONTENT_API_SERVICE) {
+    static String requestAccessToken(ClientConfig config, String scope = CONTENT_API_SERVICE) throws GeneralSecurityException, IOException {
         def params = [grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: generateJWT(config, scope)]
         def conn = null
         def map = [:]
@@ -251,41 +251,6 @@ final class GoogleClient implements Client{
             client.closeConnection(conn)
         }
         map['access_token'] as String
-    }
-
-    @Deprecated
-    static String requestAccessToken(ClientConfig config) throws GeneralSecurityException, IOException {
-        def params = [
-                accountType:'GOOGLE',
-                Email:config.credentials?.client_id,
-                Passwd:config.credentials?.client_secret,
-                service: CONTENT_API_SERVICE, // Content API for Shopping
-                source: APP
-        ]
-        def conn = null
-        def map = [:]
-        try{
-            boolean debug = config.debug
-            conn = client.doPost([debug:debug], 'https://www.google.com/accounts/ClientLogin',params)
-            if(conn.responseCode == 200){
-                def reader = new StringReader(client.getText([debug:debug], conn))
-                reader.eachLine {line ->
-                    String[] kv = line.split('=')
-                    if(kv.length > 1){
-                        def k = kv[0].trim().toLowerCase()
-                        def v = kv.drop(1).join('=').trim()
-                        if(k && v){
-                            map.put(k,v)
-                        }
-                    }
-                    return
-                }
-            }
-        }
-        finally{
-            client.closeConnection(conn)
-        }
-        map['auth'] as String
     }
 
     static Item parseEntry(GPathResult entry){
@@ -318,14 +283,13 @@ final class GoogleClient implements Client{
     }
 
     static String generateJWT(ClientConfig config, String scope = "https://www.googleapis.com/auth/prediction"){
-        final alg = "RS256"
         final clientId = config.credentials?.client_id
         final clientSecret = config.credentials?.client_secret
 
         def input = new StringBuilder()
 
         def json = new JsonBuilder()
-        json alg: alg, typ: "JWT"
+        json alg: "RS256", typ: "JWT"
         input.append(new String(Base64.encodeBase64(json.toString().getBytes("UTF-8"))))
 
         final iat = (Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime().getTime() / 1000) as int

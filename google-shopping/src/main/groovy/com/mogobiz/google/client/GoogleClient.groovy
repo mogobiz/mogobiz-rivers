@@ -238,7 +238,7 @@ final class GoogleClient implements Client{
         response
     }
 
-    static String requestOAuth2AccessToken(ClientConfig config, String scope = "https://www.googleapis.com/auth/prediction") {
+    static String requestOAuth2AccessToken(ClientConfig config, String scope = CONTENT_API_SERVICE) {
         def params = [grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: generateJWT(config, scope)]
         def conn = null
         def map = [:]
@@ -322,11 +322,11 @@ final class GoogleClient implements Client{
         final clientId = config.credentials?.client_id
         final clientSecret = config.credentials?.client_secret
 
+        def input = new StringBuilder()
+
         def json = new JsonBuilder()
         json alg: alg, typ: "JWT"
-        final headerAsString = json.toString()
-        log.debug(headerAsString)
-        final header = Base64.encodeBase64(headerAsString.getBytes("UTF-8"))
+        input.append(new String(Base64.encodeBase64(json.toString().getBytes("UTF-8"))))
 
         final iat = (Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime().getTime() / 1000) as int
         json = new JsonBuilder()
@@ -335,23 +335,18 @@ final class GoogleClient implements Client{
                 aud: "https://www.googleapis.com/oauth2/v3/token",
                 exp: iat + 3600,
                 iat: iat
-        final claimsAsString = json.toString()
-        log.debug(claimsAsString)
-        final claims = Base64.encodeBase64(claimsAsString.getBytes("UTF-8"))
+        input.append(".").append(new String(Base64.encodeBase64(json.toString().getBytes("UTF-8"))))
 
         def key = clientSecret.replace("-----BEGIN PRIVATE KEY-----\n", "").replace("\n-----END PRIVATE KEY-----\n", "")
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.decodeBase64(key.bytes))
         KeyFactory keyFactory = KeyFactory.getInstance("RSA")
         PrivateKey privateKey = keyFactory.generatePrivate(keySpec)
-
-        def input = new StringBuilder(new String(header)).append(".").append(new String(claims)).toString()
         Signature sig = Signature.getInstance("SHA256withRSA")
         sig.initSign(privateKey)
-        sig.update(input.bytes)
+        sig.update(input.toString().bytes)
         byte[] signature = Base64.encodeBase64(sig.sign())
 
-        def jwt = new StringBuilder(input).append(".").append(new String(signature))
-        jwt.toString()
+        input.append(".").append(new String(signature)).toString()
     }
 }
 

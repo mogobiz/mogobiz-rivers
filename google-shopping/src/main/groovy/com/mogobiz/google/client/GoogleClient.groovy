@@ -160,7 +160,7 @@ final class GoogleClient implements Client{
                 def conn = null
                 try{
                     HttpHeaders headers = new HttpHeaders()
-                    String token =  clientConfig.credentials?.client_token ?: requestAccessToken(clientConfig)
+                    String token =  requestAccessToken(clientConfig)
                     String authz = 'Bearer ' + token
                     headers.setHeader('Authorization', authz)
                     headers.setHeader('Content-Type', version == 2 ? 'application/xml' : 'application/atom+xml')
@@ -215,7 +215,7 @@ final class GoogleClient implements Client{
         def conn = null
         try{
             HttpHeaders headers = new HttpHeaders()
-            String token =  clientConfig.credentials?.client_token ?: requestAccessToken(clientConfig)
+            String token =  requestAccessToken(clientConfig)
             String authz = 'Bearer ' + token
             headers.setHeader('Authorization', authz)
             conn = client.doGet([debug:debug], buffer.toString(), [:], headers)
@@ -239,18 +239,27 @@ final class GoogleClient implements Client{
     }
 
     static String requestAccessToken(ClientConfig config, String scope = CONTENT_API_SERVICE) throws GeneralSecurityException, IOException {
-        def params = [grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: generateJWT(config, scope)]
-        def conn = null
-        def map = [:]
-        try{
-            boolean debug = config.debug
-            conn = client.doPost([debug:debug], 'https://www.googleapis.com/oauth2/v3/token', params)
-            map = client.parseTextAsJSON([debug:debug], conn)
+        if(config.credentials?.refreshToken()){
+            def params = [grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: generateJWT(config, scope)]
+            def conn = null
+            def map = [:]
+            try{
+                boolean debug = config.debug
+                conn = client.doPost([debug:debug], 'https://www.googleapis.com/oauth2/v3/token', params)
+                map = client.parseTextAsJSON([debug:debug], conn)
+            }
+            finally{
+                client.closeConnection(conn)
+            }
+            final accessToken = map['access_token'] as String
+            if(accessToken){
+                config.credentials?.client_token = accessToken
+                Calendar cal = Calendar.getInstance()
+                cal.add(Calendar.SECOND, 3600)
+                config.credentials?.expiration = cal.getTime()
+            }
         }
-        finally{
-            client.closeConnection(conn)
-        }
-        map['access_token'] as String
+        config.credentials?.client_token
     }
 
     static Item parseEntry(GPathResult entry){

@@ -26,4 +26,8 @@ class Credentials{
     String client_id
     String client_secret
     String client_token
+    Date expiration
+    def boolean refreshToken(){
+        !client_token || new Date().after(expiration)
+    }
 }

@@ -38,6 +38,7 @@ final class GoogleClient implements Client{
 
     private static final HTTPClient client = HTTPClient.getInstance()
     public static final String CONTENT_API_SERVICE = 'https://www.googleapis.com/auth/content'
+    public static final String ROOT_API_URL = "https://www.googleapis.com/content/v2"
     public static final String APP = 'mogobiz'//'ebiznext-mogobiz-0.1'
 
     private GoogleClient(){}
@@ -165,9 +166,9 @@ final class GoogleClient implements Client{
                     headers.setHeader('Authorization', authz)
                     headers.setHeader('Content-Type', version == 2 ? 'application/xml' : 'application/atom+xml')
                     boolean debug = config.clientConfig.debug
-                    String url = 'https://www.googleapis.com/content/v2/products/batch?dryRun=' + config.dry_run
-                    if(version != 2){
-                        url = new StringBuffer('https://content.googleapis.com/content/v2/')
+                    String url = "${ROOT_API_URL}/products/batch?dryRun=" + config.dry_run
+                    if(version < 2){
+                        url = new StringBuffer('https://content.googleapis.com/content/v1/')
                                 .append(config.clientConfig.merchant_id)
                                 .append('/items/products/generic/batch?')
                                 .append(config.dry_run?'dry-run':'')
@@ -194,7 +195,7 @@ final class GoogleClient implements Client{
                         new BulkResponse(items: _items)
                     }
                     else{
-                        client.getText([debug: debug], conn)
+                        log.error client.getText([debug: debug], conn)
                         new BulkResponse(items: [])
                     }
                 }
@@ -210,7 +211,7 @@ final class GoogleClient implements Client{
         SearchResponse response = null
         def clientConfig = request.clientConfig
         boolean debug = clientConfig.debug
-        StringBuffer buffer = new StringBuffer('https://content.googleapis.com/content/v2/')
+        StringBuffer buffer = new StringBuffer(ROOT_API_URL).append("/")
                 .append(clientConfig.merchant_id).append('/items/products/generic')
         def conn = null
         try{
@@ -229,13 +230,37 @@ final class GoogleClient implements Client{
                 response = new SearchResponse(hits: items, total: items.size())
             }
             else{
-                println client.getText([debug:debug], conn)
+                log.error client.getText([debug:debug], conn)
             }
         }
         finally {
             client.closeConnection(conn)
         }
         response
+    }
+
+    static Collection<Map> retrieveAccountIdentifiers(ClientConfig clientConfig){
+        StringBuffer buffer = new StringBuffer(ROOT_API_URL).append("/accounts/authinfo")
+        def accountIdentifiers = []
+        def conn = null
+        try{
+            HttpHeaders headers = new HttpHeaders()
+            String token =  requestAccessToken(clientConfig)
+            String authz = 'Bearer ' + token
+            headers.setHeader('Authorization', authz)
+            boolean debug = clientConfig.debug
+            conn = client.doGet([debug:debug], buffer.toString(), [:], headers)
+            if(conn.responseCode == 200){
+                accountIdentifiers = client.parseTextAsJSON([debug:debug], conn).accountIdentifiers as Collection<Map>
+            }
+            else{
+                log.error client.getText([debug:debug], conn)
+            }
+        }
+        finally {
+            client.closeConnection(conn)
+        }
+        accountIdentifiers
     }
 
     static String requestAccessToken(ClientConfig config, String scope = CONTENT_API_SERVICE) throws GeneralSecurityException, IOException {

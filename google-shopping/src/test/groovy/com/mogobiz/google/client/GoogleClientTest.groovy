@@ -45,7 +45,7 @@ class GoogleClientTest extends GroovyTestCase{
         def accountIdentifiers = GoogleClient.retrieveAccountIdentifiers(buildClientConfig())
         assertNotNull(accountIdentifiers)
         assertEquals(1, accountIdentifiers.size())
-        assertEquals(MERCHANT_ID, accountIdentifiers.first().merchantId)
+        assertEquals(MERCHANT_ID, accountIdentifiers.first())
     }
 
     private RiverConfig buildConfig() {

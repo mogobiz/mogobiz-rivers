@@ -239,7 +239,7 @@ final class GoogleClient implements Client{
         response
     }
 
-    static Collection<Map> retrieveAccountIdentifiers(ClientConfig clientConfig){
+    static Collection<String> retrieveAccountIdentifiers(ClientConfig clientConfig){
         StringBuffer buffer = new StringBuffer(ROOT_API_URL).append("/accounts/authinfo")
         def accountIdentifiers = []
         def conn = null
@@ -251,7 +251,7 @@ final class GoogleClient implements Client{
             boolean debug = clientConfig.debug
             conn = client.doGet([debug:debug], buffer.toString(), [:], headers)
             if(conn.responseCode == 200){
-                accountIdentifiers = client.parseTextAsJSON([debug:debug], conn).accountIdentifiers as Collection<Map>
+                accountIdentifiers = (client.parseTextAsJSON([debug:debug], conn).accountIdentifiers as Collection<Map>)?.collect {it.merchantId}
             }
             else{
                 log.error client.getText([debug:debug], conn)

@@ -2,7 +2,7 @@ organization := "com.mogobiz.rivers"
 
 name := "cfp"
 
-version := "0.2-SNAPSHOT"
+version := "0.3-SNAPSHOT"
 
 logLevel in Global := Level.Info
 
@@ -39,7 +39,7 @@ libraryDependencies ++= Seq(
   "org.specs2"              %% "specs2"                   % specs2V % "test",
   "ch.qos.logback"           %  "logback-classic"         % "1.1.2" % "provided",
   "net.databinder.dispatch" %% "dispatch-core"            % "0.11.2",
-  "com.mogobiz"              % "mogobiz-tools"            % "0.2-SNAPSHOT",
+  "com.mogobiz"              % "mogobiz-tools"            % "0.3-SNAPSHOT",
   "com.novocode"             % "junit-interface"          % "0.11"  % "test",
   "io.reactivex"             % "rxjava-reactive-streams"  % "0.3.0" % "test" exclude ("io.reactivex", "rxjava"),
   "org.codehaus.groovy"      % "groovy-all"               % "2.1.8" % "test",

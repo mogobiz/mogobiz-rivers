@@ -12,7 +12,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-cfp</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
     <name>mogobiz cfp client</name>
     <!-- distributionManagement -->
     <distributionManagement>

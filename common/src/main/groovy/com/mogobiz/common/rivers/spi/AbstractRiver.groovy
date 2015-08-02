@@ -17,6 +17,7 @@ import scala.concurrent.Future
 import java.text.SimpleDateFormat
 
 /**
+ *
  * Created by smanciot on 14/05/2014.
  */
 abstract class AbstractRiver<E, T extends Client> implements River {
@@ -143,7 +144,7 @@ abstract class AbstractRiver<E, T extends Client> implements River {
     }
 
     def List<String> previousProperties(){
-        ['id'] as List<String>
+        [] as List<String>
     }
 
     final static String formatToIso8601(Date d){

@@ -4,7 +4,7 @@
     <groupId>com.mogobiz</groupId>
     <artifactId>rivers</artifactId>
     <packaging>pom</packaging>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4.1-SNAPSHOT</version>
     <name>mogobiz rivers</name>
     <modules>
         <module>http-client</module>

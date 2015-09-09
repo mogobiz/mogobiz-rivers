@@ -107,6 +107,7 @@ abstract class Rivers<T extends River> {
         new ObservableToPublisherAdapter<RiverItem>(
                 Observable.defer(
                         {
+                            // mergeWith(loadRivers(), null, config)
                             Observable.merge(
                                     loadRivers().collect {river ->
                                         river.exportCatalogItemsAsRiverItems(config)
@@ -117,5 +118,25 @@ abstract class Rivers<T extends River> {
                         }as Func0<Observable<RiverItem>>
                 )
         )
+    }
+
+    static Observable<RiverItem> mergeWith(List<River> rivers, Observable<RiverItem> previous, final RiverConfig config){
+        if(rivers.isEmpty()){
+            previous
+        }
+        else{
+            final next = rivers.first()
+            mergeWith(rivers.tail(), previous?.mergeWith(next.exportCatalogItemsAsRiverItems(config)) ?: next.exportCatalogItemsAsRiverItems(config), config)
+        }
+    }
+
+    static Observable<RiverItem> concatWith(List<River> rivers, Observable<RiverItem> previous, final RiverConfig config){
+        if(rivers.isEmpty()){
+            previous
+        }
+        else{
+            final next = rivers.first()
+            concatWith(rivers.tail(), previous?.concatWith(next.exportCatalogItemsAsRiverItems(config)) ?: next.exportCatalogItemsAsRiverItems(config), config)
+        }
     }
 }

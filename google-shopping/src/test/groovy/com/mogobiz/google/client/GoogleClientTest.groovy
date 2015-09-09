@@ -48,6 +48,11 @@ class GoogleClientTest extends GroovyTestCase{
         assertEquals(MERCHANT_ID, accountIdentifiers.first())
     }
 
+    public void testRetrieveSubAccounts(){
+        def accountIdentifiers = GoogleClient.retrieveSubAccounts(buildClientConfig())
+        assertNotNull(accountIdentifiers)
+    }
+
     private RiverConfig buildConfig() {
         new RiverConfig(
                 debug: true,

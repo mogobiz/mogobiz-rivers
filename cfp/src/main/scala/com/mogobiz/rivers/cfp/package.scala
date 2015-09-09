@@ -33,7 +33,7 @@ package object cfp {
 
   def flatten[T] = Flow[Seq[T]].map(_.toList).mapConcat(identity)
 
-  def regrouped[T] = Flow[T].transform(() => new Fold[T, Seq[T]](Seq.empty, (out, in) => out :+ in))
+  def regrouped[T] = Flow[T].transform(() => new Fold[T, Seq[T]](Seq.empty, (out, in) => out :+ in)) //.scan[Seq[T]](Seq.empty)((out, in) => out :+ in)
 
   import akka.actor.ActorSystem
   import akka.event.Logging

@@ -239,6 +239,11 @@ final class GoogleClient implements Client{
         response
     }
 
+    /**
+     *
+     * @param clientConfig
+     * @return merchantId(s)
+     */
     static Collection<String> retrieveAccountIdentifiers(ClientConfig clientConfig){
         StringBuffer buffer = new StringBuffer(ROOT_API_URL).append("/accounts/authinfo")
         def accountIdentifiers = []
@@ -251,7 +256,7 @@ final class GoogleClient implements Client{
             boolean debug = clientConfig.debug
             conn = client.doGet([debug:debug], buffer.toString(), [:], headers)
             if(conn.responseCode == 200){
-                accountIdentifiers = (client.parseTextAsJSON([debug:debug], conn).accountIdentifiers as Collection<Map>)?.collect {it.merchantId}
+                accountIdentifiers = (client.parseTextAsJSON([debug:debug], conn).accountIdentifiers as Collection<Map>)?.collect {it.merchantId} ?: []
             }
             else{
                 log.error client.getText([debug:debug], conn)
@@ -263,7 +268,43 @@ final class GoogleClient implements Client{
         accountIdentifiers
     }
 
-    static String requestAccessToken(ClientConfig config, String scope = CONTENT_API_SERVICE) throws GeneralSecurityException, IOException {
+    /**
+     * requires multi-client merchant center
+     * @param clientConfig
+     * @return subAccounts
+     */
+    static Collection<Map> retrieveSubAccounts(ClientConfig clientConfig){
+        final merchantId = clientConfig?.merchant_id ?: ""
+        StringBuffer buffer = new StringBuffer(ROOT_API_URL).append("/$merchantId/accounts")
+        def subAccounts = []
+        def conn = null
+        try{
+            HttpHeaders headers = new HttpHeaders()
+            String token =  requestAccessToken(clientConfig)
+            String authz = 'Bearer ' + token
+            headers.setHeader('Authorization', authz)
+            boolean debug = clientConfig.debug
+            conn = client.doGet([debug:debug], buffer.toString(), [:], headers)
+            if(conn.responseCode == 200){
+                subAccounts = (client.parseTextAsJSON([debug:debug], conn) as Collection<Map>)
+            }
+            else{
+                log.error client.getText([debug:debug], conn)
+            }
+        }
+        finally {
+            client.closeConnection(conn)
+        }
+        subAccounts
+    }
+
+    /**
+     *
+     * @param config - client configuration including credentials
+     * @param scope - access token scope (content google shopping if not specified)
+     * @return google api access token
+     */
+    static String requestAccessToken(ClientConfig config, String scope = CONTENT_API_SERVICE) {
         if(config.credentials?.refreshToken()){
             def params = [grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: generateJWT(config, scope)]
             def conn = null

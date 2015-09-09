@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2015 Mogobiz SARL. All rights reserved.
+ */
+
 import sbt._
 import Keys._
 import com.github.shivawu.sbt.maven.MavenBuild

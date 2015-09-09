@@ -1,4 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright (C) 2015 Mogobiz SARL. All rights reserved.
+  -->
+
 <feed xmlns='http://www.w3.org/2005/Atom' xmlns:openSearch='http://a9.com/-/spec/opensearch/1.1/'
       xmlns:gd='http://schemas.google.com/g/2005' gd:etag='W/&quot;A0UGRnc6eSl7ImA9XRZTEEo.&quot;'>
     <id>http://content.googleapis.com/content/v1/100571768/items/products/generic</id>

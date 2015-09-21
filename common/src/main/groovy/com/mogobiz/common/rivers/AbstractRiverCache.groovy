@@ -3,7 +3,7 @@
  */
 
 /**
- * 
+ *
  */
 package com.mogobiz.common.rivers
 
@@ -82,7 +82,7 @@ abstract class AbstractRiverCache< T > {
 	/**
 	 * initialisation des paramètres du cache. Doit être appelé dans le
 	 * constructeur de la classe dérivée.
-	 * 
+	 *
 	 * @return
 	 */
 	protected void initVars(long maxObjects = DEFAULT_MAX_OBJECTS_IN_CACHE, long expireTime = DEFAULT_EXPIRE_TIME_IN_SECONDS) {
@@ -138,10 +138,9 @@ abstract class AbstractRiverCache< T > {
      * @return toutes les entrées présentes au sein du cache
      */
     public Collection<T> getAll() {
-        cache.keySet().collect {
-            def value = get(it)
-            value ?: []
-        }.flatten()
+		cache.keySet().collect {key ->
+            get(key) ?: []
+        }.flatten() as Collection<T>
     }
 
 	/**
@@ -167,7 +166,7 @@ abstract class AbstractRiverCache< T > {
 
 	/**
 	 * @version $Id $
-	 * 
+	 *
 	 */
 	class CacheEntry {
 		/**
@@ -191,7 +190,7 @@ abstract class AbstractRiverCache< T > {
 		private int    creationDay
 
 		/**
-		 * 
+		 *
 		 */
 		private long   lastAccessTime
 

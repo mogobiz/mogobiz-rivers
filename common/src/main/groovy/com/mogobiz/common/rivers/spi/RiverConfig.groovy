@@ -18,5 +18,5 @@ class RiverConfig {
     String countryCode = 'FR'
     String currencyCode = 'EUR'
     ClientConfig clientConfig
-    List<String> countries = ['DE','ES','FR','GB','USA']
+    List<String> countries = ['DE','ES','FR','GB','US']
 }

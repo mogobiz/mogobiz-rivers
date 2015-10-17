@@ -506,11 +506,10 @@ final class ESClient implements Client {
             def map = [:]
             switch(item.action){
                 case([BulkAction.INDEX, BulkAction.INSERT]):
-                    action << ([refresh:false] as Map)
                     map << [index:action]
                     break
                 case(BulkAction.UPDATE):
-                    action << ([refresh:false, _retry_on_conflict:3] as Map)
+                    action << ([_retry_on_conflict:3] as Map)
                     map << [update:action]
                     item.map = [doc:item.map, doc_as_upsert:true]
                     break
@@ -531,7 +530,7 @@ final class ESClient implements Client {
                     def debug = config.clientConfig.debug
                     conn = client.doPost(
                             [debug:debug],
-                            new StringBuffer(config.clientConfig?.url).append('/_bulk').toString(),
+                            new StringBuffer(config.clientConfig?.url).append('/_bulk?refresh=false').toString(),
                             null,
                             body)
                     Map m = client.parseTextAsJSON(

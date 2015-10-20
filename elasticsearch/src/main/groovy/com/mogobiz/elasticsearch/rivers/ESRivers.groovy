@@ -60,13 +60,13 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                     timestamp: true,
                                     type: 'comment',
                                     properties: []
-                                            << new ESProperty(name: 'userUuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'userId', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                             << new ESProperty(name: 'externalCode', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                             << new ESProperty(name: 'nickname', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                             << new ESProperty(name: 'notation', type: ESClient.TYPE.INTEGER, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                             << new ESProperty(name: 'subject', type: ESClient.TYPE.STRING, index: ESClient.INDEX.ANALYZED, multilang: false)
                                             << new ESProperty(name: 'comment', type: ESClient.TYPE.STRING, index: ESClient.INDEX.ANALYZED, multilang: false)
-                                            << new ESProperty(name: 'productUuid', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
+                                            << new ESProperty(name: 'productId', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                             << new ESProperty(name: 'useful', type: ESClient.TYPE.LONG, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                             << new ESProperty(name: 'notuseful', type: ESClient.TYPE.LONG, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                             << new ESProperty(name: 'created', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)

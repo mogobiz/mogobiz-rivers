@@ -24,6 +24,8 @@ import akka.dispatch.Futures
 
 import java.util.concurrent.Callable
 
+import static scala.collection.JavaConversions.*;
+
 /**
  *
  * Created by stephane.manciot@ebiznext.com on 02/02/2014.
@@ -35,18 +37,12 @@ final class ESClient implements Client {
 
     private static ESClient instance
 
-    private static ESAnalysis defaultAnalysis = createDefaultAnalysis()
-
     static final enum INDEX{
         NO, ANALYZED, NOT_ANALYZED
     }
 
     static final enum TYPE{
         STRING, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, NULL, DATE, OBJECT, NESTED, BINARY, ATTACHMENT
-    }
-
-    static final enum FILTER_TYPE{
-        STOP,STEM,NGRAM
     }
 
     private ESClient(){}
@@ -109,72 +105,11 @@ final class ESClient implements Client {
             final Collection<ESMapping> mappings,
             final Map config = [:],
             final String[] languages = ['fr', 'en', 'de', 'es'],
-            final String defaultLanguage = 'fr',
-            final ESAnalysis analysis = defaultAnalysis){
+            final String defaultLanguage = 'fr'){
 
         ESIndexResponse response = new ESIndexResponse()
 
-        def _analyzis = [:]
-
-        def filters = [:]
-        analysis.filters?.each {filter ->
-            switch (filter.type){
-                case(FILTER_TYPE.STOP):
-                    filters[filter.id] = [type: 'stop', stopwords:filter.stopwords]
-                    break
-                case(FILTER_TYPE.STEM):
-                    filters[filter.id] = [type: 'stemmer', name:filter.name]
-                    break
-                case(FILTER_TYPE.NGRAM):
-                    filters[filter.id] = [type: 'nGram'] << filter.options
-                    break
-                default:
-                    break
-            }
-        }
-        if(!filters.isEmpty()){
-            _analyzis << [filter:filters]
-        }
-
-        def analyzers = [:]
-
-        def _index_analyzers = [:]
-        analysis.index_analyzers?.each {analyzer ->
-            if(languages.contains(analyzer.lang) || '*'.equals(analyzer.lang)){
-                analyzers[analyzer.id] = [
-                            type:analyzer.type,
-                            tokenizer:analyzer.tokenizer,
-                            filter:analyzer.filters,
-                            char_filter:analyzer.charFilters
-                ]
-                _index_analyzers[analyzer.lang] = analyzer.id
-            }
-        }
-
-        def _search_analyzers = [:]
-        analysis.search_analyzers?.each {analyzer ->
-            if(languages.contains(analyzer.lang) || '*'.equals(analyzer.lang)){
-                analyzers[analyzer.id] = [
-                        type:analyzer.type,
-                        tokenizer:analyzer.tokenizer,
-                        filter:analyzer.filters,
-                        char_filter:analyzer.charFilters
-                ]
-                _search_analyzers[analyzer.lang] = analyzer.id
-            }
-        }
-
-        if(!analyzers.isEmpty()){
-            _analyzis << [analyzer:analyzers]
-        }
-
-        def tokenizers = []
-        analysis.tokenizers?.each {tokenizer ->
-            tokenizers[tokenizer.id] = [type:tokenizer.type, mode:tokenizer.mode]
-        }
-        if(!tokenizers.isEmpty()){
-            _analyzis << [tokenizer:tokenizers]
-        }
+        def _analyzis = EsAnalysis$.MODULE$.apply(asScalaSet(languages.toList().toSet()).toSet())
 
         Map _index = [
                 number_of_replicas:"${settings.number_of_replicas}",
@@ -185,17 +120,11 @@ final class ESClient implements Client {
                     flush_threshold_period:"30m",
                     interval:"5s"
                 ],
-                settings:
-                [
-                    analysis:_analyzis
-                ],
+                settings: _analyzis.toJavaMap(),
                 mappings:[:]
         ]
 
         def dynamicTemplates = []
-
-        def defaultIndexAnalyzer = _index_analyzers['*']
-        def defaultSearchAnalyzer = _search_analyzers['*']
 
         languages.each { language ->
             def template = [:]
@@ -209,8 +138,8 @@ final class ESClient implements Client {
                             '{name}' : [
                                     type            : 'string',
                                     index           : 'analyzed',
-                                    index_analyzer  : _index_analyzers.containsKey(_language) ? _index_analyzers[_language] : defaultIndexAnalyzer,
-                                    search_analyzer : _search_analyzers.containsKey(_language) ? _search_analyzers[_language] : defaultSearchAnalyzer,
+                                    index_analyzer  : _analyzis.index_analyzer(_language).id(),
+                                    search_analyzer : _analyzis.search_analyzer(_language).id(),
                                     copy_to         : 'raw',
                             ],
                             raw : [
@@ -229,8 +158,8 @@ final class ESClient implements Client {
                             '{name}' : [
                                 type            : 'string',
                                 index           : 'analyzed',
-                                index_analyzer  : _index_analyzers.containsKey(_language) ? _index_analyzers[_language] : defaultIndexAnalyzer,
-                                search_analyzer : _search_analyzers.containsKey(_language) ? _search_analyzers[_language] : defaultSearchAnalyzer,
+                                index_analyzer  : _analyzis.index_analyzer(_language).id(),
+                                search_analyzer : _analyzis.search_analyzer(_language).id(),
                                 copy_to         : 'raw',
                             ],
                             raw : [
@@ -242,9 +171,9 @@ final class ESClient implements Client {
             dynamicTemplates << [('template_nested_' + _language) : template]
         }
 
-        def _defaultLanguage = defaultLanguage?.trim()?.toLowerCase()
-        def _indexAnalyzer = _defaultLanguage && _index_analyzers.containsKey(_defaultLanguage) ? _index_analyzers[_defaultLanguage] : defaultIndexAnalyzer
-        def _searchAnalyzer = _defaultLanguage && _search_analyzers.containsKey(_defaultLanguage) ? _search_analyzers[_defaultLanguage] : defaultSearchAnalyzer
+        def _defaultLanguage = defaultLanguage?.trim()?.toLowerCase() ?: '*'
+        def _indexAnalyzer = _analyzis.index_analyzer(_defaultLanguage).id()
+        def _searchAnalyzer = _analyzis.search_analyzer(_defaultLanguage).id()
 
         log.info("default language for index -> $_defaultLanguage")
 
@@ -587,153 +516,6 @@ final class ESClient implements Client {
         return HTTPClient.instance.doHead([debug:true], url + '/' + index).responseCode == 200
     }
 
-    static ESAnalysis createDefaultAnalysis(){
-        ESAnalysis analysis = new ESAnalysis(
-                filters : [],
-                index_analyzers: [],
-                search_analyzers: [],
-                tokenizers: []
-        )
-
-        // nGram
-        analysis.filters << new ESFilter(
-                id: 'nGram_filter',
-                type:FILTER_TYPE.NGRAM,
-                options:[min_gram:2, max_gram:20]
-        )
-
-        analysis.index_analyzers << new ESAnalyzer(
-                id: 'default_index_analyzer',
-                type: 'custom',
-                lang: '*',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "nGram_filter"],
-                charFilters: ["html_strip"]
-        )
-        analysis.search_analyzers << new ESAnalyzer(
-                id: 'default_search_analyzer',
-                type: 'custom',
-                lang: '*',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer"],
-                charFilters: ["html_strip"]
-        )
-
-        // en
-        analysis.filters << new ESFilter(
-                id: 'en_stop_filter',
-                type:FILTER_TYPE.STOP,
-                stopwords: ['_english_']
-        )
-        analysis.filters << new ESFilter(
-                id: 'en_stem_filter',
-                type:FILTER_TYPE.STEM,
-                name: 'minimal_english'
-        )
-        analysis.index_analyzers << new ESAnalyzer(
-                id: 'en_index_analyzer',
-                lang: 'en',
-                type: 'custom',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "en_stop_filter", "en_stem_filter", "nGram_filter"],
-                charFilters: ["html_strip"]
-        )
-        analysis.search_analyzers << new ESAnalyzer(
-                id: 'en_search_analyzer',
-                lang: 'en',
-                type: 'custom',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "en_stop_filter", "en_stem_filter"],
-                charFilters: ["html_strip"]
-        )
-
-        // es
-        analysis.filters << new ESFilter(
-                id: 'es_stop_filter',
-                type:FILTER_TYPE.STOP,
-                stopwords: ['_spanish_']
-        )
-        analysis.filters << new ESFilter(
-                id: 'es_stem_filter',
-                type:FILTER_TYPE.STEM,
-                name: 'light_spanish'
-        )
-        analysis.index_analyzers << new ESAnalyzer(
-                id: 'es_index_analyzer',
-                lang: 'es',
-                type: 'custom',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "es_stop_filter", "es_stem_filter", "nGram_filter"],
-                charFilters: ["html_strip"]
-        )
-        analysis.search_analyzers << new ESAnalyzer(
-                id: 'es_search_analyzer',
-                lang: 'es',
-                type: 'custom',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "es_stop_filter", "es_stem_filter"],
-                charFilters: ["html_strip"]
-        )
-
-        // fr
-        analysis.filters << new ESFilter(
-                id: 'fr_stop_filter',
-                type:FILTER_TYPE.STOP,
-                stopwords: ['_french_']
-        )
-        analysis.filters << new ESFilter(
-                id: 'fr_stem_filter',
-                type:FILTER_TYPE.STEM,
-                name: 'minimal_french'
-        )
-        analysis.index_analyzers << new ESAnalyzer(
-                id: 'fr_index_analyzer',
-                lang: 'fr',
-                type: 'custom',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "fr_stop_filter", "fr_stem_filter", "nGram_filter"],
-                charFilters: ["html_strip"]
-        )
-        analysis.search_analyzers << new ESAnalyzer(
-                id: 'fr_search_analyzer',
-                lang: 'fr',
-                type: 'custom',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "fr_stop_filter", "fr_stem_filter"],
-                charFilters: ["html_strip"]
-        )
-
-        // ge
-        analysis.filters << new ESFilter(
-                id: 'de_stop_filter',
-                type:FILTER_TYPE.STOP,
-                stopwords: ['_german_']
-        )
-        analysis.filters << new ESFilter(
-                id: 'de_stem_filter',
-                type:FILTER_TYPE.STEM,
-                name: 'minimal_german'
-        )
-        analysis.index_analyzers << new ESAnalyzer(
-                id: 'de_index_analyzer',
-                lang: 'de',
-                type: 'custom',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "de_stop_filter", "de_stem_filter", "nGram_filter"],
-                charFilters: ["html_strip"]
-        )
-        analysis.search_analyzers << new ESAnalyzer(
-                id: 'de_search_analyzer',
-                lang: 'de',
-                type: 'custom',
-                tokenizer: 'icu_tokenizer',
-                filters: ["icu_folding", "icu_normalizer", "de_stop_filter", "de_stem_filter"],
-                charFilters: ["html_strip"]
-        )
-
-        analysis
-    }
-
     /**
      * This method performs a search on es
      * @param request - the request to perform on es
@@ -827,36 +609,6 @@ class ESProperty{
     ESClient.INDEX index
     boolean multilang
     Collection<ESProperty> properties
-}
-
-class ESFilter{
-    String id
-    ESClient.FILTER_TYPE type
-    String[] stopwords
-    String name
-    Map options
-}
-
-class ESAnalyzer{
-    String id
-    String lang
-    String type
-    String tokenizer
-    String[] filters
-    String[] charFilters
-}
-
-class ESTokenizer{
-    String id
-    String type
-    String mode
-}
-
-class ESAnalysis{
-    Collection<ESFilter> filters = []
-    Collection<ESAnalyzer> index_analyzers = []
-    Collection<ESAnalyzer> search_analyzers = []
-    Collection<ESTokenizer> tokenizers = []
 }
 
 class ESIndexResponse extends Response{

@@ -84,10 +84,10 @@
     </dependencies>
     <build>
         <plugins>
-            <!-- build-helper-maven-plugin -->
+            <!-- scala-maven-plugin -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

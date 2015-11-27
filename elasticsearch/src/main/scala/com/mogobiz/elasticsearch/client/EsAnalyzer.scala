@@ -51,10 +51,7 @@ object EsAnalyzer{
     }
     if(index){
       id += "_index_analyzer"
-      language match {
-        case "*" =>
-        case _   => filter = filter ++: Seq(nGram_filter.id)
-      }
+      filter = filter ++: Seq(nGram_filter.id)
     }
     else{
       id += "_search_analyzer"

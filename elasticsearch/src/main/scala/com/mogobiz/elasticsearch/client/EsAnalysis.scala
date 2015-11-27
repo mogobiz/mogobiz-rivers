@@ -30,7 +30,7 @@ case class EsAnalysis(filters:Seq[EsFilter], analyzers:Seq[EsAnalyzer], tokenize
 object EsAnalysis {
   def apply(languages:Set[String]):EsAnalysis = apply(languages, Seq.empty)
   def apply(languages:Set[String], tokenizers:Seq[EsTokenizer]):EsAnalysis = EsAnalysis(
-    filters(languages).values.flatten.toSeq,
+    filters(languages).values.flatten.toSeq ++: Seq(nGram_filter),
     analyzers(languages).values.flatten.toSeq,
     tokenizers)
 }

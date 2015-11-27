@@ -20,7 +20,7 @@ case class StopFilter(override val id:String, stopWords:Seq[String]) extends EsF
 }
 
 case class NGramFilter(override val id:String, minGram:Int, maxGram:Int) extends EsFilter{
-  override lazy val build = Map("type" -> "nGram", "options" -> Map("min_gram"->minGram, "max_gram" -> maxGram))
+  override lazy val build = Map("type" -> "nGram", "min_gram"->minGram, "max_gram" -> maxGram)
 }
 
 object EsFilter {
@@ -68,7 +68,7 @@ object EsFilter {
 
   lazy val filters: Set[String] => Map[String, Seq[EsFilter]] = languages => {
     Map(
-      "*"  -> Seq(nGram_filter),
+      "*"  -> Seq(),
       "ar" -> Seq(ar_stop_filter),
       "bg" -> Seq(bg_stop_filter),
       "ca" -> Seq(ca_stop_filter),

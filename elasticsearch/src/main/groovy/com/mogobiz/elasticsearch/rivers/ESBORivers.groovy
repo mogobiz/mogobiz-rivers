@@ -14,7 +14,6 @@ import scala.concurrent.Future
 
 /**
  *
- * Created by stephane.manciot@ebiznext.com on 11/07/2015.
  */
 final class ESBORivers extends AbstractESRivers<ESBORiver> {
 

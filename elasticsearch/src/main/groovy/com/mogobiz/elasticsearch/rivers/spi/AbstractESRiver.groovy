@@ -13,7 +13,6 @@ import com.mogobiz.elasticsearch.client.ESRequest
 
 /**
  *
- * Created by stephane.manciot@ebiznext.com on 05/03/2014.
  */
 abstract class AbstractESRiver<E> extends AbstractRiver<E, ESClient> implements ESRiver{
 

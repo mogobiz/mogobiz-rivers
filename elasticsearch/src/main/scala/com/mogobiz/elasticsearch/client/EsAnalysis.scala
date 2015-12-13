@@ -11,7 +11,6 @@ import scala.collection.JavaConversions
 
 /**
  *
- * Created by smanciot on 10/08/14.
  */
 case class EsAnalysis(filters:Seq[EsFilter], analyzers:Seq[EsAnalyzer], tokenizers:Seq[EsTokenizer] = Seq.empty) extends EsBuilder{
   override lazy val build = Map(

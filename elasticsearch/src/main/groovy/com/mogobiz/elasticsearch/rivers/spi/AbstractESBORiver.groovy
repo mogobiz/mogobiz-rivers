@@ -9,7 +9,6 @@ import com.mogobiz.elasticsearch.rivers.mappings.ESMappings
 
 /**
  *
- * Created by smanciot on 11/07/15.
  */
 abstract class AbstractESBORiver<E> extends AbstractESRiver<E> implements ESBORiver{
 

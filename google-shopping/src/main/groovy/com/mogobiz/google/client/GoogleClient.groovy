@@ -33,7 +33,6 @@ import java.util.concurrent.Callable
 
 /**
  *
- * Created by stephane.manciot@ebiznext.com on 06/05/2014.
  */
 @Slf4j
 final class GoogleClient implements Client{

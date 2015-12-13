@@ -21,7 +21,6 @@ import static java.util.concurrent.TimeUnit.SECONDS
 
 /**
  *
- * Created by smanciot on 04/06/14.
  */
 class GoogleCategoryReaderTest extends GroovyTestCase{
 

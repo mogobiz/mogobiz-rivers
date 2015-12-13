@@ -13,7 +13,6 @@ import org.reactivestreams.Subscriber
 
 /**
  *
- * Created by smanciot on 10/03/15.
  */
 object ESRiversFlow {
 

@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat
 
 /**
  *
- * Created by smanciot on 14/05/2014.
  */
 abstract class AbstractRiver<E, T extends Client> implements River {
 

@@ -20,7 +20,6 @@ import scala.concurrent.Future
 
 /**
  *
- * Created by stephane.manciot@ebiznext.com on 16/02/2014.
  */
 final class ESRivers extends AbstractESRivers<ESRiver> {
 

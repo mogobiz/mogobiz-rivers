@@ -11,7 +11,6 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 /**
- * Created by stephane.manciot@ebiznext.com on 14/05/2014.
  */
 public interface River {
 

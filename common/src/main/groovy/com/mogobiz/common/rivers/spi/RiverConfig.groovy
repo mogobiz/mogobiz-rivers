@@ -7,7 +7,6 @@ package com.mogobiz.common.rivers.spi
 import com.mogobiz.common.client.ClientConfig
 
 /**
- * Created by stephane.manciot@ebiznext.com on 14/05/2014.
  */
 class RiverConfig {
     Long idCatalog

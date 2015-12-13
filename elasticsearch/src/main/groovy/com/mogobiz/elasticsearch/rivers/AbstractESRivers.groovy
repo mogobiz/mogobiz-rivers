@@ -25,7 +25,6 @@ import scala.concurrent.Future
 
 /**
  *
- * Created by smanciot on 11/07/15.
  */
 abstract class AbstractESRivers<R extends River> extends Rivers<R>{
 

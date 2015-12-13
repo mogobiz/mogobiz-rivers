@@ -10,7 +10,6 @@ import com.mogobiz.common.rivers.spi.RiverConfig
 
 /**
  *
- * Created by smanciot on 16/05/2014.
  */
 class GoogleRiversTest extends GroovyTestCase {
 

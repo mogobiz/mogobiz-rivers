@@ -6,7 +6,6 @@ import static scala.collection.JavaConversions.asScalaSet
 
 /**
  *
- * Created by smanciot on 27/11/15.
  */
 class EsAnalysisTest extends GroovyTestCase{
 

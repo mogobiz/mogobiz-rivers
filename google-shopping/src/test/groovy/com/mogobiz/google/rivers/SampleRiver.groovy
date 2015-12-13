@@ -10,7 +10,6 @@ import com.mogobiz.google.client.GoogleClient
 import com.mogobiz.google.rivers.spi.AbstractGoogleRiver
 
 /**
- * Created by smanciot on 16/05/2014.
  */
 class SampleRiver extends AbstractGoogleRiver<Sample> {
 

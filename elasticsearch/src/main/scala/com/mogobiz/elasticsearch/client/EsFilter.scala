@@ -7,7 +7,6 @@ import com.mogobiz.elasticsearch._
 
 /**
  *
- * Created by smanciot on 10/08/14.
  */
 trait EsFilter extends EsProperty
 

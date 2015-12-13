@@ -18,7 +18,6 @@ import java.util.*;
 
 /**
  *
- * Created by smanciot on 14/08/14.
  */
 public class CfpClientTest {
     @Test

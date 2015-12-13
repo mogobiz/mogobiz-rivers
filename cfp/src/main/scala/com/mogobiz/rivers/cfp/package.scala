@@ -12,7 +12,6 @@ import scala.util.Try
 
 /**
  *
- * Created by smanciot on 14/08/14.
  */
 package object cfp {
 

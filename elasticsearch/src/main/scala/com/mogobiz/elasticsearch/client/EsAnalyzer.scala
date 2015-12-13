@@ -8,7 +8,6 @@ import com.mogobiz.elasticsearch.client.EsFilter._
 
 /**
  *
- * Created by smanciot on 10/08/14.
  */
 case class EsAnalyzer(override val id:String, tokenizer:String, filter:Seq[String], charFilter:Seq[String], index:Boolean, lang:String = "*") extends EsProperty{
   override lazy val build = Map("type" -> "custom", "tokenizer" -> tokenizer, "filter" -> filter, "char_filter" -> charFilter)

@@ -12,7 +12,6 @@ import groovy.util.slurpersupport.GPathResult
 
 /**
  *
- * Created by stephane.manciot@ebiznext.com on 06/05/2014.
  */
 class GoogleClientTest extends GroovyTestCase{
 

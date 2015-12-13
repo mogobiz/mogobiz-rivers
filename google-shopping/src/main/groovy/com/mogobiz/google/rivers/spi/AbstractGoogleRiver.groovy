@@ -12,7 +12,6 @@ import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.google.client.GoogleClient
 
 /**
- * Created by smanciot on 16/05/2014.
  */
 abstract class AbstractGoogleRiver<E> extends AbstractRiver<E, GoogleClient> implements GoogleRiver{
 

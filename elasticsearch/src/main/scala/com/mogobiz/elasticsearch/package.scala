@@ -7,7 +7,6 @@ import scala.collection.JavaConversions._
 
 /**
   *
-  * Created by smanciot on 09/11/15.
   */
 package object elasticsearch {
 

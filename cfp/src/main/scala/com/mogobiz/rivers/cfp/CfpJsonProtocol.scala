@@ -9,7 +9,6 @@ import spray.httpx.Json4sSupport
 
 /**
  *
- * Created by smanciot on 27/08/14.
  */
 object CfpJsonProtocol extends Json4sSupport{
 

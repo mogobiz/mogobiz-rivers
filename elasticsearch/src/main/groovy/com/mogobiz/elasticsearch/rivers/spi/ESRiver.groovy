@@ -9,7 +9,6 @@ import com.mogobiz.elasticsearch.client.ESMapping
 
 /**
  *
- * Created by stephane.manciot@ebiznext.com on 16/02/2014.
  */
 public interface ESRiver extends River{
 

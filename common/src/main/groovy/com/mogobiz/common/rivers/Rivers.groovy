@@ -21,7 +21,6 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 /**
- * Created by smanciot on 16/05/2014.
  */
 abstract class Rivers<T extends River> {
 

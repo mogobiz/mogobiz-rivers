@@ -19,6 +19,7 @@
         <module>elasticsearch-flow</module>
         <module>google-shopping</module>
         <module>cfp</module>
+        <module>mirakl</module>
     </modules>
     <!-- distributionManagement -->
     <distributionManagement>

@@ -500,16 +500,17 @@
           },
           "startDate": {
             "type": "date",
-            "format": "date_time"
+            "format": "dateOptionalTime"
           },
           "endDate": {
             "type": "date",
-            "format": "date_time"
+            "format": "dateOptionalTime"
           },
           "bODelivery": {
             "properties": {
               "status": {
-                "type": "string"
+                "type": "string",
+                "index": "not_analyzed"
               },
               "tracking": {
                 "type": "string"
@@ -556,16 +557,19 @@
         "type": "double"
       },
       "dateCreated": {
-        "type": "long"
+        "type": "date",
+        "format": "dateOptionalTime"
       },
       "lastUpdated": {
-        "type": "long"
+        "type": "date",
+        "format": "dateOptionalTime"
       },
       "price": {
         "type": "long"
       },
       "status": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "transactionUuid": {
         "type": "string"

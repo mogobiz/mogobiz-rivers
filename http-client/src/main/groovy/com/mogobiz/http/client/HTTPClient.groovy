@@ -9,6 +9,7 @@ import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.FilePart
 import com.mogobiz.http.client.multipart.ParamPart
 import com.mogobiz.http.client.multipart.Part
+import com.mogobiz.tools.MimeTypeTools
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
@@ -276,9 +277,9 @@ final class HTTPClient {
                     writer.append("--" + boundary).append(CRLF)
                     writer.append("Content-Disposition: form-data; name=\"" + key
                             + "\"; filename=\"" + filePart.fileName + "\"").append(CRLF)
-                    String contentType = (binary ? (filePart.contentType ? filePart.contentType :
-                            URLConnection.guessContentTypeFromName(filePart.fileName)) :
-                            "text/plain; charset=" + charset)
+                    String contentType = (filePart.contentType ? filePart.contentType : binary ? (
+                            MimeTypeTools.detectMimeType(filePart.bodyPart)+"; charset=$charset") :
+                            "text/plain; charset=$charset")
                     writer.append("Content-Type: " + contentType).append(CRLF)
                     if(binary){
                         writer.append("Content-Transfer-Encoding: binary").append(CRLF)
@@ -300,7 +301,7 @@ final class HTTPClient {
             }
 
             // End of multipart/form-data.
-            writer.append("--" + boundary + "--").append(CRLF)
+            writer.append("--" + boundary + "--").append(CRLF).flush()
 
             return handleRedirection(conn, config, follow)
         }
@@ -312,7 +313,7 @@ final class HTTPClient {
         }
     }
 
-    def closeConnection(HttpURLConnection conn) {
+    def static closeConnection(HttpURLConnection conn) {
         try {
             conn?.inputStream?.close()
             conn?.outputStream?.close()
@@ -323,7 +324,7 @@ final class HTTPClient {
         }
     }
 
-    def String getText(Map config = [:], HttpURLConnection conn) {
+    def static String getText(Map config = [:], HttpURLConnection conn) {
         String charset = config['charset']
         String text = conn.responseCode >= 400 ? conn.errorStream?.getText(charset ? charset : DEFAULT_CHARSET) :
                 conn.content?.getText(charset ? charset : DEFAULT_CHARSET)
@@ -334,7 +335,7 @@ final class HTTPClient {
         return text
     }
 
-    def GPathResult parseTextAsXML(Map config = [:], HttpURLConnection conn, SAXParser parser = null) {
+    def static GPathResult parseTextAsXML(Map config = [:], HttpURLConnection conn, SAXParser parser = null) {
         def text = getText(config, conn)
         def slurper = parser ? new XmlSlurper(parser) : new XmlSlurper()
         try {
@@ -346,7 +347,7 @@ final class HTTPClient {
         }
     }
 
-    def Map parseTextAsJSON(Map config = [:], HttpURLConnection conn) {
+    def static Map parseTextAsJSON(Map config = [:], HttpURLConnection conn) {
         try {
             return new JsonSlurper().parseText(getText(config, conn)) as Map
         }
@@ -356,7 +357,7 @@ final class HTTPClient {
         }
     }
 
-    def SAXParser getHtmlParser(Map config = [:]) {
+    def static SAXParser getHtmlParser(Map config = [:]) {
         def parser = new SAXParser()
         String charset = config['charset']
         parser.setProperty('http://cyberneko.org/html/properties/default-encoding', charset ? charset : DEFAULT_CHARSET)

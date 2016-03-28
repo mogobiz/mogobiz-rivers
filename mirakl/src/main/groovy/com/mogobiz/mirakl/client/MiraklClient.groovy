@@ -48,6 +48,16 @@ final class MiraklClient implements Client{
         return null
     }
 
+    /******************************************************************************************************************
+     * Categories api
+     ******************************************************************************************************************/
+
+    /**
+     * CA01 - Update categories from Operator Information System
+     * @param config - river configuration
+     * @param categories - categories to update
+     * @return synchronization id
+     */
     static Map synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
         def buffer = new StringBuffer(String.format("\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"%n"))
         categories?.each {
@@ -59,16 +69,42 @@ final class MiraklClient implements Client{
         synchronize(config, "/api/categories/synchros", "categories.csv", data)
     }
 
+    /**
+     * CA02 - Get status of the categories synchronisation
+     * @param config - river configuration
+     * @param synchro - synchronization id
+     * @return status of the categories synchronisation
+     */
     static Map refreshCategoriesSynchronizationStatus(RiverConfig config, Integer synchro){
         refreshSynchronizationStatus(config, "/api/categories/synchros", synchro)
     }
 
+    /**
+     * add headers to authenticate Operator
+     * @param config - river configuration
+     * @return http headers with authorization
+     */
     private static HttpHeaders authenticate(RiverConfig config){
         def headers = new HttpHeaders()
         headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
         headers
     }
 
+    /******************************************************************************************************************
+     * Synchronization api
+     ******************************************************************************************************************/
+
+    /**
+     * Synchronization from Operator Information System
+     * @param config - river configuration
+     * @param api - api
+     * @param fileName - file name
+     * @param data - multipart data
+     * @param partName - name of the multipart
+     * @param mimeType - mime type
+     * @param charset - charset
+     * @return synchronization id
+     */
     private static Map synchronize(
             RiverConfig config,
             String api,
@@ -102,6 +138,13 @@ final class MiraklClient implements Client{
         ret
     }
 
+    /**
+     * Get status of the synchronisation
+     * @param config - river configuration
+     * @param api - api
+     * @param synchro - synchronization id
+     * @return status of the synchronisation
+     */
     private static Map refreshSynchronizationStatus(RiverConfig config, String api, Integer synchro){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")

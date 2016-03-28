@@ -1,6 +1,7 @@
 package com.mogobiz.mirakl.client
 
 import com.mogobiz.common.client.BulkAction
+import com.mogobiz.mirakl.client.domain.MiraklCategory
 
 /**
  *

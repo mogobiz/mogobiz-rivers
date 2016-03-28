@@ -3,7 +3,6 @@
  */
 package com.mogobiz.mirakl.client
 
-import com.mogobiz.common.client.BulkAction
 import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Client
@@ -13,6 +12,7 @@ import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
+import com.mogobiz.mirakl.client.domain.MiraklCategory
 import groovy.util.logging.Slf4j
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -125,14 +125,5 @@ final class MiraklClient implements Client{
             closeConnection(conn)
         }
         ret
-    }
-}
-class MiraklCategory extends BulkItem{
-    String label
-    String logisticClass = ''
-
-    @Override
-    public String toString() {
-        return "$id;$label;$logisticClass;${action == BulkAction.DELETE ? "delete" : "update"};${parent?parent.id:''}";
     }
 }

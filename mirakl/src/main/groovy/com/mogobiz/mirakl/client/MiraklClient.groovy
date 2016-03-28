@@ -104,7 +104,7 @@ final class MiraklClient implements Client{
         def ret = null
         try{
             conn = client.doGet(
-                    [debug: true],
+                    [debug: config.debug],
                     "${config?.clientConfig?.url}/api/shops",
                     [:],
                     headers,
@@ -154,7 +154,7 @@ final class MiraklClient implements Client{
         def ret = null
         try{
             conn = client.doMultipart(
-                    [debug: true],
+                    [debug: config.debug],
                     "${config?.clientConfig?.url}$api",
                     [part],
                     headers,
@@ -186,7 +186,7 @@ final class MiraklClient implements Client{
         def ret = null
         try{
             conn = client.doGet(
-                    [debug: true],
+                    [debug: config.debug],
                     "${config?.clientConfig?.url}$api/$synchro",
                     [:],
                     headers,

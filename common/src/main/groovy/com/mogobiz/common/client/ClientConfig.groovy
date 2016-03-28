@@ -26,6 +26,10 @@ class ClientConfig {
 }
 
 class Credentials{
+    /**
+     * api key - mirakl
+     */
+    String apiKey
     String client_id
     String client_secret
     String client_token

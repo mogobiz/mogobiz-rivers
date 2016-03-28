@@ -75,6 +75,19 @@
             <scope>test</scope>
         </dependency>
 
+        <!--
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+        //-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+
         <!-- junit -->
         <dependency>
             <groupId>junit</groupId>
@@ -92,6 +105,26 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jsonschema2pojo</groupId>
+                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
+                <version>0.4.22</version>
+                <configuration>
+                    <sourceDirectory>${basedir}/src/main/resources/schemas</sourceDirectory>
+                    <targetPackage>com.mogobiz.mirakl.client.domain</targetPackage>
+                    <includeAdditionalProperties>false</includeAdditionalProperties>
+                    <includeAccessors>true</includeAccessors>
+                    <includeHashcodeAndEquals>false</includeHashcodeAndEquals>
+                    <includeToString>false</includeToString>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

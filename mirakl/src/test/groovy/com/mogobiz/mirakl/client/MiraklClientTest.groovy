@@ -42,6 +42,13 @@ class MiraklClientTest extends GroovyTestCase{
         assertFalse(map.has_error_report as Boolean)
     }
 
+    void testSearchShops(){
+        def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: MIRAKL_API_KEY))
+        def riverConfig = new RiverConfig(clientConfig: clientConfig)
+        def searchShopsResponse = MiraklClient.searchShops(riverConfig)
+        assertNotNull(searchShopsResponse)
+    }
+
     private static MiraklCategory createCategory(
             int indice,
             String logisticClass = 'A',

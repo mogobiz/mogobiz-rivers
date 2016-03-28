@@ -3,6 +3,7 @@
  */
 package com.mogobiz.mirakl.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Client
@@ -13,11 +14,14 @@ import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
 import com.mogobiz.mirakl.client.domain.MiraklCategory
+import com.mogobiz.mirakl.client.domain.SearchShopsResponse
+import com.mogobiz.mirakl.client.domain.Shop
 import groovy.util.logging.Slf4j
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import static com.mogobiz.http.client.HTTPClient.*
+import static com.mogobiz.mirakl.client.domain.Shop.*
 
 /**
  *
@@ -88,6 +92,37 @@ final class MiraklClient implements Client{
         def headers = new HttpHeaders()
         headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
         headers
+    }
+
+    /******************************************************************************************************************
+     * Shop api
+     ******************************************************************************************************************/
+
+    static SearchShopsResponse searchShops(RiverConfig config){
+        def headers= authenticate(config)
+        headers.setHeader("Accept", "application/json")
+        def conn = null
+        def ret = null
+        try{
+            conn = client.doGet(
+                    [debug: true],
+                    "${config?.clientConfig?.url}/api/shops",
+                    [:],
+                    headers,
+                    true
+            )
+            def responseCode = conn.responseCode
+            if(responseCode != 200){
+                log.error("$responseCode: ${conn.responseMessage}")
+            }
+            def text = getText([debug: config.debug], conn)
+            def objectMapper = new ObjectMapper()
+            ret = objectMapper.readValue(text, SearchShopsResponse.class)
+        }
+        finally {
+            closeConnection(conn)
+        }
+        ret
     }
 
     /******************************************************************************************************************
@@ -170,3 +205,12 @@ final class MiraklClient implements Client{
         ret
     }
 }
+
+class MiraklShopRequest{
+    List<String> shop_ids = []
+    PremiumState premium = PremiumState.DEFAULT
+    ShopState state
+    Date updated_since
+    boolean paginate = true
+}
+

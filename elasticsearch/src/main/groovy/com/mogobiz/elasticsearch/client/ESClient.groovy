@@ -346,7 +346,7 @@ final class ESClient implements Client {
             default :
                 def fieldMap = [type: type.name().toLowerCase(), index: property.index.name().toLowerCase()]
                 if (TYPE.DATE.equals(type)) {
-                    fieldMap['format'] = property.format ? property.format : 'date_optional_time'
+                    fieldMap['format'] = property.format ? property.format : 'dateOptionalTime'
                     currentMap[property.name] = fieldMap
                 } else {
                     currentMap[property.name] = fieldMap

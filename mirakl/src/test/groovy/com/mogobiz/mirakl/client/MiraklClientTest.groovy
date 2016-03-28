@@ -30,8 +30,9 @@ class MiraklClientTest extends GroovyTestCase{
         map.each {k, v ->
             log.info("$k: $v")
         }
-        assertNotNull(map.synchro_id)
-        log.info(map.synchro_id)
+        Integer synchro_id = map.synchro_id as Integer //2001
+        assertNotNull(synchro_id)
+        log.info(synchro_id.toString())
     }
 
     private static MiraklCategory createCategory(

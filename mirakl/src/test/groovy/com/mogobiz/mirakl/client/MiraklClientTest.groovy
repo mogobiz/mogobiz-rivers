@@ -45,7 +45,7 @@ class MiraklClientTest extends GroovyTestCase{
     void testSearchShops(){
         def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: MIRAKL_API_KEY))
         def riverConfig = new RiverConfig(clientConfig: clientConfig)
-        def searchShopsResponse = MiraklClient.searchShops(riverConfig)
+        def searchShopsResponse = MiraklClient.searchShops(riverConfig, null)
         assertNotNull(searchShopsResponse)
     }
 

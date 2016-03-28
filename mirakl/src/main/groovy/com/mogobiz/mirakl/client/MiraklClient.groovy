@@ -14,8 +14,7 @@ import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
 import com.mogobiz.mirakl.client.domain.MiraklCategory
-import com.mogobiz.mirakl.client.domain.SearchShopsResponse
-import com.mogobiz.mirakl.client.domain.Shop
+import com.mogobiz.mirakl.client.domain.SearchShopResponse
 import groovy.util.logging.Slf4j
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -98,7 +97,7 @@ final class MiraklClient implements Client{
      * Shop api
      ******************************************************************************************************************/
 
-    static SearchShopsResponse searchShops(RiverConfig config){
+    static SearchShopResponse searchShops(RiverConfig config, SearchShopRequest request){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -117,7 +116,7 @@ final class MiraklClient implements Client{
             }
             def text = getText([debug: config.debug], conn)
             def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, SearchShopsResponse.class)
+            ret = objectMapper.readValue(text, SearchShopResponse.class)
         }
         finally {
             closeConnection(conn)
@@ -206,7 +205,7 @@ final class MiraklClient implements Client{
     }
 }
 
-class MiraklShopRequest{
+class SearchShopRequest{
     List<String> shop_ids = []
     PremiumState premium = PremiumState.DEFAULT
     ShopState state

@@ -30,9 +30,15 @@ class MiraklClientTest extends GroovyTestCase{
         map.each {k, v ->
             log.info("$k: $v")
         }
-        Integer synchro_id = map.synchro_id as Integer //2001
-        assertNotNull(synchro_id)
-        log.info(synchro_id.toString())
+        Integer synchro = map.synchro_id as Integer
+        assertNotNull(synchro)
+        log.info(synchro.toString())
+        map = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
+        assertNotNull(map)
+        map.each {k, v ->
+            log.info("$k: $v")
+        }
+        assertFalse(map.has_error_report as Boolean)
     }
 
     private static MiraklCategory createCategory(

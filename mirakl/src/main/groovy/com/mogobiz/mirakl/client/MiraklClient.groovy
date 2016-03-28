@@ -56,7 +56,28 @@ final class MiraklClient implements Client{
         log.debug(buffer.toString())
         final charset = DEFAULT_CHARSET
         byte[] data = buffer.toString().getBytes(charset)
-        def part = MultipartFactory.createFilePart("file", "categories.csv", data, false, "text/csv; charset=$charset", charset)
+        synchronize(config, "/api/categories/synchros", "categories.csv", data)
+    }
+
+    static Map refreshCategoriesSynchronizationStatus(RiverConfig config, Integer synchro){
+        refreshSynchronizationStatus(config, "/api/categories/synchros", synchro)
+    }
+
+    private static HttpHeaders authenticate(RiverConfig config){
+        def headers = new HttpHeaders()
+        headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
+        headers
+    }
+
+    private static Map synchronize(
+            RiverConfig config,
+            String api,
+            String fileName,
+            byte[] data,
+            String partName = "file",
+            String mimeType = "text/csv",
+            String charset = DEFAULT_CHARSET){
+        def part = MultipartFactory.createFilePart(partName, fileName, data, false, "$mimeType; charset=$charset", charset)
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -64,7 +85,7 @@ final class MiraklClient implements Client{
         try{
             conn = client.doMultipart(
                     [debug: true],
-                    "${config?.clientConfig?.url}/api/categories/synchros",
+                    "${config?.clientConfig?.url}$api",
                     [part],
                     headers,
                     true
@@ -81,12 +102,30 @@ final class MiraklClient implements Client{
         ret
     }
 
-    private static HttpHeaders authenticate(RiverConfig config){
-        def headers = new HttpHeaders()
-        headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
-        headers
+    private static Map refreshSynchronizationStatus(RiverConfig config, String api, Integer synchro){
+        def headers= authenticate(config)
+        headers.setHeader("Accept", "application/json")
+        def conn = null
+        def ret = null
+        try{
+            conn = client.doGet(
+                    [debug: true],
+                    "${config?.clientConfig?.url}$api/$synchro",
+                    [:],
+                    headers,
+                    true
+            )
+            def responseCode = conn.responseCode
+            if(responseCode != 200){
+                log.error("$responseCode: ${conn.responseMessage}")
+            }
+            ret = parseTextAsJSON(conn)
+        }
+        finally {
+            closeConnection(conn)
+        }
+        ret
     }
-
 }
 class MiraklCategory extends BulkItem{
     String label

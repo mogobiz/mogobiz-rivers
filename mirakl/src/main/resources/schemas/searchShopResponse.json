@@ -12,8 +12,8 @@
       "properties": {
         "approval_delay": { "type": "integer" },
         "approval_rate": { "type": "integer" },
-        "banner": { "type": "string" },
-        "billing_info": {},
+        "banner": { "type": "string", "format": "uri" },
+        "billing_info": {"type": "object", "$ref": "#/definitions/billingInfo"},
         "channels": { "type": "array", "items": {"type": "string"}, "uniqueItems": true },
         "closed_from": {"type": "string", "format": "date-time"},
         "closed_to": {"type": "string", "format": "date-time"},
@@ -46,6 +46,11 @@
         "shop_id": {"type": "integer"},
         "shop_name": {"type": "string"},
         "shop_state": {"enum": ["OPEN", "CLOSE", "SUSPENDED"]}
+      }
+    },
+    "billingInfo": {
+      "properties": {
+        "bank_city": {"type": "string"}
       }
     },
     "contactInformations": {

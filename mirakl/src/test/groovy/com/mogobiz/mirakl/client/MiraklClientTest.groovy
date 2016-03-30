@@ -48,6 +48,7 @@ class MiraklClientTest extends GroovyTestCase{
         def riverConfig = new RiverConfig(clientConfig: clientConfig)
         def searchShopsResponse = MiraklClient.searchShops(riverConfig, new SearchShopsRequest())
         assertNotNull(searchShopsResponse)
+        assertTrue(searchShopsResponse.shops?.size() > 0)
     }
 
     private static MiraklCategory createCategory(

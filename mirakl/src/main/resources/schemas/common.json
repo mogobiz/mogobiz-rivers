@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "common Mirakl definitions",
+  "definitions": {
+    "address": {
+      "javaType": "com.mogobiz.mirakl.client.domain.Address",
+      "properties":{
+        "city": {"type": "string"},
+        "civility": {"type": "string"},
+        "country": {"type": "string"},
+        "firstname": {"type": "string"},
+        "lastname": {"type": "string"},
+        "phone": {"type": "string"},
+        "phone_secondary": {"type": "string"},
+        "state": {"type": "string"},
+        "street1": {"type": "string"},
+        "street2": {"type": "string"},
+        "zip_code": {"type": "string"}
+      }
+    },
+    "billingInfo": {
+      "javaType": "com.mogobiz.mirakl.client.domain.BillingInfo",
+      "properties": {
+        "bank_city": {"type": "string"},
+        "bank_name": {"type": "string"},
+        "bank_street": {"type": "string"},
+        "bic": {"type": "string"},
+        "iban": {"type": "string"},
+        "owner": {"type": "string"},
+        "zip_code": {"type": "string"}
+      }
+    },
+    "contactInfo": {
+      "javaType": "com.mogobiz.mirakl.client.domain.ContactInfo",
+      "properties":{
+        "city": {"type": "string"},
+        "civility": {"type": "string"},
+        "country": {"type": "string"},
+        "email": {"type": "string", "format": "email"},
+        "fax": {"type": "string"},
+        "firstname": {"type": "string"},
+        "lastname": {"type": "string"},
+        "phone": {"type": "string"},
+        "phone_secondary": {"type": "string"},
+        "state": {"type": "string"},
+        "street1": {"type": "string"},
+        "street2": {"type": "string"},
+        "web_site": {"type": "string", "format": "uri"},
+        "zip_code": {"type": "string"}
+      }
+    },
+    "paymentDetails":{
+      "javaType": "com.mogobiz.mirakl.client.domain.PaymentDetails",
+      "properties":{
+        "paid_balance": {"type": "number"},
+        "pay_subscription": {"type": "boolean"},
+        "payable_balance": {"type": "number"},
+        "payment_blocked": {"type": "boolean"},
+        "pending_balance": {"type": "number"},
+        "subscription_free_from": {"type": "string", "format": "date-time"},
+        "subscription_free_to": {"type": "string", "format": "date-time"}
+      }
+    },
+    "additionalField": {
+      "javaType": "com.mogobiz.mirakl.client.domain.AdditionalField",
+      "properties":{
+        "code": {"type": "string"},
+        "value": {"type": "string"}
+      },
+      "required": ["code", "value"]
+    },
+    "paymentInfo":{
+      "javaType": "com.mogobiz.mirakl.client.domain.PaymentInfo",
+      "properties":{
+        "owner": {"type": "string"}
+      }
+    },
+    "proDetails":{
+      "javaType": "com.mogobiz.mirakl.client.domain.ProDetails",
+      "properties":{
+        "corporate_name": {"type": "string"},
+        "identification_number": {"type": "string"},
+        "tax_identification_number": {"type": "string"},
+        "VAT_number": {"type": "string"}
+      }
+    },
+    "shipping": {
+      "javaType": "com.mogobiz.mirakl.client.domain.Shipping",
+      "properties":{
+        "shipping_free_amount": {"type": "number"},
+        "shipping_type_code": {"type": "string"},
+        "shipping_type_label": {"type": "string"},
+        "shipping_zone_code": {"type": "string"},
+        "shipping_zone_label": {"type": "string"}
+      },
+      "required": ["shipping_type_code", "shipping_type_label", "shipping_zone_code", "shipping_zone_label"]
+    },
+    "shop": {
+      "type": "object",
+      "javaType": "com.mogobiz.mirakl.client.domain.Shop",
+      "properties": {
+        "currency_iso_code": {"type": "string", "format": "^[A-Z]{3}$"},
+        "description": {"type": "string"},
+        "immunity_date": {"type": "string", "format": "date-time"},
+        "is_professional": {"type": "boolean"},
+        "operator_internal_id": {"type": "string"},
+        "payment_info": {"type": "object", "$ref": "#/definitions/paymentInfo"},
+        "premium": {"type": "boolean"},
+        "pro_details": {"type": "object", "$ref": "#/definitions/proDetails"},
+        "return_policy": {"type": "string"},
+        "shipping_country": {"type": "string"},
+        "shop_additional_fields": {"type": "array", "items": {"type": "object", "$ref": "#/definitions/additionalField"}},
+        "shop_name": {"type": "string"}
+      },
+      "required": ["currency_iso_code", "is_professional", "premium", "pro_details", "shop_additional_fields", "shop_name"]
+    },
+    "shopState": {"enum": ["OPEN", "CLOSE", "SUSPENDED"]},
+    "user": {
+      "javaType": "com.mogobiz.mirakl.client.domain.User",
+      "properties": {
+        "email": {"type": "string", "format": "email"},
+        "locale": {"type": "string"},
+        "password": {"type": "string"}
+      }
+    },
+    "premiumState": {"enum": ["DEFAULT", "PREMIUM", "NOT_PREMIUM"]}
+  }
+}

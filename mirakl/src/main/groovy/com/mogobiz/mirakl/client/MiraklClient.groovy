@@ -14,13 +14,13 @@ import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
 import com.mogobiz.mirakl.client.domain.MiraklCategory
-import com.mogobiz.mirakl.client.domain.SearchShopResponse
+import com.mogobiz.mirakl.client.io.SearchShops
 import groovy.util.logging.Slf4j
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import static com.mogobiz.http.client.HTTPClient.*
-import static com.mogobiz.mirakl.client.domain.Shop.*
+import static com.mogobiz.mirakl.client.domain.OutputShop.*
 
 /**
  *
@@ -97,7 +97,7 @@ final class MiraklClient implements Client{
      * Shop api
      ******************************************************************************************************************/
 
-    static SearchShopResponse searchShops(RiverConfig config, SearchShopRequest request){
+    static SearchShops searchShops(RiverConfig config, SearchShopRequest request){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -116,7 +116,7 @@ final class MiraklClient implements Client{
             }
             def text = getText([debug: config.debug], conn)
             def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, SearchShopResponse.class)
+            ret = objectMapper.readValue(text, SearchShops.class)
         }
         finally {
             closeConnection(conn)

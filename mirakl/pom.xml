@@ -117,6 +117,7 @@
                     <includeAccessors>true</includeAccessors>
                     <includeHashcodeAndEquals>false</includeHashcodeAndEquals>
                     <includeToString>false</includeToString>
+                    <useLongIntegers>true</useLongIntegers>
                 </configuration>
                 <executions>
                     <execution>

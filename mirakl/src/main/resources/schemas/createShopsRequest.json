@@ -1,31 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "Mirakl Shop",
+  "description": "Create shops request",
   "type": "object",
-  "javaType": "com.mogobiz.mirakl.client.io.CreateShops",
+  "javaType": "com.mogobiz.mirakl.client.io.CreateShopsRequest",
   "properties": {
-    "shops": { "type": "array", "items": {"type": "object", "$ref": "#/definitions/externalShop"} }
+    "shops": { "type": "array", "items": {"type": "object", "$ref": "common.json#/definitions/inputShop"} }
   },
-  "required": [],
-  "definitions": {
-    "externalShop": {
-      "type": "object",
-      "extends": {"$ref": "common.json#/definitions/shop"},
-      "javaType": "com.mogobiz.mirakl.client.domain.InputShop",
-      "properties": {
-        "address": {"type": "object", "$ref": "common.json#/definitions/address"},
-        "closed_from_date": {"type": "string", "format": "date-time"},
-        "closed_to_date": {"type": "string", "format": "date-time"},
-        "email": {"type": "string", "format": "email"},
-        "existing_user": {"type": "object", "$ref": "common.json#/definitions/user"},
-        "fax": {"type": "string"},
-        "new_user": {"type": "object", "$ref": "common.json#/definitions/user"},
-        "password": {"type": "string"},
-        "payment_blocked": {"type": "boolean"},
-        "suspend": {"type": "boolean"},
-        "web_site": {"type": "string"}
-      },
-      "required": []
-    }
-  }
+  "required": []
 }

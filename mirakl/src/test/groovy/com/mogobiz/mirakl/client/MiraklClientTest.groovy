@@ -5,6 +5,7 @@ import com.mogobiz.common.client.ClientConfig
 import com.mogobiz.common.client.Credentials
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.mirakl.client.domain.MiraklCategory
+import com.mogobiz.mirakl.client.io.SearchShopsRequest
 
 /**
  *
@@ -45,7 +46,7 @@ class MiraklClientTest extends GroovyTestCase{
     void testSearchShops(){
         def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: MIRAKL_API_KEY))
         def riverConfig = new RiverConfig(clientConfig: clientConfig)
-        def searchShopsResponse = MiraklClient.searchShops(riverConfig, null)
+        def searchShopsResponse = MiraklClient.searchShops(riverConfig, new SearchShopsRequest())
         assertNotNull(searchShopsResponse)
     }
 

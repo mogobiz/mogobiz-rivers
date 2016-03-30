@@ -14,13 +14,13 @@ import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
 import com.mogobiz.mirakl.client.domain.MiraklCategory
-import com.mogobiz.mirakl.client.io.SearchShops
+import com.mogobiz.mirakl.client.io.SearchShopsRequest
+import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import groovy.util.logging.Slf4j
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import static com.mogobiz.http.client.HTTPClient.*
-import static com.mogobiz.mirakl.client.domain.OutputShop.*
 
 /**
  *
@@ -97,16 +97,22 @@ final class MiraklClient implements Client{
      * Shop api
      ******************************************************************************************************************/
 
-    static SearchShops searchShops(RiverConfig config, SearchShopRequest request){
+    static SearchShopsResponse searchShops(RiverConfig config, SearchShopsRequest request){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
         try{
+            def params = [:]
+            params << [shop_ids: request?.shopIds?.join(",")]
+            params << [premium: request?.premium?.toString()?:SearchShopsRequest.Premium.ALL.toString()]
+            params << [state: request?.state?.toString()]
+            params << [updated_since: request?.updatedSince?.toString()]
+            params << [paginate: request?.paginate]
             conn = client.doGet(
                     [debug: config.debug],
                     "${config?.clientConfig?.url}/api/shops",
-                    [:],
+                    params,
                     headers,
                     true
             )
@@ -116,7 +122,7 @@ final class MiraklClient implements Client{
             }
             def text = getText([debug: config.debug], conn)
             def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, SearchShops.class)
+            ret = objectMapper.readValue(text, SearchShopsResponse.class)
         }
         finally {
             closeConnection(conn)
@@ -203,13 +209,5 @@ final class MiraklClient implements Client{
         }
         ret
     }
-}
-
-class SearchShopRequest{
-    List<String> shop_ids = []
-    PremiumState premium = PremiumState.DEFAULT
-    ShopState state
-    Date updated_since
-    boolean paginate = true
 }
 

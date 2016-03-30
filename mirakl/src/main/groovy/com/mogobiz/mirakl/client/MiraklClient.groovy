@@ -14,6 +14,7 @@ import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
 import com.mogobiz.mirakl.client.domain.MiraklCategory
+import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
@@ -75,16 +76,16 @@ final class MiraklClient implements Client{
     }
 
     /**
-     * CA02 - Get status of the categories synchronisation
+     * CA02 - refresh categories synchronisation status
      * @param config - river configuration
      * @param synchro - synchronization id
      * @return status of the categories synchronisation
      */
-    static SynchronizationStatusResponse refreshCategoriesSynchronizationStatus(RiverConfig config, Long synchro){
+    static CategoriesSynchronizationStatusResponse refreshCategoriesSynchronizationStatus(RiverConfig config, Long synchro){
         refreshSynchronizationStatus(
                 config,
                 "/api/categories/synchros",
-                new SynchronizationStatusResponse(synchroId: synchro)
+                new CategoriesSynchronizationStatusResponse(synchroId: synchro)
         )
     }
 

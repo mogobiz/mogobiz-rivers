@@ -5,6 +5,7 @@ import com.mogobiz.common.client.ClientConfig
 import com.mogobiz.common.client.Credentials
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.mirakl.client.domain.MiraklCategory
+import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.Synchronization
 
@@ -32,10 +33,14 @@ class MiraklClientTest extends GroovyTestCase{
         assertNotNull(synchronization)
         def synchro = synchronization.synchroId
         assertNotNull(synchro)
-        log.info(synchro.toString())
         def synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
         assertNotNull(synchronizationStatusResponse)
         assertFalse(synchronizationStatusResponse.hasErrorReport as Boolean)
+        while(synchronizationStatusResponse.status in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
+            Thread.sleep(1000)
+            synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
+        }
+        assertEquals(SynchronizationStatus.COMPLETE, synchronizationStatusResponse.status)
     }
 
     void testSearchShops(){

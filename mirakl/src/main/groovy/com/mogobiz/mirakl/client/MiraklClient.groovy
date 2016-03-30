@@ -213,12 +213,12 @@ final class MiraklClient implements Client{
             }
             def text = getText([debug: config.debug], conn)
             def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, synchro.getClass()) as SynchronizationStatusResponse
+            ret = objectMapper.readValue(text, synchro.getClass())
         }
         finally {
             closeConnection(conn)
         }
-        ret
+        ret as T
     }
 }
 

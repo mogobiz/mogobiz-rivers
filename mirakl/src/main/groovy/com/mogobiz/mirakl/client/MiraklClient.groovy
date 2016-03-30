@@ -16,6 +16,8 @@ import com.mogobiz.http.client.multipart.MultipartFactory
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
+import com.mogobiz.mirakl.client.io.Synchronization
+import com.mogobiz.mirakl.client.io.SynchronizationStatusResponse
 import groovy.util.logging.Slf4j
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -59,9 +61,9 @@ final class MiraklClient implements Client{
      * CA01 - Update categories from Operator Information System
      * @param config - river configuration
      * @param categories - categories to update
-     * @return synchronization id
+     * @return synchronization
      */
-    static Map synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
+    static Synchronization synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
         def buffer = new StringBuffer(String.format("\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"%n"))
         categories?.each {
             buffer.append(String.format("${it.toString()}%n"))
@@ -78,8 +80,12 @@ final class MiraklClient implements Client{
      * @param synchro - synchronization id
      * @return status of the categories synchronisation
      */
-    static Map refreshCategoriesSynchronizationStatus(RiverConfig config, Integer synchro){
-        refreshSynchronizationStatus(config, "/api/categories/synchros", synchro)
+    static SynchronizationStatusResponse refreshCategoriesSynchronizationStatus(RiverConfig config, Long synchro){
+        refreshSynchronizationStatus(
+                config,
+                "/api/categories/synchros",
+                new SynchronizationStatusResponse(synchroId: synchro)
+        )
     }
 
     /**
@@ -145,7 +151,7 @@ final class MiraklClient implements Client{
      * @param charset - charset
      * @return synchronization id
      */
-    private static Map synchronize(
+    private static Synchronization synchronize(
             RiverConfig config,
             String api,
             String fileName,
@@ -170,7 +176,9 @@ final class MiraklClient implements Client{
             if(responseCode != 201){
                 log.error("$responseCode: ${conn.responseMessage}")
             }
-            ret = parseTextAsJSON(conn)
+            def text = getText([debug: config.debug], conn)
+            def objectMapper = new ObjectMapper()
+            ret = objectMapper.readValue(text, Synchronization.class)
         }
         finally{
             closeConnection(conn)
@@ -185,7 +193,7 @@ final class MiraklClient implements Client{
      * @param synchro - synchronization id
      * @return status of the synchronisation
      */
-    private static Map refreshSynchronizationStatus(RiverConfig config, String api, Integer synchro){
+    private static <T extends SynchronizationStatusResponse> T refreshSynchronizationStatus(RiverConfig config, String api, T synchro){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -193,7 +201,7 @@ final class MiraklClient implements Client{
         try{
             conn = client.doGet(
                     [debug: config.debug],
-                    "${config?.clientConfig?.url}$api/$synchro",
+                    "${config?.clientConfig?.url}$api/${synchro.synchroId}",
                     [:],
                     headers,
                     true
@@ -202,7 +210,9 @@ final class MiraklClient implements Client{
             if(responseCode != 200){
                 log.error("$responseCode: ${conn.responseMessage}")
             }
-            ret = parseTextAsJSON(conn)
+            def text = getText([debug: config.debug], conn)
+            def objectMapper = new ObjectMapper()
+            ret = objectMapper.readValue(text, synchro.getClass()) as SynchronizationStatusResponse
         }
         finally {
             closeConnection(conn)

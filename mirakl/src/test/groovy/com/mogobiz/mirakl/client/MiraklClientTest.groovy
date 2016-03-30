@@ -6,6 +6,7 @@ import com.mogobiz.common.client.Credentials
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
+import com.mogobiz.mirakl.client.io.Synchronization
 
 /**
  *
@@ -27,20 +28,14 @@ class MiraklClientTest extends GroovyTestCase{
         (1..10).each {
             categories << createCategory(it)
         }
-        Map map = MiraklClient.synchronizeCategories(riverConfig, categories)
-        assertNotNull(map)
-        map.each {k, v ->
-            log.info("$k: $v")
-        }
-        Integer synchro = map.synchro_id as Integer
+        def synchronization = MiraklClient.synchronizeCategories(riverConfig, categories)
+        assertNotNull(synchronization)
+        def synchro = synchronization.synchroId
         assertNotNull(synchro)
         log.info(synchro.toString())
-        map = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
-        assertNotNull(map)
-        map.each {k, v ->
-            log.info("$k: $v")
-        }
-        assertFalse(map.has_error_report as Boolean)
+        def synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
+        assertNotNull(synchronizationStatusResponse)
+        assertFalse(synchronizationStatusResponse.hasErrorReport as Boolean)
     }
 
     void testSearchShops(){

@@ -119,13 +119,13 @@
       "extends": {"$ref": "#/definitions/shop"},
       "javaType": "com.mogobiz.mirakl.client.domain.InputShop",
       "properties": {
-        "address": {"type": "object", "$ref": "common.json#/definitions/address"},
+        "address": {"type": "object", "$ref": "#/definitions/address"},
         "closed_from_date": {"type": "string", "format": "date-time"},
         "closed_to_date": {"type": "string", "format": "date-time"},
         "email": {"type": "string", "format": "email"},
-        "existing_user": {"type": "object", "$ref": "common.json#/definitions/user"},
+        "existing_user": {"type": "object", "$ref": "#/definitions/user"},
         "fax": {"type": "string"},
-        "new_user": {"type": "object", "$ref": "common.json#/definitions/user"},
+        "new_user": {"type": "object", "$ref": "#/definitions/user"},
         "password": {"type": "string"},
         "payment_blocked": {"type": "boolean"},
         "suspend": {"type": "boolean"},
@@ -141,11 +141,11 @@
         "approval_delay": { "type": "integer" },
         "approval_rate": { "type": "integer" },
         "banner": { "type": "string", "format": "uri" },
-        "billing_info": {"type": "object", "$ref": "common.json#/definitions/billingInfo"},
+        "billing_info": {"type": "object", "$ref": "#/definitions/billingInfo"},
         "channels": { "type": "array", "items": {"type": "string"}, "uniqueItems": true },
         "closed_from": {"type": "string", "format": "date-time"},
         "closed_to": {"type": "string", "format": "date-time"},
-        "contact_informations": {"type": "object", "$ref": "common.json#/definitions/contactInfo"},
+        "contact_informations": {"type": "object", "$ref": "#/definitions/contactInfo"},
         "date_created": {"type": "string", "format": "date-time"},
         "evaluations_count": {"type": "integer"},
         "free_shipping": {"type": "boolean"},
@@ -155,13 +155,13 @@
         "offers_count": {"type": "integer"},
         "order_messages_response_delay": {"type": "integer"},
         "orders_count": {"type": "integer"},
-        "payment_details": {"type": "object", "$ref": "common.json#/definitions/paymentDetails"},
-        "premium_state": {"$ref": "common.json#/definitions/premiumState"},
-        "shippings": {"type": "array", "items": {"type": "object", "$ref": "common.json#/definitions/shipping"}},
+        "payment_details": {"type": "object", "$ref": "#/definitions/paymentDetails"},
+        "premium_state": {"$ref": "#/definitions/premiumState"},
+        "shippings": {"type": "array", "items": {"type": "object", "$ref": "#/definitions/shipping"}},
         "shipping_types": { "type": "array", "items": {"type": "string"}},
         "shipping_zones": { "type": "array", "items": {"type": "string"}},
         "shop_id": {"type": "integer"},
-        "shop_state": {"$ref": "common.json#/definitions/shopState"}
+        "shop_state": {"$ref": "#/definitions/shopState"}
       }
     },
     "shopState": {
@@ -179,6 +179,28 @@
     "premiumState": {
       "javaType": "com.mogobiz.mirakl.client.domain.PremiumState",
       "enum": ["DEFAULT", "PREMIUM", "NOT_PREMIUM"]
+    },
+    "synchronization": {
+      "javaType": "com.mogobiz.mirakl.client.io.Synchronization",
+      "properties": {
+        "synchro_id": {"type": "integer"}
+      }
+    },
+    "synchronizationStatus": {
+      "javaType": "com.mogobiz.mirakl.client.domain.SynchronizationStatus",
+      "enum": ["WAITING", "RUNNING", "COMPLETE", "FAILED", "CANCELLED"]
+    },
+    "synchronizationStatusResponse": {
+      "javaType": "com.mogobiz.mirakl.client.io.SynchronizationStatusResponse",
+      "extends": {"$ref": "#/definitions/synchronization"},
+      "properties": {
+        "date_created": {"type": "string", "format": "date-time"},
+        "has_error_report": {"type": "boolean"},
+        "lines_in_error": {"type": "integer"},
+        "lines_in_success": {"type": "integer"},
+        "lines_read": {"type": "integer"},
+        "status": {"$ref": "#/definitions/synchronizationStatus"}
+      }
     }
   }
 }

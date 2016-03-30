@@ -112,7 +112,7 @@
                 <version>0.4.22</version>
                 <configuration>
                     <sourceDirectory>${basedir}/src/main/resources/schemas</sourceDirectory>
-                    <targetPackage>com.mogobiz.mirakl.client.domain</targetPackage>
+                    <targetPackage>com.mogobiz.mirakl.client.io</targetPackage>
                     <includeAdditionalProperties>false</includeAdditionalProperties>
                     <includeAccessors>true</includeAccessors>
                     <includeHashcodeAndEquals>false</includeHashcodeAndEquals>

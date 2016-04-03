@@ -5,6 +5,7 @@ import com.mogobiz.common.client.ClientConfig
 import com.mogobiz.common.client.Credentials
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.mirakl.client.domain.MiraklCategory
+import com.mogobiz.mirakl.client.domain.MiraklHierarchy
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.Synchronization
@@ -23,8 +24,7 @@ class MiraklClientTest extends GroovyTestCase{
     def MIRAKL_URL = 'https://ebiznext-dev.mirakl.net'
 
     void testSynchronizeCategories(){
-        def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: MIRAKL_API_KEY))
-        def riverConfig = new RiverConfig(clientConfig: clientConfig)
+        RiverConfig riverConfig = riverConfig()
         def categories = []
         (1..10).each {
             categories << createCategory(it)
@@ -35,7 +35,7 @@ class MiraklClientTest extends GroovyTestCase{
         assertNotNull(synchro)
         def synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
         assertNotNull(synchronizationStatusResponse)
-        assertFalse(synchronizationStatusResponse.hasErrorReport as Boolean)
+        assertFalse(synchronizationStatusResponse.hasErrorReport)
         while(synchronizationStatusResponse.status in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
             Thread.sleep(1000)
             synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
@@ -44,11 +44,36 @@ class MiraklClientTest extends GroovyTestCase{
     }
 
     void testSearchShops(){
-        def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: MIRAKL_API_KEY))
-        def riverConfig = new RiverConfig(clientConfig: clientConfig)
+        RiverConfig riverConfig = riverConfig()
         def searchShopsResponse = MiraklClient.searchShops(riverConfig, new SearchShopsRequest())
         assertNotNull(searchShopsResponse)
         assertTrue(searchShopsResponse.shops?.size() > 0)
+    }
+
+    void testImportHierarchies(){
+        RiverConfig riverConfig = riverConfig()
+        def hierarchies = []
+        (1..10).each {
+            hierarchies << createHierarchy(it)
+        }
+        def importResponse = MiraklClient.importHierarchies(riverConfig, hierarchies)
+        assertNotNull(importResponse)
+        def trackingId = importResponse.importId
+        assertNotNull(trackingId)
+        def trackingImportStatus = MiraklClient.trackHierarchiesImportStatusResponse(riverConfig, trackingId)
+        assertNotNull(trackingImportStatus)
+        assertFalse(trackingImportStatus.hasErrorReport)
+        while(trackingImportStatus.importStatus in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
+            Thread.sleep(1000)
+            trackingImportStatus = MiraklClient.trackHierarchiesImportStatusResponse(riverConfig, trackingId)
+        }
+        assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
+    }
+
+    private RiverConfig riverConfig(String apiKey = MIRAKL_API_KEY) {
+        def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: apiKey))
+        def riverConfig = new RiverConfig(clientConfig: clientConfig)
+        riverConfig
     }
 
     private static MiraklCategory createCategory(
@@ -60,6 +85,18 @@ class MiraklClientTest extends GroovyTestCase{
                 id: "category$indice",
                 label: "category${indice}Label",
                 logisticClass: logisticClass,
+                action: action,
+                parent: parent
+        )
+    }
+
+    private static MiraklHierarchy createHierarchy(
+            int indice,
+            BulkAction action = BulkAction.INSERT,
+            MiraklCategory parent = null){
+        return new MiraklHierarchy(
+                id: "hierarchy$indice",
+                label: "hierarchy${indice}Label",
                 action: action,
                 parent: parent
         )

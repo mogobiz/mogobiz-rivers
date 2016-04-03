@@ -14,10 +14,15 @@ import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
 import com.mogobiz.mirakl.client.domain.MiraklCategory
+import com.mogobiz.mirakl.client.domain.MiraklHierarchy
 import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
+import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
+import com.mogobiz.mirakl.client.io.ImportResponse
+import com.mogobiz.mirakl.client.io.ImportStatusResponse
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
+import com.mogobiz.mirakl.client.io.SynchronizationResponse
 import com.mogobiz.mirakl.client.io.SynchronizationStatusResponse
 import groovy.util.logging.Slf4j
 import scala.concurrent.ExecutionContext
@@ -64,7 +69,7 @@ final class MiraklClient implements Client{
      * @param categories - categories to update
      * @return synchronization
      */
-    static Synchronization synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
+    static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
         def buffer = new StringBuffer(String.format("\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"%n"))
         categories?.each {
             buffer.append(String.format("${it.toString()}%n"))
@@ -72,7 +77,7 @@ final class MiraklClient implements Client{
         log.debug(buffer.toString())
         final charset = DEFAULT_CHARSET
         byte[] data = buffer.toString().getBytes(charset)
-        synchronize(config, "/api/categories/synchros", "categories.csv", data)
+        synchronize(Synchronization.class, config, "/api/categories/synchros", "categories.csv", data)
     }
 
     /**
@@ -89,15 +94,35 @@ final class MiraklClient implements Client{
         )
     }
 
+    /******************************************************************************************************************
+     * Hierarchies api
+     ******************************************************************************************************************/
+
     /**
-     * add headers to authenticate Operator
+     * H01 - Import operator hierarchies
      * @param config - river configuration
-     * @return http headers with authorization
+     * @param hierarchies - hierarchies to import
+     * @return import response
      */
-    private static HttpHeaders authenticate(RiverConfig config){
-        def headers = new HttpHeaders()
-        headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
-        headers
+    static ImportResponse importHierarchies(RiverConfig config, List<MiraklHierarchy> hierarchies){
+        def buffer = new StringBuffer(String.format("\"hierarchy-code\";\"hierarchy-label\";\"hierarchy-parent-code\";\"update-delete\"%n"))
+        hierarchies?.each {
+            buffer.append(String.format("${it.toString()}%n"))
+        }
+        log.debug(buffer.toString())
+        final charset = DEFAULT_CHARSET
+        byte[] data = buffer.toString().getBytes(charset)
+        bulkImport(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", "hierarchies.csv", data)
+    }
+
+    /**
+     * H02 - Get import information
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return status response
+     */
+    static ImportStatusResponse trackHierarchiesImportStatusResponse(RiverConfig config, Long importId){
+        trackImportStatus(config,  "/api/hierarchies/imports", importId,ImportStatusResponse.class)
     }
 
     /******************************************************************************************************************
@@ -138,6 +163,37 @@ final class MiraklClient implements Client{
     }
 
     /******************************************************************************************************************
+     * Import api
+     ******************************************************************************************************************/
+
+    /**
+     * Import from Operator Information System
+     * @param config - river configuration
+     * @param api - api
+     * @param fileName - file name
+     * @param data - multipart data
+     * @param partName - name of the multipart
+     * @param mimeType - mime type
+     * @param charset - charset
+     * @return synchronization id
+     */
+    private static <T extends ImportResponse> T bulkImport(
+            Class<T> classz,
+            RiverConfig config,
+            String api,
+            String fileName,
+            byte[] data,
+            String partName = "file",
+            String mimeType = "text/csv",
+            String charset = DEFAULT_CHARSET){
+        multipart(classz, config, api, fileName, data, partName, mimeType, charset)
+    }
+
+    private static <T extends ImportStatusResponse> T trackImportStatus(RiverConfig config, String api, Long importId, Class<T> classz){
+        trackStatus(classz, config, api, importId) as T
+    }
+
+    /******************************************************************************************************************
      * Synchronization api
      ******************************************************************************************************************/
 
@@ -152,7 +208,61 @@ final class MiraklClient implements Client{
      * @param charset - charset
      * @return synchronization id
      */
-    private static Synchronization synchronize(
+    private static <T extends SynchronizationResponse> T synchronize(
+            Class<T> classz,
+            RiverConfig config,
+            String api,
+            String fileName,
+            byte[] data,
+            String partName = "file",
+            String mimeType = "text/csv",
+            String charset = DEFAULT_CHARSET){
+        multipart(classz, config, api, fileName, data, partName, mimeType, charset)
+    }
+
+    /**
+     * Get status of the synchronisation
+     * @param config - river configuration
+     * @param api - api
+     * @param synchro - synchronization id
+     * @return status of the synchronisation
+     */
+    private static <T extends SynchronizationStatusResponse> T refreshSynchronizationStatus(RiverConfig config, String api, T synchro){
+        trackStatus(synchro.getClass(), config, api, synchro.synchroId) as T
+    }
+
+    /******************************************************************************************************************
+     * Authorization helper
+     ******************************************************************************************************************/
+
+    /**
+     * add headers to authenticate Operator
+     * @param config - river configuration
+     * @return http headers with authorization
+     */
+    private static HttpHeaders authenticate(RiverConfig config){
+        def headers = new HttpHeaders()
+        headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
+        headers
+    }
+
+    /******************************************************************************************************************
+     * Multipart helper
+     ******************************************************************************************************************/
+
+    /**
+     *
+     * @param config - river configuration
+     * @param api - api
+     * @param fileName - file name
+     * @param data - multipart data
+     * @param partName - name of the multipart
+     * @param mimeType - mime type
+     * @param charset - charset
+     * @return T
+     */
+    private static <T> T multipart(
+            Class<T> classz,
             RiverConfig config,
             String api,
             String fileName,
@@ -179,7 +289,7 @@ final class MiraklClient implements Client{
             }
             def text = getText([debug: config.debug], conn)
             def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, Synchronization.class)
+            ret = objectMapper.readValue(text, classz)
         }
         finally{
             closeConnection(conn)
@@ -187,14 +297,11 @@ final class MiraklClient implements Client{
         ret
     }
 
-    /**
-     * Get status of the synchronisation
-     * @param config - river configuration
-     * @param api - api
-     * @param synchro - synchronization id
-     * @return status of the synchronisation
-     */
-    private static <T extends SynchronizationStatusResponse> T refreshSynchronizationStatus(RiverConfig config, String api, T synchro){
+    /******************************************************************************************************************
+     * Status helper
+     ******************************************************************************************************************/
+
+    private static <T> T trackStatus(Class<T> classz, RiverConfig config, String api, Long trackingtId){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -202,7 +309,7 @@ final class MiraklClient implements Client{
         try{
             conn = client.doGet(
                     [debug: config.debug],
-                    "${config?.clientConfig?.url}$api/${synchro.synchroId}",
+                    "${config?.clientConfig?.url}$api/$trackingtId",
                     [:],
                     headers,
                     true
@@ -213,12 +320,13 @@ final class MiraklClient implements Client{
             }
             def text = getText([debug: config.debug], conn)
             def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, synchro.getClass())
+            ret = objectMapper.readValue(text, classz) as T
         }
         finally {
             closeConnection(conn)
         }
-        ret as T
+        ret
     }
+
 }
 

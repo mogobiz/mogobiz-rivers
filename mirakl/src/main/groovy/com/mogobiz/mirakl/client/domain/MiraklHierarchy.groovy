@@ -11,7 +11,11 @@ class MiraklHierarchy extends MiraklItem{
     String label
 
     @Override
-    public String toLine() {
-        return "$id;$label;${parent?parent.id:''};${action == BulkAction.DELETE ? "delete" : "update"};";
+    public StringBuffer append(StringBuffer buffer) {
+        buffer.append(
+                String.format(
+                        "$id;$label;${parent?parent.id:''};${action == BulkAction.DELETE ? "delete" : "update"};%n"
+                )
+        )
     }
 }

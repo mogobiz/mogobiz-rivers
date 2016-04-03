@@ -9,10 +9,15 @@ import com.mogobiz.common.client.BulkItem
  */
 class MiraklCategory extends MiraklItem{
     String label
+
     String logisticClass = ''
 
     @Override
-    public String toLine() {
-        return "$id;$label;$logisticClass;${action == BulkAction.DELETE ? "delete" : "update"};${parent?parent.id:''}";
+    public StringBuffer append(StringBuffer buffer) {
+        buffer.append(
+                String.format(
+                        "$id;$label;$logisticClass;${action == BulkAction.DELETE ? "delete" : "update"};${parent?parent.id:''}%n"
+                )
+        )
     }
 }

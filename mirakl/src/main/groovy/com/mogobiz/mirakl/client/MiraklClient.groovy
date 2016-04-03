@@ -25,7 +25,6 @@ import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
 import com.mogobiz.mirakl.client.io.SynchronizationResponse
-import com.mogobiz.mirakl.client.io.SynchronizationStatusResponse
 import groovy.util.logging.Slf4j
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -172,13 +171,7 @@ final class MiraklClient implements Client{
             String partName = "file",
             String mimeType = "text/csv",
             String charset = DEFAULT_CHARSET){
-        def buffer = new StringBuffer(String.format("${items.header}%n"))
-        items?.items?.each {
-            buffer.append(String.format("${it.toLine()}%n"))
-        }
-        log.debug(buffer.toString())
-        byte[] data = buffer.toString().getBytes(charset)
-        def part = MultipartFactory.createFilePart(partName, fileName, data, false, "$mimeType; charset=$charset", charset)
+        def part = MultipartFactory.createFilePart(partName, fileName, items.getBytes(charset), false, "$mimeType; charset=$charset", charset)
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null

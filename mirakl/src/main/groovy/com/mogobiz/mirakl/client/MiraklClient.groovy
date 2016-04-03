@@ -73,7 +73,7 @@ final class MiraklClient implements Client{
      */
     static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
         def items = new MiraklItems(header: "\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"", items: categories)
-        synchronize(Synchronization.class, config, "/api/categories/synchros", items, "categories.csv")
+        importItems(Synchronization.class, config, "/api/categories/synchros", items, "categories.csv")
     }
 
     /**
@@ -83,11 +83,7 @@ final class MiraklClient implements Client{
      * @return status of the categories synchronisation
      */
     static CategoriesSynchronizationStatusResponse refreshCategoriesSynchronizationStatus(RiverConfig config, Long synchro){
-        refreshSynchronizationStatus(
-                config,
-                "/api/categories/synchros",
-                new CategoriesSynchronizationStatusResponse(synchroId: synchro)
-        )
+        trackStatus(CategoriesSynchronizationStatusResponse.class, config, "/api/categories/synchros", synchro)
     }
 
     /******************************************************************************************************************
@@ -102,7 +98,7 @@ final class MiraklClient implements Client{
      */
     static ImportResponse importHierarchies(RiverConfig config, List<MiraklHierarchy> hierarchies){
         def items = new MiraklItems(header: "\"hierarchy-code\";\"hierarchy-label\";\"hierarchy-parent-code\";\"update-delete\"", items: hierarchies)
-        bulkImport(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", items, "hierarchies.csv")
+        importItems(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", items, "hierarchies.csv")
     }
 
     /**
@@ -112,7 +108,7 @@ final class MiraklClient implements Client{
      * @return status response
      */
     static ImportStatusResponse trackHierarchiesImportStatusResponse(RiverConfig config, Long importId){
-        trackImportStatus(config,  "/api/hierarchies/imports", importId,ImportStatusResponse.class)
+        trackStatus(ImportStatusResponse.class, config,  "/api/hierarchies/imports", importId)
     }
 
     /******************************************************************************************************************
@@ -153,42 +149,11 @@ final class MiraklClient implements Client{
     }
 
     /******************************************************************************************************************
-     * Import api
+     * Bulk Import helper
      ******************************************************************************************************************/
 
     /**
-     * Import from Operator Information System
-     * @param config - river configuration
-     * @param api - api
-     * @param fileName - file name
-     * @param data - multipart data
-     * @param partName - name of the multipart
-     * @param mimeType - mime type
-     * @param charset - charset
-     * @return synchronization id
-     */
-    private static <T extends ImportResponse, U extends MiraklItem> T bulkImport(
-            Class<T> classz,
-            RiverConfig config,
-            String api,
-            MiraklItems<U> items,
-            String fileName,
-            String partName = "file",
-            String mimeType = "text/csv",
-            String charset = DEFAULT_CHARSET){
-        multipart(classz, config, api, items, fileName, partName, mimeType, charset)
-    }
-
-    private static <T extends ImportStatusResponse> T trackImportStatus(RiverConfig config, String api, Long importId, Class<T> classz){
-        trackStatus(classz, config, api, importId) as T
-    }
-
-    /******************************************************************************************************************
-     * Synchronization api
-     ******************************************************************************************************************/
-
-    /**
-     * Synchronization from Operator Information System
+     *
      * @param config - river configuration
      * @param api - api
      * @param items - items to import
@@ -196,62 +161,9 @@ final class MiraklClient implements Client{
      * @param partName - name of the multipart
      * @param mimeType - mime type
      * @param charset - charset
-     * @return synchronization id
-     */
-    static <T extends SynchronizationResponse, U extends MiraklItem> T synchronize(
-            Class<T> classz,
-            RiverConfig config,
-            String api,
-            MiraklItems<U> items,
-            String fileName,
-            String partName = "file",
-            String mimeType = "text/csv",
-            String charset = DEFAULT_CHARSET){
-        multipart(classz, config, api, items, fileName, partName, mimeType, charset)
-    }
-
-    /**
-     * Get status of the synchronisation
-     * @param config - river configuration
-     * @param api - api
-     * @param synchro - synchronization id
-     * @return status of the synchronisation
-     */
-    static <T extends SynchronizationStatusResponse> T refreshSynchronizationStatus(RiverConfig config, String api, T synchro){
-        trackStatus(synchro.getClass(), config, api, synchro.synchroId) as T
-    }
-
-    /******************************************************************************************************************
-     * Authorization helper
-     ******************************************************************************************************************/
-
-    /**
-     * add headers to authenticate Operator
-     * @param config - river configuration
-     * @return http headers with authorization
-     */
-    private static HttpHeaders authenticate(RiverConfig config){
-        def headers = new HttpHeaders()
-        headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
-        headers
-    }
-
-    /******************************************************************************************************************
-     * Multipart helper
-     ******************************************************************************************************************/
-
-    /**
-     *
-     * @param config - river configuration
-     * @param api - api
-     * @param fileName - file name
-     * @param data - multipart data
-     * @param partName - name of the multipart
-     * @param mimeType - mime type
-     * @param charset - charset
      * @return T
      */
-    private static <T, U extends MiraklItem> T multipart(
+    static <T, U extends MiraklItem> T importItems(
             Class<T> classz,
             RiverConfig config,
             String api,
@@ -294,10 +206,10 @@ final class MiraklClient implements Client{
     }
 
     /******************************************************************************************************************
-     * Status helper
+     * Tracking Status helper
      ******************************************************************************************************************/
 
-    private static <T> T trackStatus(Class<T> classz, RiverConfig config, String api, Long trackingtId){
+    static <T> T trackStatus(Class<T> classz, RiverConfig config, String api, Long trackingtId){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -322,6 +234,21 @@ final class MiraklClient implements Client{
             closeConnection(conn)
         }
         ret
+    }
+
+    /******************************************************************************************************************
+     * Authorization helper
+     ******************************************************************************************************************/
+
+    /**
+     * add headers to authenticate Operator
+     * @param config - river configuration
+     * @return http headers with authorization
+     */
+    private static HttpHeaders authenticate(RiverConfig config){
+        def headers = new HttpHeaders()
+        headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
+        headers
     }
 
 }

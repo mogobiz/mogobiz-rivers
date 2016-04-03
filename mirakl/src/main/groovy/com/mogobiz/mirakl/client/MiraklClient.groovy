@@ -15,6 +15,8 @@ import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.domain.MiraklHierarchy
+import com.mogobiz.mirakl.client.domain.MiraklItem
+import com.mogobiz.mirakl.client.domain.MiraklItems
 import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
 import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ImportResponse
@@ -70,14 +72,8 @@ final class MiraklClient implements Client{
      * @return synchronization
      */
     static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
-        def buffer = new StringBuffer(String.format("\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"%n"))
-        categories?.each {
-            buffer.append(String.format("${it.toString()}%n"))
-        }
-        log.debug(buffer.toString())
-        final charset = DEFAULT_CHARSET
-        byte[] data = buffer.toString().getBytes(charset)
-        synchronize(Synchronization.class, config, "/api/categories/synchros", "categories.csv", data)
+        def items = new MiraklItems(header: "\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"", items: categories)
+        synchronize(Synchronization.class, config, "/api/categories/synchros", items, "categories.csv")
     }
 
     /**
@@ -105,14 +101,8 @@ final class MiraklClient implements Client{
      * @return import response
      */
     static ImportResponse importHierarchies(RiverConfig config, List<MiraklHierarchy> hierarchies){
-        def buffer = new StringBuffer(String.format("\"hierarchy-code\";\"hierarchy-label\";\"hierarchy-parent-code\";\"update-delete\"%n"))
-        hierarchies?.each {
-            buffer.append(String.format("${it.toString()}%n"))
-        }
-        log.debug(buffer.toString())
-        final charset = DEFAULT_CHARSET
-        byte[] data = buffer.toString().getBytes(charset)
-        bulkImport(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", "hierarchies.csv", data)
+        def items = new MiraklItems(header: "\"hierarchy-code\";\"hierarchy-label\";\"hierarchy-parent-code\";\"update-delete\"", items: hierarchies)
+        bulkImport(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", items, "hierarchies.csv")
     }
 
     /**
@@ -177,16 +167,16 @@ final class MiraklClient implements Client{
      * @param charset - charset
      * @return synchronization id
      */
-    private static <T extends ImportResponse> T bulkImport(
+    private static <T extends ImportResponse, U extends MiraklItem> T bulkImport(
             Class<T> classz,
             RiverConfig config,
             String api,
+            MiraklItems<U> items,
             String fileName,
-            byte[] data,
             String partName = "file",
             String mimeType = "text/csv",
             String charset = DEFAULT_CHARSET){
-        multipart(classz, config, api, fileName, data, partName, mimeType, charset)
+        multipart(classz, config, api, items, fileName, partName, mimeType, charset)
     }
 
     private static <T extends ImportStatusResponse> T trackImportStatus(RiverConfig config, String api, Long importId, Class<T> classz){
@@ -201,23 +191,23 @@ final class MiraklClient implements Client{
      * Synchronization from Operator Information System
      * @param config - river configuration
      * @param api - api
+     * @param items - items to import
      * @param fileName - file name
-     * @param data - multipart data
      * @param partName - name of the multipart
      * @param mimeType - mime type
      * @param charset - charset
      * @return synchronization id
      */
-    private static <T extends SynchronizationResponse> T synchronize(
+    static <T extends SynchronizationResponse, U extends MiraklItem> T synchronize(
             Class<T> classz,
             RiverConfig config,
             String api,
+            MiraklItems<U> items,
             String fileName,
-            byte[] data,
             String partName = "file",
             String mimeType = "text/csv",
             String charset = DEFAULT_CHARSET){
-        multipart(classz, config, api, fileName, data, partName, mimeType, charset)
+        multipart(classz, config, api, items, fileName, partName, mimeType, charset)
     }
 
     /**
@@ -227,7 +217,7 @@ final class MiraklClient implements Client{
      * @param synchro - synchronization id
      * @return status of the synchronisation
      */
-    private static <T extends SynchronizationStatusResponse> T refreshSynchronizationStatus(RiverConfig config, String api, T synchro){
+    static <T extends SynchronizationStatusResponse> T refreshSynchronizationStatus(RiverConfig config, String api, T synchro){
         trackStatus(synchro.getClass(), config, api, synchro.synchroId) as T
     }
 
@@ -261,15 +251,21 @@ final class MiraklClient implements Client{
      * @param charset - charset
      * @return T
      */
-    private static <T> T multipart(
+    private static <T, U extends MiraklItem> T multipart(
             Class<T> classz,
             RiverConfig config,
             String api,
+            MiraklItems<U> items,
             String fileName,
-            byte[] data,
             String partName = "file",
             String mimeType = "text/csv",
             String charset = DEFAULT_CHARSET){
+        def buffer = new StringBuffer(String.format("${items.header}%n"))
+        items?.items?.each {
+            buffer.append(String.format("${it.toLine()}%n"))
+        }
+        log.debug(buffer.toString())
+        byte[] data = buffer.toString().getBytes(charset)
         def part = MultipartFactory.createFilePart(partName, fileName, data, false, "$mimeType; charset=$charset", charset)
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")

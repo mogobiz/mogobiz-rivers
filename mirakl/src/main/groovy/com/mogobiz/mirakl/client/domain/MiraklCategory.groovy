@@ -7,12 +7,12 @@ import com.mogobiz.common.client.BulkItem
  *
  * Created by smanciot on 28/03/16.
  */
-class MiraklCategory extends BulkItem{
+class MiraklCategory extends MiraklItem{
     String label
     String logisticClass = ''
 
     @Override
-    public String toString() {
+    public String toLine() {
         return "$id;$label;$logisticClass;${action == BulkAction.DELETE ? "delete" : "update"};${parent?parent.id:''}";
     }
 }

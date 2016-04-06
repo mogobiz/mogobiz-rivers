@@ -114,7 +114,7 @@ final class MiraklClient implements Client{
      * Shop api
      ******************************************************************************************************************/
 
-    static SearchShopsResponse searchShops(RiverConfig config, SearchShopsRequest request){
+    static <T extends SearchShopsResponse> T searchShops(Class<T> classz = SearchShopsResponse.class, RiverConfig config, SearchShopsRequest request){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -137,9 +137,7 @@ final class MiraklClient implements Client{
             if(responseCode != 200){
                 log.error("$responseCode: ${conn.responseMessage}")
             }
-            def text = getText([debug: config.debug], conn)
-            def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, SearchShopsResponse.class)
+            ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), classz) as T
         }
         finally {
             closeConnection(conn)
@@ -188,9 +186,7 @@ final class MiraklClient implements Client{
             if(responseCode != 201){
                 log.error("$responseCode: ${conn.responseMessage}")
             }
-            def text = getText([debug: config.debug], conn)
-            def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, classz)
+            ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), classz) as T
         }
         finally{
             closeConnection(conn)
@@ -219,9 +215,7 @@ final class MiraklClient implements Client{
             if(responseCode != 200){
                 log.error("$responseCode: ${conn.responseMessage}")
             }
-            def text = getText([debug: config.debug], conn)
-            def objectMapper = new ObjectMapper()
-            ret = objectMapper.readValue(text, classz) as T
+            ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), classz) as T
         }
         finally {
             closeConnection(conn)

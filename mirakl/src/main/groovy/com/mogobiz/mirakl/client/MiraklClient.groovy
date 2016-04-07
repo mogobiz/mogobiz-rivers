@@ -4,6 +4,7 @@
 package com.mogobiz.mirakl.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.mogobiz.common.client.BulkAction
 import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Client
@@ -17,10 +18,12 @@ import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.domain.MiraklHierarchy
 import com.mogobiz.mirakl.client.domain.MiraklItem
 import com.mogobiz.mirakl.client.domain.MiraklItems
+import com.mogobiz.mirakl.client.domain.MiraklValue
 import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
 import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ImportResponse
 import com.mogobiz.mirakl.client.io.ImportStatusResponse
+import com.mogobiz.mirakl.client.io.ImportValuesResponse
 import com.mogobiz.mirakl.client.io.ListValuesResponse
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
@@ -115,6 +118,12 @@ final class MiraklClient implements Client{
      * Values api
      ******************************************************************************************************************/
 
+    /**
+     * VL11 - Get information about operator's values lists
+     * @param config - config
+     * @param code - [optional] The operator's values list code. If not specified, all values lists are retrieved
+     * @return Operator Values Lists
+     */
     static ListValuesResponse listValues(RiverConfig config, String code = null){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
@@ -142,6 +151,44 @@ final class MiraklClient implements Client{
             closeConnection(conn)
         }
         ret
+    }
+
+    /**
+     * VL01 - Send a file to create, update or delete values list
+     * @param config - config
+     * @param listOfValues - values
+     * @return
+     */
+    static ImportResponse importListOfValues(RiverConfig config, List<MiraklValue> listOfValues = []){
+        def items = new MiraklItems<MiraklValue>(header: "\"list-code\";\"list-label\";\"value-code\";\"value-label\";\"update-delete\"", items: listOfValues)
+        def itemsCollection = items.items.collect { item ->
+            item.action = BulkAction.UPDATE
+            "${item.root?.id}${item.id}"
+        }
+        listValues(config).valuesLists.each{valuesList ->
+            valuesList.values.findAll {value ->
+                final str = "${valuesList.code}${value.code}"
+                !(str in itemsCollection)
+            }.each {value ->
+                items.items << new MiraklValue(
+                        root: new MiraklValue(id: valuesList.code, label: valuesList.label),
+                        id: value.code,
+                        label: value.label,
+                        action: BulkAction.DELETE
+                )
+            }
+        }
+        importItems(ImportValuesResponse.class, config, "/api/values_lists/imports", items, "values_lists.csv")
+    }
+
+    /**
+     * VL02 - Get import information
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return status response
+     */
+    static ImportStatusResponse trackListOfValuesImportStatusResponse(RiverConfig config, Long importId){
+        trackStatus(ImportStatusResponse.class, config,  "/api/values_lists/imports", importId)
     }
 
     /******************************************************************************************************************

@@ -6,6 +6,7 @@ import com.mogobiz.common.client.Credentials
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.domain.MiraklHierarchy
+import com.mogobiz.mirakl.client.domain.MiraklValue
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.Synchronization
@@ -76,6 +77,26 @@ class MiraklClientTest extends GroovyTestCase{
         assertNotNull(listValuesResponse)
     }
 
+    void testImportListOfValues(){
+        RiverConfig riverConfig = riverConfig()
+        def listOfValues = []
+        (1..5).each {
+            listOfValues.addAll(createValues(it))
+        }
+        def importValuesResponse = MiraklClient.importListOfValues(riverConfig, listOfValues)
+        assertNotNull(importValuesResponse)
+        def trackingId = importValuesResponse.importId
+        assertNotNull(trackingId)
+        def trackingImportStatus = MiraklClient.trackListOfValuesImportStatusResponse(riverConfig, trackingId)
+        assertNotNull(trackingImportStatus)
+        assertFalse(trackingImportStatus.hasErrorReport)
+        while(trackingImportStatus.importStatus in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
+            Thread.sleep(1000)
+            trackingImportStatus = MiraklClient.trackListOfValuesImportStatusResponse(riverConfig, trackingId)
+        }
+        assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
+    }
+
     private RiverConfig riverConfig(String apiKey = MIRAKL_API_KEY) {
         def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: apiKey))
         def riverConfig = new RiverConfig(clientConfig: clientConfig)
@@ -106,5 +127,22 @@ class MiraklClientTest extends GroovyTestCase{
                 action: action,
                 parent: parent
         )
+    }
+
+    private static List<MiraklValue> createValues(
+            int indice){
+        def ret = []
+        def root = new MiraklValue(
+                id: "values$indice",
+                label: "values${indice}Label"
+        )
+        (1..3).each {
+            ret << new MiraklValue(
+                    id: "value$it",
+                    label: "value${indice}_${it}Label",
+                    root: root
+            )
+        }
+        ret
     }
 }

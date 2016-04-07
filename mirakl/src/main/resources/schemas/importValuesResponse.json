@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Import operator's values lists response",
+  "type": "object",
+  "javaType": "com.mogobiz.mirakl.client.io.ImportValuesResponse",
+  "javaInterfaces": ["com.mogobiz.mirakl.client.io.ImportResponse"],
+  "properties": {
+    "values_lists_import_id": {"type": "integer", "javaName": "import_id"}
+  },
+  "required": ["values_lists_import_id"]
+}

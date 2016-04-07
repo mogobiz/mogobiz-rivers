@@ -21,6 +21,7 @@ import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
 import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ImportResponse
 import com.mogobiz.mirakl.client.io.ImportStatusResponse
+import com.mogobiz.mirakl.client.io.ListValuesResponse
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
@@ -108,6 +109,39 @@ final class MiraklClient implements Client{
      */
     static ImportStatusResponse trackHierarchiesImportStatusResponse(RiverConfig config, Long importId){
         trackStatus(ImportStatusResponse.class, config,  "/api/hierarchies/imports", importId)
+    }
+
+    /******************************************************************************************************************
+     * Values api
+     ******************************************************************************************************************/
+
+    static ListValuesResponse listValues(RiverConfig config, String code = null){
+        def headers= authenticate(config)
+        headers.setHeader("Accept", "application/json")
+        def conn = null
+        def ret = null
+        def params = [:]
+        if(code){
+            params << [code: code]
+        }
+        try{
+            conn = client.doGet(
+                    [debug: config.debug],
+                    "${config?.clientConfig?.url}/api/values_lists",
+                    params,
+                    headers,
+                    true
+            )
+            def responseCode = conn.responseCode
+            if(responseCode != 200){
+                log.error("$responseCode: ${conn.responseMessage}")
+            }
+            ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), ListValuesResponse)
+        }
+        finally {
+            closeConnection(conn)
+        }
+        ret
     }
 
     /******************************************************************************************************************

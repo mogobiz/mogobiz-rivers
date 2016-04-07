@@ -209,6 +209,26 @@
         "has_error_report": {"type": "boolean"},
         "import_status": {"$ref": "#/definitions/synchronizationStatus"}
       }
+    },
+    "value": {
+      "javaType": "com.mogobiz.mirakl.client.domain.Value",
+      "properties": {
+        "code": {"type": "string"},
+        "label": {"type": "string"}
+      }
+    },
+    "values": {
+      "javaType": "com.mogobiz.mirakl.client.domain.Values",
+      "extends": {"$ref": "#/definitions/value"},
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/value"
+          }
+        }
+      }
     }
   }
 }

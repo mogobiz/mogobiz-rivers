@@ -16,7 +16,7 @@ import com.mogobiz.mirakl.client.io.Synchronization
  */
 class MiraklClientTest extends GroovyTestCase{
 
-    def MIRAKL_API_KEY = '096401e5-c3e8-42fe-9891-ed94cd4c1a89'
+    def MIRAKL_API_KEY = '096401e5-c3e8-42fe-9891-ed94cd4c1a89' //front api key
 
 //    def FRONT_KEY = 'de901fbc-804e-4733-a5bd-8765c41c921f'
 //    def OPERATOR_KEY = '3c404360-7b63-4f34-beb4-2d564fde2e03'
@@ -68,6 +68,12 @@ class MiraklClientTest extends GroovyTestCase{
             trackingImportStatus = MiraklClient.trackHierarchiesImportStatusResponse(riverConfig, trackingId)
         }
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
+    }
+
+    void testListValues(){
+        RiverConfig riverConfig = riverConfig()
+        def listValuesResponse = MiraklClient.listValues(riverConfig)
+        assertNotNull(listValuesResponse)
     }
 
     private RiverConfig riverConfig(String apiKey = MIRAKL_API_KEY) {

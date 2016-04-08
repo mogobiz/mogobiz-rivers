@@ -156,11 +156,11 @@ final class MiraklClient implements Client{
     /**
      * VL01 - Send a file to create, update or delete values list
      * @param config - config
-     * @param listOfValues - values
+     * @param values - values
      * @return
      */
-    static ImportResponse importListOfValues(RiverConfig config, List<MiraklValue> listOfValues = []){
-        def items = new MiraklItems<MiraklValue>(header: "\"list-code\";\"list-label\";\"value-code\";\"value-label\";\"update-delete\"", items: listOfValues)
+    static ImportResponse importValues(RiverConfig config, List<MiraklValue> values = []){
+        def items = new MiraklItems<MiraklValue>(header: "\"list-code\";\"list-label\";\"value-code\";\"value-label\";\"update-delete\"", items: values)
         def itemsCollection = items.items.collect { item ->
             item.action = BulkAction.UPDATE
             "${item.root?.id}${item.id}"
@@ -187,7 +187,7 @@ final class MiraklClient implements Client{
      * @param importId - tracking id
      * @return status response
      */
-    static ImportStatusResponse trackListOfValuesImportStatusResponse(RiverConfig config, Long importId){
+    static ImportStatusResponse trackValuesImportStatusResponse(RiverConfig config, Long importId){
         trackStatus(ImportStatusResponse.class, config,  "/api/values_lists/imports", importId)
     }
 

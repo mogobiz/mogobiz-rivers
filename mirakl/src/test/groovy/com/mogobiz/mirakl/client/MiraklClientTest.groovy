@@ -9,7 +9,6 @@ import com.mogobiz.mirakl.client.domain.MiraklHierarchy
 import com.mogobiz.mirakl.client.domain.MiraklValue
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
-import com.mogobiz.mirakl.client.io.Synchronization
 
 /**
  *
@@ -83,16 +82,16 @@ class MiraklClientTest extends GroovyTestCase{
         (1..5).each {
             listOfValues.addAll(createValues(it))
         }
-        def importValuesResponse = MiraklClient.importListOfValues(riverConfig, listOfValues)
+        def importValuesResponse = MiraklClient.importValues(riverConfig, listOfValues)
         assertNotNull(importValuesResponse)
         def trackingId = importValuesResponse.importId
         assertNotNull(trackingId)
-        def trackingImportStatus = MiraklClient.trackListOfValuesImportStatusResponse(riverConfig, trackingId)
+        def trackingImportStatus = MiraklClient.trackValuesImportStatusResponse(riverConfig, trackingId)
         assertNotNull(trackingImportStatus)
         assertFalse(trackingImportStatus.hasErrorReport)
         while(trackingImportStatus.importStatus in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
             Thread.sleep(1000)
-            trackingImportStatus = MiraklClient.trackListOfValuesImportStatusResponse(riverConfig, trackingId)
+            trackingImportStatus = MiraklClient.trackValuesImportStatusResponse(riverConfig, trackingId)
         }
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
     }

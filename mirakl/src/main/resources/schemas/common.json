@@ -234,18 +234,6 @@
       "javaType": "com.mogobiz.mirakl.client.domain.AttributeType",
       "enum": ["TEXT", "LONG_TEXT", "MEDIA", "DATE", "INTEGER", "DECIMAL", "LIST", "LIST_MULTIPLE_VALUES", "MULTIPLE"]
     },
-    "transformationType": {
-      "javaType": "com.mogobiz.mirakl.client.domain.TransformationType",
-      "enum": ["ADDITION", "DIVISION", "MULTIPLICATION", "SUBTRACTION", "CONSTANT", "DATE", "REGEXP", "ROUND_DECIMAL", "UPPER_CASE", "LOWER_CASE", "CAMEL_CASE", "CAPITALIZE", "REMOVE_HTML"]
-    },
-    "roundingMode": {
-      "javaType": "com.mogobiz.mirakl.client.domain.RoundingMode",
-      "enum": ["HALF_UP", "HALF_DOWN", "CEILING", "FLOOR"]
-    },
-    "validationType": {
-      "javaType": "com.mogobiz.mirakl.client.domain.ValidationType",
-      "enum": ["LENGTH", "MAX", "MAX_LENGTH", "MIN", "MIN_LENGTH", "REGEXP"]
-    },
     "attribute": {
       "javaType": "com.mogobiz.mirakl.client.domain.Attribute",
       "properties": {
@@ -256,10 +244,10 @@
         "hierarchy_code": {"type": "string"},
         "label": {"type": "string"},
         "required": {"type": "boolean"},
-        "transformations": {"type": "string"},
+        "transformations": {"type": "string", "javaName": "transformationsAsString"},
         "type": {"$ref": "#/definitions/attributeType"},
         "type_parameter": {"type": "string"},
-        "validations": {"type": "string"},
+        "validations": {"type": "string", "javaName": "validationsAsString"},
         "values": {
           "type": "array",
           "items": {

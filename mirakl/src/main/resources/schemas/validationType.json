@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "validation type",
+  "javaType": "com.mogobiz.mirakl.client.domain.ValidationType",
+  "enum": ["LENGTH", "MAX", "MAX_LENGTH", "MIN", "MIN_LENGTH", "REGEXP"]
+}

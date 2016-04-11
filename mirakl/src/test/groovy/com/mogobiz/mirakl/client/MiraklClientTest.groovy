@@ -96,6 +96,13 @@ class MiraklClientTest extends GroovyTestCase{
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
     }
 
+    void testListAttributes(){
+        RiverConfig riverConfig = riverConfig()
+        def listAttributesResponse = MiraklClient.listAttributes(riverConfig)
+        assertNotNull(listAttributesResponse)
+        assertTrue(listAttributesResponse?.attributes?.size() > 0)
+    }
+
     private RiverConfig riverConfig(String apiKey = MIRAKL_API_KEY) {
         def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: apiKey))
         def riverConfig = new RiverConfig(clientConfig: clientConfig)

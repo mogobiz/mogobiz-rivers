@@ -24,6 +24,7 @@ import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ImportResponse
 import com.mogobiz.mirakl.client.io.ImportStatusResponse
 import com.mogobiz.mirakl.client.io.ImportValuesResponse
+import com.mogobiz.mirakl.client.io.ListAttributesResponse
 import com.mogobiz.mirakl.client.io.ListValuesResponse
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
@@ -189,6 +190,49 @@ final class MiraklClient implements Client{
      */
     static ImportStatusResponse trackValuesImportStatusResponse(RiverConfig config, Long importId){
         trackStatus(ImportStatusResponse.class, config,  "/api/values_lists/imports", importId)
+    }
+
+    /******************************************************************************************************************
+     * Product Attributes api
+     ******************************************************************************************************************/
+
+    /**
+     * PM11 - Get attributes configuration
+     * @param config - river configuration
+     * @param hierarchy - Code of the hierarchy
+     * @param max_level - Number of children hierarchy levels to retrieve
+     * @return List of attributes configuration
+     */
+    static ListAttributesResponse listAttributes(RiverConfig config, String hierarchy = null, Long max_level = null){
+        def headers= authenticate(config)
+        headers.setHeader("Accept", "application/json")
+        def conn = null
+        def ret = null
+        def params = [:]
+        if(hierarchy){
+            params << [hierarchy: hierarchy]
+        }
+        if(max_level){
+            params << [max_level: max_level]
+        }
+        try{
+            conn = client.doGet(
+                    [debug: config.debug],
+                    "${config?.clientConfig?.url}/api/products/attributes",
+                    params,
+                    headers,
+                    true
+            )
+            def responseCode = conn.responseCode
+            if(responseCode != 200){
+                log.error("$responseCode: ${conn.responseMessage}")
+            }
+            ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), ListAttributesResponse)
+        }
+        finally {
+            closeConnection(conn)
+        }
+        ret
     }
 
     /******************************************************************************************************************

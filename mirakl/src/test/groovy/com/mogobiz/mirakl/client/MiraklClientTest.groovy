@@ -10,6 +10,8 @@ import com.mogobiz.mirakl.client.domain.MiraklValue
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 
+import static com.mogobiz.mirakl.client.MiraklClient.toScalaOption
+
 /**
  *
  * Created by smanciot on 27/03/16.
@@ -115,11 +117,11 @@ class MiraklClientTest extends GroovyTestCase{
             BulkAction action = BulkAction.INSERT,
             MiraklCategory parent = null){
         return new MiraklCategory(
-                id: "category$indice",
-                label: "category${indice}Label",
-                logisticClass: logisticClass,
-                action: action,
-                parent: parent
+                "category$indice",
+                "category${indice}Label",
+                action,
+                toScalaOption(parent),
+                logisticClass
         )
     }
 
@@ -128,25 +130,25 @@ class MiraklClientTest extends GroovyTestCase{
             BulkAction action = BulkAction.INSERT,
             MiraklCategory parent = null){
         return new MiraklHierarchy(
-                id: "hierarchy$indice",
-                label: "hierarchy${indice}Label",
-                action: action,
-                parent: parent
+                "hierarchy$indice",
+                "hierarchy${indice}Label",
+                action,
+                toScalaOption(parent)
         )
     }
 
     private static List<MiraklValue> createValues(
             int indice){
         def ret = []
-        def root = new MiraklValue(
-                id: "values$indice",
-                label: "values${indice}Label"
+        def parent = new MiraklValue(
+                "values$indice",
+                "values${indice}Label"
         )
         (1..3).each {
             ret << new MiraklValue(
-                    id: "value$it",
-                    label: "value${indice}_${it}Label",
-                    root: root
+                    "value$it",
+                    "value${indice}_${it}Label",
+                    toScalaOption(parent)
             )
         }
         ret

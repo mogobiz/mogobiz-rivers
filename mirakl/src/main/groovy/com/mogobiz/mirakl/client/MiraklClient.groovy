@@ -31,10 +31,14 @@ import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
 import com.mogobiz.mirakl.client.io.SynchronizationResponse
 import groovy.util.logging.Slf4j
+import scala.Option
+import scala.collection.Iterable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import static com.mogobiz.http.client.HTTPClient.*
+
+import static scala.collection.JavaConverters.*
 
 /**
  *
@@ -44,16 +48,16 @@ final class MiraklClient implements Client{
 
     private static MiraklClient instance
 
-    private static final HTTPClient client = HTTPClient.getInstance()
+    private static final HTTPClient client = getInstance()
 
     private MiraklClient(){}
 
-    public static MiraklClient getInstance(){
-        if(!instance){
-            instance = new MiraklClient()
-        }
-        return instance
-    }
+//    public static MiraklClient getInstance(){
+//        if(!instance){
+//            instance = new MiraklClient()
+//        }
+//        return instance
+//    }
 
     @Override
     Future<BulkResponse> bulk(RiverConfig config, List<BulkItem> items, ExecutionContext ec) {
@@ -76,7 +80,7 @@ final class MiraklClient implements Client{
      * @return synchronization
      */
     static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
-        def items = new MiraklItems(header: "\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"", items: categories)
+        def items = new MiraklItems("\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"", toScalaList(categories))
         importItems(Synchronization.class, config, "/api/categories/synchros", items, "categories.csv")
     }
 
@@ -101,7 +105,7 @@ final class MiraklClient implements Client{
      * @return import response
      */
     static ImportResponse importHierarchies(RiverConfig config, List<MiraklHierarchy> hierarchies){
-        def items = new MiraklItems(header: "\"hierarchy-code\";\"hierarchy-label\";\"hierarchy-parent-code\";\"update-delete\"", items: hierarchies)
+        def items = new MiraklItems("\"hierarchy-code\";\"hierarchy-label\";\"hierarchy-parent-code\";\"update-delete\"", toScalaList(hierarchies))
         importItems(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", items, "hierarchies.csv")
     }
 
@@ -161,24 +165,25 @@ final class MiraklClient implements Client{
      * @return
      */
     static ImportResponse importValues(RiverConfig config, List<MiraklValue> values = []){
-        def items = new MiraklItems<MiraklValue>(header: "\"list-code\";\"list-label\";\"value-code\";\"value-label\";\"update-delete\"", items: values)
-        def itemsCollection = items.items.collect { item ->
+        def itemsCollection = values.collect { item ->
             item.action = BulkAction.UPDATE
-            "${item.root?.id}${item.id}"
+            "${item.parent?.id}${item.id}"
         }
         listValues(config).valuesLists.each{valuesList ->
             valuesList.values.findAll {value ->
                 final str = "${valuesList.code}${value.code}"
                 !(str in itemsCollection)
             }.each {value ->
-                items.items << new MiraklValue(
-                        root: new MiraklValue(id: valuesList.code, label: valuesList.label),
-                        id: value.code,
-                        label: value.label,
-                        action: BulkAction.DELETE
+                def parent = new MiraklValue(valuesList.code, valuesList.label, BulkAction.UNKNOWN, toScalaOption(null))
+                values << new MiraklValue(
+                        value.code,
+                        value.label,
+                        BulkAction.DELETE,
+                        toScalaOption(parent)
                 )
             }
         }
+        def items = new MiraklItems<MiraklValue>("\"list-code\";\"list-label\";\"value-code\";\"value-label\";\"update-delete\"", toScalaList(values))
         importItems(ImportValuesResponse.class, config, "/api/values_lists/imports", items, "values_lists.csv")
     }
 
@@ -294,7 +299,7 @@ final class MiraklClient implements Client{
             String partName = "file",
             String mimeType = "text/csv",
             String charset = DEFAULT_CHARSET){
-        def part = MultipartFactory.createFilePart(partName, fileName, items.getBytes(charset), false, "$mimeType; charset=$charset", charset)
+        def part = MultipartFactory.createFilePart(partName, fileName, items.getBytes(charset, ";"), false, "$mimeType; charset=$charset", charset)
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -323,7 +328,7 @@ final class MiraklClient implements Client{
      * Tracking Status helper
      ******************************************************************************************************************/
 
-    static <T> T trackStatus(Class<T> classz, RiverConfig config, String api, Long trackingtId){
+    static <T> T trackStatus(Class<T> classz, RiverConfig config, String api, Long trackingId){
         def headers= authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -331,7 +336,7 @@ final class MiraklClient implements Client{
         try{
             conn = client.doGet(
                     [debug: config.debug],
-                    "${config?.clientConfig?.url}$api/$trackingtId",
+                    "${config?.clientConfig?.url}$api/$trackingId",
                     [:],
                     headers,
                     true
@@ -363,5 +368,12 @@ final class MiraklClient implements Client{
         headers
     }
 
+    protected static <T> scala.collection.immutable.List<T> toScalaList(List<T> list) {
+        ((collectionAsScalaIterableConverter(list).asScala()) as Iterable<T>).toList()
+    }
+
+    protected static <T> Option<T> toScalaOption(T o){
+        Option.apply(o)
+    }
 }
 

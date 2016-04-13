@@ -12,10 +12,10 @@ class MiraklCategory extends MiraklItem{
     String logisticClass = ''
 
     @Override
-    public StringBuffer append(StringBuffer buffer) {
+    public StringBuffer append(StringBuffer buffer, String separator = ";") {
         buffer.append(
                 String.format(
-                        "$id;$label;$logisticClass;${action.toString().toLowerCase()};${parent?parent.id:''}%n"
+                        "$id$separator$label$separator$logisticClass$separator${action.toString().toLowerCase()}$separator${parent?parent.id:''}%n"
                 )
         )
     }

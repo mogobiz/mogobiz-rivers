@@ -9,8 +9,8 @@ class MiraklValue extends MiraklItem{
     MiraklValue root
 
     @Override
-    StringBuffer append(StringBuffer buffer) {
-        buffer.append(String.format("${root.id};${root.label};$id;$label;${action.toString().toLowerCase()}%n"))
+    StringBuffer append(StringBuffer buffer, String separator = ";") {
+        buffer.append(String.format("${root.id}$separator${root.label}$separator$id$separator$label$separator${action.toString().toLowerCase()}%n"))
     }
 
 }

@@ -13,10 +13,10 @@ class MiraklItems<T extends MiraklItem> {
 
     String header
 
-    byte[] getBytes(String charset){
+    byte[] getBytes(String charset, String separator = ";"){
         def buffer = new StringBuffer(String.format("${header}%n"))
         items?.each {
-            it.append(buffer)
+            it.append(buffer, separator)
         }
         def str = buffer.toString()
         log.info(str)

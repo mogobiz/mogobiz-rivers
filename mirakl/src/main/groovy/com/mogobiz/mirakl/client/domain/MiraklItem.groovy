@@ -10,5 +10,5 @@ abstract class MiraklItem extends BulkItem{
 
     String label
 
-    abstract StringBuffer append(StringBuffer buffer)
+    abstract StringBuffer append(StringBuffer buffer, String separator)
 }

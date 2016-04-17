@@ -46,11 +46,7 @@ abstract class AbstractMiraklItem[T <: MiraklItem](
                                                     @BeanProperty val label: String,
                                                     @BeanProperty var action: BulkAction,
                                                     @BeanProperty var parent: Option[T])
-  extends MiraklItem{
-//  setId(id)
-//  setAction(action)
-//  setParent(parent.orNull)
-}
+  extends MiraklItem
 
 class MiraklCategory(
                            override val code: String,

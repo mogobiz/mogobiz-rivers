@@ -80,7 +80,7 @@ final class MiraklClient implements Client{
      * @return synchronization
      */
     static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
-        def items = new MiraklItems("\"category-code\";\"category-label\";\"logistic-class\";\"update-delete\";\"parent-code\"", toScalaList(categories))
+        def items = new MiraklItems("category-code;category-label;logistic-class;update-delete;parent-code", toScalaList(categories))
         importItems(Synchronization.class, config, "/api/categories/synchros", items, "categories.csv")
     }
 
@@ -105,7 +105,7 @@ final class MiraklClient implements Client{
      * @return import response
      */
     static ImportResponse importHierarchies(RiverConfig config, List<MiraklHierarchy> hierarchies){
-        def items = new MiraklItems("\"hierarchy-code\";\"hierarchy-label\";\"hierarchy-parent-code\";\"update-delete\"", toScalaList(hierarchies))
+        def items = new MiraklItems("hierarchy-code;hierarchy-label;hierarchy-parent-code;update-delete", toScalaList(hierarchies))
         importItems(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", items, "hierarchies.csv")
     }
 
@@ -183,7 +183,7 @@ final class MiraklClient implements Client{
                 )
             }
         }
-        def items = new MiraklItems<MiraklValue>("\"list-code\";\"list-label\";\"value-code\";\"value-label\";\"update-delete\"", toScalaList(values))
+        def items = new MiraklItems<MiraklValue>("list-code;list-label;value-code;value-label;update-delete", toScalaList(values))
         importItems(ImportValuesResponse.class, config, "/api/values_lists/imports", items, "values_lists.csv")
     }
 

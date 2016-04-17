@@ -13,6 +13,7 @@ import scala.beans.BeanProperty
 trait MiraklItem { // TODO extends BulkItem
   val code: String
   val label: String
+  var action: BulkAction
 //  val id: String = code
   def append(buffer: StringBuffer, separator: String, header: String): StringBuffer = {
     def fields(properties: List[String], values: List[String]): List[String] = {
@@ -21,9 +22,7 @@ trait MiraklItem { // TODO extends BulkItem
         case x :: xs => fields(xs, values :+ property2Value(x))
       }
     }
-    buffer.append(
-      String.format(fields(header.split(separator).map(_.trim.toLowerCase).toList, List.empty).mkString(separator)+"%n")
-    )
+    buffer.append(String.format(fields(header.split(separator).map(_.trim.toLowerCase).toList, List.empty).mkString(separator)+"%n"))
   }
   val property2Value: String => String = {
     case _ => ""
@@ -33,9 +32,13 @@ trait MiraklItem { // TODO extends BulkItem
 case class MiraklItems[T <: MiraklItem](header: String, items: List[T]) {
 
   def getBytes(charset: String, separator: String = ";"): Array[Byte] = {
-    def buffer = new StringBuffer(String.format(s"$header%n"))
-    for(item <- items) {item.append(buffer, separator, header)}
-    val str = buffer.toString
+    def append(items: List[T], buffer: StringBuffer): StringBuffer = {
+      items match {
+        case Nil => buffer
+        case x :: xs => append(xs, x.append(buffer, separator, header))
+      }
+    }
+    val str = append(items, new StringBuffer(String.format("\""+header.split(separator).map(_.trim).toList.mkString("\""+separator+"\"")+"\"%n"))).toString
     str.getBytes(charset)
   }
 
@@ -127,7 +130,7 @@ class MiraklValue(
   }
 }
 
-class MiraklAttribute(val action: BulkAction, val transformations: List[Transformation], val validations: List[Validation]) extends Attribute with MiraklItem{
+class MiraklAttribute(var action: BulkAction, val transformations: List[Transformation], val validations: List[Validation]) extends Attribute with MiraklItem{
   lazy val code = getCode
   lazy val label = getLabel
   //code;label;hierarchy-code;description;example;required;values-list;type;type-parameter;variant;default-value;transformations;validations;action

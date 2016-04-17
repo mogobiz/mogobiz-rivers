@@ -10,10 +10,12 @@ import com.mogobiz.mirakl.client.domain.{RoundingMode, TransformationType}
   */
 trait Transformation{
   val `type`: TransformationType
+  val transformation: String
+  override def toString = transformation
 }
 
 abstract class AbstractTransformation(val `type`: TransformationType) extends Transformation{
-  override def toString = s"${`type`}"
+  override val transformation = s"${`type`}"
 }
 
 class UpperCase extends AbstractTransformation(TransformationType.UPPER_CASE)
@@ -23,7 +25,7 @@ class Capitalize extends AbstractTransformation(TransformationType.CAPITALIZE)
 class RemoveHtml extends AbstractTransformation(TransformationType.REMOVE_HTML)
 
 class NumericTransformation(override val `type`: TransformationType, val number: Number) extends AbstractTransformation(`type`){
-  override def toString = s"${`type`}|$number"
+  override val transformation = s"${`type`}|$number"
 }
 case class Addition(override val number: Number) extends NumericTransformation(TransformationType.ADDITION, number)
 case class Division(override val number: Number) extends NumericTransformation(TransformationType.DIVISION, number)
@@ -31,17 +33,17 @@ case class Multiplication(override val number: Number) extends NumericTransforma
 case class Subtraction(override val number: Number) extends NumericTransformation(TransformationType.SUBTRACTION, number)
 
 case class Constant(text: String, empty: Boolean = true) extends AbstractTransformation(TransformationType.CONSTANT){
-  override def toString = s"${`type`}|$text|$empty"
+  override val transformation = s"${`type`}|$text|$empty"
 }
 
 case class Date(inputFormat: String, outputFormat: String) extends AbstractTransformation(TransformationType.DATE){
-  override def toString = s"${`type`}|$inputFormat|$outputFormat"
+  override val transformation = s"${`type`}|$inputFormat|$outputFormat"
 }
 
 case class Regexp(pattern: Pattern, output: String) extends AbstractTransformation(TransformationType.REGEXP){
-  override def toString = s"${`type`}|${pattern.pattern()}|$output"
+  override val transformation = s"${`type`}|${pattern.pattern()}|$output"
 }
 
 case class RoundDecimal(mode: RoundingMode, precision: Int) extends AbstractTransformation(TransformationType.ROUND_DECIMAL){
-  override def toString = s"${`type`}|${mode.toString}|$precision"
+  override val transformation = s"${`type`}|${mode.toString}|$precision"
 }

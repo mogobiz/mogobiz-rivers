@@ -167,7 +167,7 @@ final class MiraklClient implements Client{
     static ImportResponse importValues(RiverConfig config, List<MiraklValue> values = []){
         def itemsCollection = values.collect { item ->
             item.action = BulkAction.UPDATE
-            "${item.parent?.id}${item.id}"
+            "${item.parent.get().code}${item.code}"
         }
         listValues(config).valuesLists.each{valuesList ->
             valuesList.values.findAll {value ->

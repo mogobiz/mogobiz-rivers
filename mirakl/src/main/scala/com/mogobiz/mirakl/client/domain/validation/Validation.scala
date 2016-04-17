@@ -10,11 +10,10 @@ import com.mogobiz.mirakl.client.domain.ValidationType
   */
 trait Validation {
   val `type`: ValidationType
-  def validation: String
 }
 
-abstract case class AbstractValidation[T](`type`: ValidationType, value:T) extends Validation{
-  override def validation = s"$`type`|$value"
+abstract class AbstractValidation[T](val `type`: ValidationType, value:T) extends Validation{
+  override def toString = s"${`type`}|$value"
 }
 
 case class Length(number: Long) extends AbstractValidation(ValidationType.LENGTH, number)
@@ -24,5 +23,5 @@ case class Min(number: Long) extends AbstractValidation(ValidationType.MIN, numb
 case class MinLength(number: Long) extends AbstractValidation(ValidationType.MIN_LENGTH, number)
 
 case class Regexp(pattern: Pattern) extends AbstractValidation(ValidationType.REGEXP, pattern){
-  override def validation = s"$`type`|${pattern.pattern()}"
+  override def toString = s"${`type`}|${pattern.pattern()}"
 }

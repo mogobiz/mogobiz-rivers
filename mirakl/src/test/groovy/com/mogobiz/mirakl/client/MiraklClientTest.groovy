@@ -4,6 +4,7 @@ import com.mogobiz.common.client.BulkAction
 import com.mogobiz.common.client.ClientConfig
 import com.mogobiz.common.client.Credentials
 import com.mogobiz.common.rivers.spi.RiverConfig
+import com.mogobiz.mirakl.client.domain.MiraklAttribute
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.domain.MiraklHierarchy
 import com.mogobiz.mirakl.client.domain.MiraklValue
@@ -103,6 +104,23 @@ class MiraklClientTest extends GroovyTestCase{
         def listAttributesResponse = MiraklClient.listAttributes(riverConfig)
         assertNotNull(listAttributesResponse)
         assertTrue(listAttributesResponse?.attributes?.size() > 0)
+    }
+
+    void testImportAttributes(){
+        RiverConfig riverConfig = riverConfig()
+        def attributes = MiraklClient.listAttributes(riverConfig).attributes.collect {new MiraklAttribute(it)}
+        def importValuesResponse = MiraklClient.importAttributes(riverConfig, attributes)
+        assertNotNull(importValuesResponse)
+        def trackingId = importValuesResponse.importId
+        assertNotNull(trackingId)
+        def trackingImportStatus = MiraklClient.trackAttributesImportStatusResponse(riverConfig, trackingId)
+        assertNotNull(trackingImportStatus)
+        assertFalse(trackingImportStatus.hasErrorReport)
+        while(trackingImportStatus.importStatus in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
+            Thread.sleep(1000)
+            trackingImportStatus = MiraklClient.trackAttributesImportStatusResponse(riverConfig, trackingId)
+        }
+        assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
     }
 
     private RiverConfig riverConfig(String apiKey = MIRAKL_API_KEY) {

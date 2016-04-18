@@ -14,12 +14,14 @@ import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.http.client.HTTPClient
 import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.MultipartFactory
+import com.mogobiz.mirakl.client.domain.MiraklAttribute
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.domain.MiraklHierarchy
 import com.mogobiz.mirakl.client.domain.MiraklItem
 import com.mogobiz.mirakl.client.domain.MiraklItems
 import com.mogobiz.mirakl.client.domain.MiraklValue
 import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
+import com.mogobiz.mirakl.client.io.ImportAttributesResponse
 import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ImportResponse
 import com.mogobiz.mirakl.client.io.ImportStatusResponse
@@ -35,6 +37,9 @@ import scala.Option
 import scala.collection.Iterable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+
+import static com.mogobiz.mirakl.client.domain.MiraklApi.*
+
 
 import static com.mogobiz.http.client.HTTPClient.*
 
@@ -80,7 +85,7 @@ final class MiraklClient implements Client{
      * @return synchronization
      */
     static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
-        def items = new MiraklItems("category-code;category-label;logistic-class;update-delete;parent-code", toScalaList(categories))
+        def items = new MiraklItems(attributesHeader(), toScalaList(categories))
         importItems(Synchronization.class, config, "/api/categories/synchros", items, "categories.csv")
     }
 
@@ -105,7 +110,7 @@ final class MiraklClient implements Client{
      * @return import response
      */
     static ImportResponse importHierarchies(RiverConfig config, List<MiraklHierarchy> hierarchies){
-        def items = new MiraklItems("hierarchy-code;hierarchy-label;hierarchy-parent-code;update-delete", toScalaList(hierarchies))
+        def items = new MiraklItems(hierarchiesHeader(), toScalaList(hierarchies))
         importItems(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", items, "hierarchies.csv")
     }
 
@@ -183,7 +188,7 @@ final class MiraklClient implements Client{
                 )
             }
         }
-        def items = new MiraklItems<MiraklValue>("list-code;list-label;value-code;value-label;update-delete", toScalaList(values))
+        def items = new MiraklItems<MiraklValue>(valuesHeader(), toScalaList(values))
         importItems(ImportValuesResponse.class, config, "/api/values_lists/imports", items, "values_lists.csv")
     }
 
@@ -238,6 +243,27 @@ final class MiraklClient implements Client{
             closeConnection(conn)
         }
         ret
+    }
+
+    /**
+     * PM01 - Import operator attributes
+     * @param config - river config
+     * @param attributes - attributes
+     * @return the import identifier to track the status of the import
+     */
+    static ImportAttributesResponse importAttributes(RiverConfig config, List<MiraklAttribute> attributes = []){
+        def items = new MiraklItems(attributesHeader(), toScalaList(attributes))
+        importItems(ImportAttributesResponse.class, config, "/api/products/attributes/imports", items, "attributes.csv")
+    }
+
+    /**
+     * PM02 - Get import operator attributes information
+     * @param config - river config
+     * @param importId - the identifier of the import
+     * @return import status
+     */
+    static ImportStatusResponse trackAttributesImportStatusResponse(RiverConfig config, Long importId){
+        trackStatus(ImportStatusResponse.class, config,  "/api/products/attributes/imports", importId)
     }
 
     /******************************************************************************************************************

@@ -67,7 +67,6 @@ class MiraklCategory(
     this(code, label, None)
   }
 
-  //"category-code;category-label;logistic-class;update-delete;parent-code"
   override val property2Value: String => String = {
     case "category-code" => code
     case "category-label" => label
@@ -93,7 +92,6 @@ class MiraklHierarchy(
     this(code, label, None)
   }
 
-  // hierarchy-code;hierarchy-label;hierarchy-parent-code;update-delete
   override val property2Value: String => String = {
     case "hierarchy-code" => code
     case "hierarchy-label" => label
@@ -119,7 +117,6 @@ class MiraklValue(
     this(code, label, None)
   }
 
-  // list-code;list-label;value-code";value-label";update-delete
   override val property2Value: String => String = {
     case "list-code" => parent.map(_.code).getOrElse("")
     case "list-label" => parent.map(_.label).getOrElse("")
@@ -130,10 +127,26 @@ class MiraklValue(
   }
 }
 
-class MiraklAttribute(var action: BulkAction, val transformations: List[Transformation], val validations: List[Validation]) extends Attribute with MiraklItem{
+class MiraklAttribute(var action: BulkAction = BulkAction.UPDATE, val transformations: List[Transformation], val validations: List[Validation]) extends Attribute with MiraklItem{
+  def this(transformations: List[Transformation], validations: List[Validation]){
+    this(BulkAction.UPDATE, transformations, validations)
+  }
+  def this(attribute: Attribute){
+    this(List.empty, List.empty) // TODO transformationsAsString -> transformations, validationsAsString -> validations
+    setCode(attribute.getCode)
+    setLabel(attribute.getLabel)
+    setHierarchyCode(attribute.getHierarchyCode)
+    setDescription(attribute.getDescription)
+    setExample(attribute.getExample)
+    setRequired(attribute.getRequired)
+    setValuesList(attribute.getValuesList)
+    setType(attribute.getType)
+    setTypeParameter(attribute.getTypeParameter)
+    setVariant(attribute.getVariant)
+    setDefaultValue(attribute.getDefaultValue)
+  }
   lazy val code = getCode
   lazy val label = getLabel
-  //code;label;hierarchy-code;description;example;required;values-list;type;type-parameter;variant;default-value;transformations;validations;action
   override val property2Value: String => String = {
     case "code" => code
     case "label" => label
@@ -151,4 +164,16 @@ class MiraklAttribute(var action: BulkAction, val transformations: List[Transfor
     case "update-delete" => action.toString.toLowerCase
     case _ => ""
   }
+}
+
+object MiraklApi {
+
+  val categoriesHeader = "category-code;category-label;logistic-class;update-delete;parent-code"
+
+  val hierarchiesHeader = "hierarchy-code;hierarchy-label;hierarchy-parent-code;update-delete"
+
+  val valuesHeader = "list-code;list-label;value-code;value-label;update-delete"
+
+  val attributesHeader = "code;label;hierarchy-code;description;example;required;values-list;type;type-parameter;variant;default-value;transformations;validations;update-delete"
+
 }

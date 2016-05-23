@@ -132,7 +132,7 @@ final class HTTPClient {
             }
             final String b = params ? addParams(body, params, charset).toString() : body
             log.debug(b)
-            byte[] bytes = b.getBytes(charset)
+            byte[] bytes = b?.getBytes(charset) ?: new byte[0]
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
             conn.setRequestProperty('Length', '' + len)
@@ -201,7 +201,7 @@ final class HTTPClient {
             conn.setRequestProperty('Accept-Charset', charset)
             final def s = params ? addParams(content, params, charset).toString() : content
             log.debug(s)
-            byte[] bytes = s.getBytes(charset)
+            byte[] bytes = s?.getBytes(charset) ?: new byte[0]
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
             conn.setRequestProperty('Length', '' + len)

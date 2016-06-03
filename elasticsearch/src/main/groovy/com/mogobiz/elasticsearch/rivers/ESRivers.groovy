@@ -43,9 +43,16 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
         loadRivers().each { river ->
             mappings << river.defineESMapping()
         }
+        def clientConfig = config.clientConfig
+        def conf = [debug: clientConfig?.debug]
+        def credentials = clientConfig?.credentials
+        if(credentials){
+            conf << [username: credentials.client_id]
+            conf << [password: credentials.client_secret]
+        }
         ESIndexResponse response = new ESIndexResponse(acknowledged: true, error: null)
         def comments = config.clientConfig.store + '_comment'
-        def exists = client.indexExists(config.clientConfig.url, comments)
+        def exists = client.indexExists(config.clientConfig.url, comments, conf)
         if (!exists) {
             response = client.createIndex(
                     config.clientConfig.url,
@@ -70,13 +77,13 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                             << new ESProperty(name: 'notuseful', type: ESClient.TYPE.LONG, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                             << new ESProperty(name: 'created', type: ESClient.TYPE.DATE, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                             )],
-                    [debug: config.debug],
+                    conf,
                     config.languages as String[],
                     config.defaultLang)
         }
         if (response.acknowledged) {
             def wishlist = config.clientConfig.store + '_wishlist'
-            exists = client.indexExists(config.clientConfig.url, wishlist)
+            exists = client.indexExists(config.clientConfig.url, wishlist, conf)
             if (!exists) {
                 def ownerProperties = []
                 ownerProperties << new ESProperty(name: 'dayOfBirth', type: ESClient.TYPE.INTEGER, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
@@ -136,7 +143,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                                 << new ESProperty(name: 'owner', type: ESClient.TYPE.NESTED, properties: ownerProperties)
                                                 << new ESProperty(name: 'wishlists', type: ESClient.TYPE.NESTED, properties: wishlistsProperties)
                                 )],
-                        [debug: config.debug],
+                        conf,
                         config.languages as String[],
                         config.defaultLang)
             }
@@ -144,7 +151,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
 
         if (response.acknowledged) {
             def history = config.clientConfig.store + '_history'
-            exists = client.indexExists(config.clientConfig.url, history)
+            exists = client.indexExists(config.clientConfig.url, history, conf)
             if (!exists) {
                 response = client.createIndex(
                         config.clientConfig.url,
@@ -160,7 +167,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                         properties: []
                                                 << new ESProperty(name: 'productIds', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                 )],
-                        [debug: config.debug],
+                        conf,
                         config.languages as String[],
                         config.defaultLang)
             }
@@ -168,7 +175,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
 
         if (response.acknowledged) {
             def learning = config.clientConfig.store + '_learning'
-            exists = client.indexExists(config.clientConfig.url, learning)
+            exists = client.indexExists(config.clientConfig.url, learning, conf)
             if (!exists) {
                 response = client.createIndex(
                         config.clientConfig.url,
@@ -194,7 +201,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                                 << new ESProperty(name: 'action', type: ESClient.TYPE.STRING, index: ESClient.INDEX.NOT_ANALYZED, multilang: false)
                                 )
                         ],
-                        [debug: config.debug],
+                        conf,
                         config.languages as String[],
                         config.defaultLang)
             }
@@ -202,7 +209,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
 
         if (response.acknowledged) {
             def cart = config.clientConfig.store + '_cart'
-            exists = client.indexExists(config.clientConfig.url, cart)
+            exists = client.indexExists(config.clientConfig.url, cart, conf)
             if (!exists) {
                 response = client.createIndex(
                         config.clientConfig.url,
@@ -212,18 +219,19 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                 refresh_interval: "1s"
                         ),
                         ESMappings.loadMappings("StoreCart"),
-                        [debug: config.debug])
+                        conf
+                )
             }
             def url = config.clientConfig.url
-            Set<String> indexes = client.retrieveAliasIndexes(url, 'mogobiz_carts', [debug: true])
+            Set<String> indexes = client.retrieveAliasIndexes(url, 'mogobiz_carts', conf)
             if (!indexes.contains(cart)) {
-                client.createAlias([debug: true], url, 'mogobiz_carts', cart)
+                client.createAlias(conf, url, 'mogobiz_carts', cart)
             }
         }
 
         if (response.acknowledged) {
             def cart = config.clientConfig.store + '_predictions_view'
-            exists = client.indexExists(config.clientConfig.url, cart)
+            exists = client.indexExists(config.clientConfig.url, cart, conf)
             if (!exists) {
                 Map preditionsMap = ESMappings.loadMappings("Predictions")
                 Map fisMap = ESMappings.loadMappings("FrequentPattern")
@@ -238,13 +246,14 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                 refresh_interval: "1s"
                         ),
                         allMap,
-                        [debug: config.debug])
+                        conf
+                )
             }
         }
 
         if (response.acknowledged) {
             def cart = config.clientConfig.store + '_predictions_purchase'
-            exists = client.indexExists(config.clientConfig.url, cart)
+            exists = client.indexExists(config.clientConfig.url, cart, conf)
             if (!exists) {
                 Map preditionsMap = ESMappings.loadMappings("Predictions")
                 Map fisMap = ESMappings.loadMappings("FrequentPattern")
@@ -259,13 +268,14 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                 refresh_interval: "1s"
                         ),
                         allMap,
-                        [debug: config.debug])
+                        conf
+                )
             }
         }
 
         if (response.acknowledged) {
             def bo = config.clientConfig.store + '_bo'
-            exists = client.indexExists(config.clientConfig.url, bo)
+            exists = client.indexExists(config.clientConfig.url, bo, conf)
             if (!exists) {
                 Map cartMap = ESMappings.loadMappings("BOCart")
                 Map itemMap = ESMappings.loadMappings("BOCartItemEx")
@@ -280,7 +290,8 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                                 refresh_interval: "1s"
                         ),
                         allMap,
-                        [debug: config.debug])
+                        conf
+                )
             }
         }
 
@@ -290,7 +301,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
                     config.clientConfig.config.index as String,
                     new ESIndexSettings(number_of_replicas: 0, refresh_interval: "-1"),
                     mappings,
-                    [debug: config.debug],
+                    conf,
                     config.languages as String[],
                     config.defaultLang)
         }

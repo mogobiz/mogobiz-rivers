@@ -33,7 +33,13 @@ abstract class AbstractESRiver<E> extends AbstractRiver<E, ESClient> implements 
                     query:[:],
                     included: properties,
                     excluded: [])
-            hits.addAll(getClient().search(request, [debug:config.clientConfig.debug]).hits)
+            def conf = [debug:config.clientConfig?.debug]
+            def credentials = config.clientConfig?.credentials
+            if(credentials){
+                conf << [username: credentials.client_id]
+                conf << [password: credentials.client_secret]
+            }
+            hits.addAll(getClient().search(request, conf).hits)
         }
         return new SearchResponse(hits:hits?.collect {hit ->
             new Item(id:hit.id, type: getType(), map:hit)

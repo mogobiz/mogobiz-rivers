@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>rivers</artifactId>
-        <version>0.4.1-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-http-client</artifactId>
@@ -27,6 +27,11 @@
         <dependency>
             <groupId>net.sourceforge.nekohtml</groupId>
             <artifactId>nekohtml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.8</version>
         </dependency>
         <!-- groovy -->
         <dependency>

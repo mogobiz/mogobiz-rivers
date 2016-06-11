@@ -281,7 +281,7 @@ final class MiraklClient implements Client{
      * @param attributes - attributes
      * @return attributes synchronization tracking id
      */
-    static ImportAttributesResponse importAttributes(RiverConfig config, List<MiraklAttribute> attributes = []){
+    static ImportResponse importAttributes(RiverConfig config, List<MiraklAttribute> attributes = []){
         def items = new MiraklItems(attributesHeader(), toScalaList(attributes))
         importItems(ImportAttributesResponse.class, config, attributesApi(), items, "attributes.csv")
     }

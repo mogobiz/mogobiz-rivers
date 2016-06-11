@@ -82,21 +82,31 @@ final class MiraklClient implements Client{
      * CA01 - Update categories from Operator Information System
      * @param config - river configuration
      * @param categories - categories to update
-     * @return synchronization
+     * @return categories synchronisation tracking id
      */
     static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
-        def items = new MiraklItems(attributesHeader(), toScalaList(categories))
-        importItems(Synchronization.class, config, "/api/categories/synchros", items, "categories.csv")
+        def items = new MiraklItems(categoriesHeader(), toScalaList(categories))
+        importItems(Synchronization.class, config, categoriesApi(), items, "categories.csv")
     }
 
     /**
      * CA02 - refresh categories synchronisation status
      * @param config - river configuration
-     * @param synchro - synchronization id
-     * @return status of the categories synchronisation
+     * @param importId - tracking id
+     * @return categories synchronisation status
      */
-    static CategoriesSynchronizationStatusResponse refreshCategoriesSynchronizationStatus(RiverConfig config, Long synchro){
-        trackStatus(CategoriesSynchronizationStatusResponse.class, config, "/api/categories/synchros", synchro)
+    static CategoriesSynchronizationStatusResponse refreshCategoriesSynchronizationStatus(RiverConfig config, Long importId){
+        trackStatus(CategoriesSynchronizationStatusResponse.class, config, categoriesApi(), importId)
+    }
+
+    /**
+     * CA03 - get errors report file for categories synchronisation
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return categories synchronization error report
+     */
+    static String loadCategoriesSynchronizationErrorReport(RiverConfig config, Long importId){
+        loadSynchronizationErrorReport(config, categoriesApi(), importId)
     }
 
     /******************************************************************************************************************
@@ -107,21 +117,31 @@ final class MiraklClient implements Client{
      * H01 - Import operator hierarchies
      * @param config - river configuration
      * @param hierarchies - hierarchies to import
-     * @return import response
+     * @return hierarchies synchronisation tracking id
      */
     static ImportResponse importHierarchies(RiverConfig config, List<MiraklHierarchy> hierarchies){
         def items = new MiraklItems(hierarchiesHeader(), toScalaList(hierarchies))
-        importItems(ImportHierarchiesResponse.class, config, "/api/hierarchies/imports", items, "hierarchies.csv")
+        importItems(ImportHierarchiesResponse.class, config, hierarchiesApi(), items, "hierarchies.csv")
     }
 
     /**
-     * H02 - Get import information
+     * H02 - refresh hierarchies synchronisation status
      * @param config - river configuration
      * @param importId - tracking id
-     * @return status response
+     * @return hierarchies synchronisation status
      */
     static ImportStatusResponse trackHierarchiesImportStatusResponse(RiverConfig config, Long importId){
-        trackStatus(ImportStatusResponse.class, config,  "/api/hierarchies/imports", importId)
+        trackStatus(ImportStatusResponse.class, config,  hierarchiesApi(), importId)
+    }
+
+    /**
+     * H03 - get errors report file for hierarchies synchronisation
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return hierarchies synchronisation error report
+     */
+    static String loadHierarchiesSynchronizationErrorReport(RiverConfig config, Long importId){
+        loadSynchronizationErrorReport(config, hierarchiesApi(), importId)
     }
 
     /******************************************************************************************************************
@@ -167,7 +187,7 @@ final class MiraklClient implements Client{
      * VL01 - Send a file to create, update or delete values list
      * @param config - config
      * @param values - values
-     * @return
+     * @return values synchronization tracking id
      */
     static ImportResponse importValues(RiverConfig config, List<MiraklValue> values = []){
         def itemsCollection = values.collect { item ->
@@ -189,17 +209,27 @@ final class MiraklClient implements Client{
             }
         }
         def items = new MiraklItems<MiraklValue>(valuesHeader(), toScalaList(values))
-        importItems(ImportValuesResponse.class, config, "/api/values_lists/imports", items, "values_lists.csv")
+        importItems(ImportValuesResponse.class, config, valuesApi(), items, "values_lists.csv")
     }
 
     /**
-     * VL02 - Get import information
+     * VL02 - refresh values synchronisation status
      * @param config - river configuration
      * @param importId - tracking id
-     * @return status response
+     * @return values synchronization status
      */
     static ImportStatusResponse trackValuesImportStatusResponse(RiverConfig config, Long importId){
-        trackStatus(ImportStatusResponse.class, config,  "/api/values_lists/imports", importId)
+        trackStatus(ImportStatusResponse.class, config,  valuesApi(), importId)
+    }
+
+    /**
+     * VL03 - get errors report file for values synchronisation
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return values synchronization error report
+     */
+    static String loadValuesSynchronizationErrorReport(RiverConfig config, Long importId){
+        loadSynchronizationErrorReport(config, valuesApi(), importId)
     }
 
     /******************************************************************************************************************
@@ -249,21 +279,31 @@ final class MiraklClient implements Client{
      * PM01 - Import operator attributes
      * @param config - river config
      * @param attributes - attributes
-     * @return the import identifier to track the status of the import
+     * @return attributes synchronization tracking id
      */
     static ImportAttributesResponse importAttributes(RiverConfig config, List<MiraklAttribute> attributes = []){
         def items = new MiraklItems(attributesHeader(), toScalaList(attributes))
-        importItems(ImportAttributesResponse.class, config, "/api/products/attributes/imports", items, "attributes.csv")
+        importItems(ImportAttributesResponse.class, config, attributesApi(), items, "attributes.csv")
     }
 
     /**
-     * PM02 - Get import operator attributes information
+     * PM02 - refresh attributes synchronisation status
      * @param config - river config
      * @param importId - the identifier of the import
-     * @return import status
+     * @return attributes synchronisation status
      */
     static ImportStatusResponse trackAttributesImportStatusResponse(RiverConfig config, Long importId){
-        trackStatus(ImportStatusResponse.class, config,  "/api/products/attributes/imports", importId)
+        trackStatus(ImportStatusResponse.class, config,  attributesApi(), importId)
+    }
+
+    /**
+     * PM03 - get errors report file for attributes synchronisation
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return attributes synchronization error report
+     */
+    static String loadAttributesSynchronizationErrorReport(RiverConfig config, Long importId){
+        loadSynchronizationErrorReport(config, attributesApi(), importId)
     }
 
     /******************************************************************************************************************
@@ -372,6 +412,31 @@ final class MiraklClient implements Client{
                 log.error("$responseCode: ${conn.responseMessage}")
             }
             ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), classz) as T
+        }
+        finally {
+            closeConnection(conn)
+        }
+        ret
+    }
+
+    static String loadSynchronizationErrorReport(RiverConfig config, String api, Long synchro){
+        def headers= authenticate(config)
+        headers.setHeader("Accept", "application/json")
+        def conn = null
+        def ret = null
+        try{
+            conn = client.doGet(
+                    [debug: config.debug],
+                    "${config?.clientConfig?.url}$api/$synchro/error_report",
+                    [:],
+                    headers,
+                    true
+            )
+            def responseCode = conn.responseCode
+            if(responseCode != 200){
+                log.error("$responseCode: ${conn.responseMessage}")
+            }
+            ret = getText([debug: config.debug], conn)
         }
         finally {
             closeConnection(conn)

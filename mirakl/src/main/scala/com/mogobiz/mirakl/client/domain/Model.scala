@@ -154,7 +154,7 @@ class MiraklAttribute(var action: BulkAction = BulkAction.UPDATE, val transforma
     case "description" => getDescription
     case "example" => getExample
     case "required" => getRequired.toString
-    case "values-list" => getValuesList
+    case "values-list" => Option(getValuesList).getOrElse("")
     case "type" => getType.toString
     case "type-parameter" => getTypeParameter
     case "variant" => getVariant.toString
@@ -170,10 +170,17 @@ object MiraklApi {
 
   val categoriesHeader = "category-code;category-label;logistic-class;update-delete;parent-code"
 
+  val categoriesApi = "/api/categories/synchros"
+
   val hierarchiesHeader = "hierarchy-code;hierarchy-label;hierarchy-parent-code;update-delete"
+
+  val hierarchiesApi = "/api/hierarchies/imports"
 
   val valuesHeader = "list-code;list-label;value-code;value-label;update-delete"
 
+  val valuesApi = "/api/values_lists/imports"
+
   val attributesHeader = "code;label;hierarchy-code;description;example;required;values-list;type;type-parameter;variant;default-value;transformations;validations;update-delete"
 
+  val attributesApi = "/api/products/attributes/imports"
 }

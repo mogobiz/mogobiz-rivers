@@ -44,6 +44,9 @@ class MiraklClientTest extends GroovyTestCase{
             synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
         }
         assertEquals(SynchronizationStatus.COMPLETE, synchronizationStatusResponse.status)
+        if(synchronizationStatusResponse.hasErrorReport){
+            fail(MiraklClient.loadCategoriesSynchronizationErrorReport(riverConfig, synchro))
+        }
     }
 
     void testSearchShops(){
@@ -71,6 +74,9 @@ class MiraklClientTest extends GroovyTestCase{
             trackingImportStatus = MiraklClient.trackHierarchiesImportStatusResponse(riverConfig, trackingId)
         }
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
+        if(trackingImportStatus.hasErrorReport){
+            fail(MiraklClient.loadHierarchiesSynchronizationErrorReport(riverConfig, trackingId))
+        }
     }
 
     void testListValues(){
@@ -97,6 +103,9 @@ class MiraklClientTest extends GroovyTestCase{
             trackingImportStatus = MiraklClient.trackValuesImportStatusResponse(riverConfig, trackingId)
         }
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
+        if(trackingImportStatus.hasErrorReport){
+            fail(MiraklClient.loadValuesSynchronizationErrorReport(riverConfig, trackingId))
+        }
     }
 
     void testListAttributes(){
@@ -121,6 +130,9 @@ class MiraklClientTest extends GroovyTestCase{
             trackingImportStatus = MiraklClient.trackAttributesImportStatusResponse(riverConfig, trackingId)
         }
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
+        if(trackingImportStatus.hasErrorReport){
+            fail(MiraklClient.loadAttributesSynchronizationErrorReport(riverConfig, trackingId))
+        }
     }
 
     private RiverConfig riverConfig(String apiKey = MIRAKL_API_KEY) {

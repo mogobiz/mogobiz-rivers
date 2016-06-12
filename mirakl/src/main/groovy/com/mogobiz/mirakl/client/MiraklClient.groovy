@@ -499,11 +499,11 @@ final class MiraklClient implements Client{
         headers
     }
 
-    protected static <T> scala.collection.immutable.List<T> toScalaList(List<T> list) {
+    static <T> scala.collection.immutable.List<T> toScalaList(List<T> list) {
         ((collectionAsScalaIterableConverter(list).asScala()) as Iterable<T>).toList()
     }
 
-    protected static <T> Option<T> toScalaOption(T o){
+    static <T> Option<T> toScalaOption(T o){
         Option.apply(o)
     }
 }

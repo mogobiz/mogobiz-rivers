@@ -258,6 +258,15 @@
         "values_list": {"type": "string"},
         "variant": {"type": "boolean"}
       }
+    },
+    "hierarchie": {
+      "javaType": "com.mogobiz.mirakl.client.domain.Hierarchie",
+      "properties": {
+        "code": {"type": "string"},
+        "label": {"type": "string"},
+        "level": {"type": "integer"},
+        "parent_code": {"type": "string"}
+      }
     }
   }
 }

@@ -27,6 +27,7 @@ import com.mogobiz.mirakl.client.io.ImportResponse
 import com.mogobiz.mirakl.client.io.ImportStatusResponse
 import com.mogobiz.mirakl.client.io.ImportValuesResponse
 import com.mogobiz.mirakl.client.io.ListAttributesResponse
+import com.mogobiz.mirakl.client.io.ListHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ListValuesResponse
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
@@ -53,16 +54,16 @@ final class MiraklClient implements Client{
 
     private static MiraklClient instance
 
-    private static final HTTPClient client = getInstance()
+    private static final HTTPClient client = HTTPClient.getInstance()
 
     private MiraklClient(){}
 
-//    public static MiraklClient getInstance(){
-//        if(!instance){
-//            instance = new MiraklClient()
-//        }
-//        return instance
-//    }
+    public static MiraklClient getInstance(){
+        if(!instance){
+            instance = new MiraklClient()
+        }
+        return instance
+    }
 
     @Override
     Future<BulkResponse> bulk(RiverConfig config, List<BulkItem> items, ExecutionContext ec) {
@@ -112,6 +113,45 @@ final class MiraklClient implements Client{
     /******************************************************************************************************************
      * Hierarchies api
      ******************************************************************************************************************/
+
+    /**
+     * H11 - List hierarchies related (parents and children) to the given hierarchy
+     * @param config - config
+     * @param hierarchy - [optional] The code of the hierarchy
+     * @param max_level -  [optional] Number of children hierarchy levels to retrieve. If not specified, all child hierarchies are retrieved
+     * @return The list of hierarchies
+     */
+    static ListHierarchiesResponse listHierarchies(RiverConfig config, String hierarchy = null, int max_level = -1){
+        def headers= authenticate(config)
+        headers.setHeader("Accept", "application/json")
+        def conn = null
+        def ret = null
+        def params = [:]
+        if(hierarchy){
+            params << [hierarchy: hierarchy]
+        }
+        if(max_level >= 0){
+            params << [max_level: max_level]
+        }
+        try{
+            conn = client.doGet(
+                    [debug: config.debug],
+                    "${config?.clientConfig?.url}/api/hierarchies",
+                    params,
+                    headers,
+                    true
+            )
+            def responseCode = conn.responseCode
+            if(responseCode != 200){
+                log.error("$responseCode: ${conn.responseMessage}")
+            }
+            ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), ListHierarchiesResponse)
+        }
+        finally {
+            closeConnection(conn)
+        }
+        ret
+    }
 
     /**
      * H01 - Import operator hierarchies

@@ -56,12 +56,15 @@ class MiraklClientTest extends GroovyTestCase{
         assertTrue(searchShopsResponse.shops?.size() > 0)
     }
 
+    void testListHierarchies(){
+        RiverConfig riverConfig = riverConfig()
+        def hierarchiesResponse = MiraklClient.listHierarchies(riverConfig)
+        assertNotNull(hierarchiesResponse)
+    }
+
     void testImportHierarchies(){
         RiverConfig riverConfig = riverConfig()
-        def hierarchies = []
-        (1..10).each {
-            hierarchies << createHierarchy(it)
-        }
+        def hierarchies = MiraklClient.listHierarchies(riverConfig).hierarchies.collect {new MiraklHierarchy(it)}
         def importResponse = MiraklClient.importHierarchies(riverConfig, hierarchies)
         assertNotNull(importResponse)
         def trackingId = importResponse.importId

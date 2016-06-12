@@ -92,6 +92,13 @@ class MiraklHierarchy(
     this(code, label, None)
   }
 
+  def this(hierarchie: Hierarchie){
+    this(hierarchie.getCode, hierarchie.getLabel, BulkAction.UPDATE, Option(hierarchie.getParentCode) match {
+      case Some(s) if s.trim.length > 0 => Some(new MiraklCategory(s, ""))
+      case _ => None
+    })
+  }
+
   override val property2Value: String => String = {
     case "hierarchy-code" => code
     case "hierarchy-label" => label

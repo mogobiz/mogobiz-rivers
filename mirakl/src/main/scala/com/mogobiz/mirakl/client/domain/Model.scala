@@ -99,6 +99,10 @@ class MiraklHierarchy(
     })
   }
 
+  def this(category: MiraklCategory){
+    this(category.code, category.label, BulkAction.UPDATE, category.parent)
+  }
+
   override val property2Value: String => String = {
     case "hierarchy-code" => code
     case "hierarchy-label" => label

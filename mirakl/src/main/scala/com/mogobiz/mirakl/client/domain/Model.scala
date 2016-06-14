@@ -70,7 +70,7 @@ class MiraklCategory(
   override val property2Value: String => String = {
     case "category-code" => code
     case "category-label" => label
-    case "logistic-class" => logisticClass
+    case "logistic-class" => Option(logisticClass).getOrElse("")
     case "update-delete" => action.toString.toLowerCase()
     case "parent-code" => parent.map(_.code).getOrElse("")
     case _ => ""

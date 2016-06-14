@@ -1,6 +1,7 @@
 package com.mogobiz.mirakl.client
 
 import com.mogobiz.common.client.BulkAction
+import com.mogobiz.mirakl.client.domain.MiraklApi
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 
 import static com.mogobiz.mirakl.client.MiraklClient.toScalaOption
@@ -18,8 +19,8 @@ class MiraklCategoryTest extends GroovyTestCase{
                 toScalaOption(null),
                 'A'
         )
-        log.info(category1.append(new StringBuffer(), ";").toString())
-        assertEquals("category1;category1Label;A;delete;\n", category1.append(new StringBuffer(), ";").toString())
+        log.info(category1.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
+        assertEquals("category1;category1Label;A;delete;\n", category1.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
         def category2 = new MiraklCategory(
                 'category2',
                 'category2Label',
@@ -27,7 +28,7 @@ class MiraklCategoryTest extends GroovyTestCase{
                 toScalaOption(category1),
                 'A'
         )
-        log.info(category2.append(new StringBuffer(), ";").toString())
-        assertEquals("category2;category2Label;A;delete;category1\n", category2.append(new StringBuffer(), ";").toString())
+        log.info(category2.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
+        assertEquals("category2;category2Label;A;delete;category1\n", category2.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
     }
 }

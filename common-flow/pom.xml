@@ -50,7 +50,6 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-stream-experimental_${scala.major.version}</artifactId>
-            <version>1.0-M3</version>
         </dependency>
 
         <!-- spray -->

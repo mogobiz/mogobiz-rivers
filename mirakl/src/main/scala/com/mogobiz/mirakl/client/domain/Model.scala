@@ -199,7 +199,7 @@ class MiraklProduct(val code: String, val label: String, val description:String,
   }
 }
 
-class MiraklAttributeValue(val attribute: MiraklAttribute, val value: Option[String] = None)
+class MiraklAttributeValue(val attribute: String, val value: Option[String] = None)
 
 class MiraklOffer(
                    val sku: String,
@@ -223,8 +223,14 @@ class MiraklOffer(
                    val attributes: Seq[MiraklAttributeValue] = Seq.empty,
                    val product: Option[MiraklProduct] = None
                  ) extends BulkItem with MiraklItem{
+  def this(sku: String, productId: String, productIdType: ProductIdType = ProductIdType.SKU, description: String, price: Double, quantity: Int = 0, state: String){
+    this(sku, productId, productIdType, description, price, quantity, state)
+  }
+  def this(sku: String, productId: String, productIdType: ProductIdType = ProductIdType.SKU, description: String, price: Double, quantity: Int = 0, state: String, attributes: Seq[MiraklAttributeValue], product: Option[MiraklProduct]){
+    this(sku, productId, productIdType, description, price, quantity, state, attributes = attributes, product = product)
+  }
   lazy val code = sku
-  lazy val values: Map[String, Option[String]] = attributes.map(a => a.attribute.code -> a.value).toMap
+  lazy val values: Map[String, Option[String]] = attributes.map(a => a.attribute -> a.value).toMap
   override val property2Value: String => String = {
     case "sku" => code
     case x if values contains x => values(x).getOrElse("")

@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>rivers</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-RC2</version>
     </parent>
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-elasticsearch-mappings</artifactId>

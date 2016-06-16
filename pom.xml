@@ -8,7 +8,7 @@
     <groupId>com.mogobiz</groupId>
     <artifactId>rivers</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.0-RC2</version>
     <name>mogobiz rivers</name>
     <modules>
         <module>http-client</module>

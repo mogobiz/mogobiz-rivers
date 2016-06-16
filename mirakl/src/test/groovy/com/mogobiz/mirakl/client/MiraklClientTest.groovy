@@ -24,6 +24,8 @@ class MiraklClientTest extends GroovyTestCase{
 //    def FRONT_KEY = 'de901fbc-804e-4733-a5bd-8765c41c921f'
 //    def OPERATOR_KEY = '3c404360-7b63-4f34-beb4-2d564fde2e03'
 
+    def SHOP_ID = "2000"
+
     def MIRAKL_URL = 'https://ebiznext-dev.mirakl.net'
 
     void testSynchronizeCategories(){
@@ -139,7 +141,7 @@ class MiraklClientTest extends GroovyTestCase{
     }
 
     private RiverConfig riverConfig(String apiKey = MIRAKL_API_KEY) {
-        def clientConfig = new ClientConfig(url: MIRAKL_URL, credentials: new Credentials(apiKey: apiKey))
+        def clientConfig = new ClientConfig(merchant_id: SHOP_ID, merchant_url: MIRAKL_URL, credentials: new Credentials(apiKey: apiKey))
         def riverConfig = new RiverConfig(clientConfig: clientConfig)
         riverConfig
     }

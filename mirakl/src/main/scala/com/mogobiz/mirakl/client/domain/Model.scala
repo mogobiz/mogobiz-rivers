@@ -1,6 +1,8 @@
 package com.mogobiz.mirakl.client.domain
 
-import com.mogobiz.common.client.BulkAction
+import java.util.Date
+
+import com.mogobiz.common.client.{BulkItem, BulkAction}
 import com.mogobiz.mirakl.client.domain.transformation.Transformation
 import com.mogobiz.mirakl.client.domain.validation.Validation
 
@@ -10,9 +12,8 @@ import scala.beans.BeanProperty
   *
   * Created by smanciot on 13/04/16.
   */
-trait MiraklItem { // TODO extends BulkItem
+trait MiraklItem {
   val code: String
-  val label: String
   var action: BulkAction
 //  val id: String = code
   def append(buffer: StringBuffer, separator: String, header: String): StringBuffer = {
@@ -29,33 +30,35 @@ trait MiraklItem { // TODO extends BulkItem
   }
 }
 
-case class MiraklItems[T <: MiraklItem](header: String, items: List[T]) {
+case class MiraklItems[T <: MiraklItem](header: String, items: List[T], separator: String = ";") {
 
-  def getBytes(charset: String, separator: String = ";"): Array[Byte] = {
+  def getBytes(charset: String): Array[Byte] = {
+    toString.getBytes(charset)
+  }
+
+  override def toString: String = {
     def append(items: List[T], buffer: StringBuffer): StringBuffer = {
       items match {
         case Nil => buffer
         case x :: xs => append(xs, x.append(buffer, separator, header))
       }
     }
-    val str = append(items, new StringBuffer(String.format("\""+header.split(separator).map(_.trim).toList.mkString("\""+separator+"\"")+"\"%n"))).toString
-    str.getBytes(charset)
+    append(items, new StringBuffer(String.format("\""+header.split(separator).map(_.trim).toList.mkString("\""+separator+"\"")+"\"%n"))).toString
   }
-
 }
 
 abstract class AbstractMiraklItem[T <: MiraklItem](
                                                     @BeanProperty val code: String,
                                                     @BeanProperty val label: String,
                                                     @BeanProperty var action: BulkAction,
-                                                    @BeanProperty var parent: Option[T])
+                                                    @BeanProperty var parent: Option[T] = None)
   extends MiraklItem
 
 class MiraklCategory(
                            override val code: String,
                            override val label: String,
                            action: BulkAction,
-                           parent: Option[MiraklCategory],
+                           parent: Option[MiraklCategory] = None,
                            logisticClass: String = "")
   extends AbstractMiraklItem[MiraklCategory](code, label, action, parent) {
 
@@ -81,7 +84,7 @@ class MiraklHierarchy(
                             override val code: String,
                             override val label: String,
                             action: BulkAction,
-                            parent: Option[MiraklCategory])
+                            parent: Option[MiraklCategory] = None)
   extends AbstractMiraklItem[MiraklCategory](code, label, action, parent) {
 
   def this(code: String, label: String, parent: Option[MiraklCategory]){
@@ -117,7 +120,7 @@ class MiraklValue(
                         override val code: String,
                         override val label: String,
                         action: BulkAction,
-                        parent: Option[MiraklValue])
+                        parent: Option[MiraklValue] = None)
   extends AbstractMiraklItem[MiraklValue](code, label, action, parent) {
 
   def this(code: String, label: String, parent: Option[MiraklValue]){
@@ -177,6 +180,58 @@ class MiraklAttribute(var action: BulkAction = BulkAction.UPDATE, val transforma
   }
 }
 
+class MiraklProduct(val code: String, val label: String, val description:String, val category: String, val active: Option[Boolean] = None, val references:Seq[ProductReference] = Seq.empty, val skus: Seq[String] = Seq.empty, val brand: String, val url: Option[String] = None, val media: Option[String] = None, val shops: Seq[String] = Seq.empty, val group: Option[String] = None, var action: BulkAction = BulkAction.UPDATE) extends BulkItem with MiraklItem{
+  override val property2Value: String => String = {
+    case "product-sku" => code
+    case "product-description" => description
+    case "product-title" => label
+    case "category-code" => category
+    case "active" => active.getOrElse(true).toString
+    case "product-references" => references.map{reference => s"${reference.getReferenceType}|${reference.getReference}"}.mkString(",")
+    case "shop-skus" => skus.mkString(",")
+    case "brand" => Option(brand).getOrElse("")
+    case "update-delete" => action.toString.toLowerCase
+    case "product-url" => url.getOrElse("")
+    case "media-url" => media.getOrElse("")
+    case "authorized-shop-ids" => shops.mkString(",")
+    case "variant-group-code" => group.getOrElse("")
+    case _ => ""
+  }
+}
+
+class MiraklAttributeValue(val attribute: MiraklAttribute, val value: Option[String] = None)
+
+class MiraklOffer(
+                   val sku: String,
+                   val productId: String,
+                   val productIdType: ProductIdType = ProductIdType.SKU,
+                   val description: String,
+                   val price: Double,
+                   val quantity: Int = 0,
+                   val state: String,
+                   val internalDescription: Option[String] = None,
+                   val priceAdditionalInfo: Option[String] = None,
+                   val minQuantityAlert: Option[Int] = None,
+                   val availableStartDate: Option[Date] = None,
+                   val availableEndDate: Option[Date] = None,
+                   val discountPrice: Option[Double] = None,
+                   val discountStartDate: Option[Date] = None,
+                   val discountEndDate: Option[Date] = None,
+                   val discountRanges: Option[String] = None,
+                   val leadtimeToShip: Option[Int] = None,
+                   var action: BulkAction = BulkAction.UPDATE,
+                   val attributes: Seq[MiraklAttributeValue] = Seq.empty,
+                   val product: Option[MiraklProduct] = None
+                 ) extends BulkItem with MiraklItem{
+  lazy val code = sku
+  lazy val values: Map[String, Option[String]] = attributes.map(a => a.attribute.code -> a.value).toMap
+  override val property2Value: String => String = {
+    case "sku" => code
+    case x if values contains x => values(x).getOrElse("")
+    case _ => ""
+  }
+}
+
 object MiraklApi {
 
   val categoriesHeader = "category-code;category-label;logistic-class;update-delete;parent-code"
@@ -194,4 +249,13 @@ object MiraklApi {
   val attributesHeader = "code;label;hierarchy-code;description;example;required;values-list;type;type-parameter;variant;default-value;transformations;validations;update-delete"
 
   val attributesApi = "/api/products/attributes/imports"
+
+  val productsHeader = "product-sku;product-description;product-title;category-code;active;product-references;shop-skus;brand;update-delete;product-url;media-url;authorized-shop-ids;variant-group-code"
+
+  val productsApi = "/api/products/synchros"
+
+  val offersHeader = "sku;product-id;product-id-type;description;internal-description;price;price-additional-info;quantity;min-quantity-alert;state;available-start-date;available-end-date;discount-price;discount-start-date;discount-end-date;discount-ranges;leadtime-to-ship;update-delete"
+
+  val offersApi = "/api/offers/imports"
+
 }

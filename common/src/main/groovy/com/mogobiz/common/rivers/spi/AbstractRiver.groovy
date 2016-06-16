@@ -11,7 +11,7 @@ import com.mogobiz.common.client.Item
 import com.mogobiz.common.client.Client
 
 import rx.functions.Func1
-import rx.internal.reactivestreams.ObservableToPublisherAdapter
+import rx.internal.reactivestreams.PublisherAdapter
 
 import org.reactivestreams.Publisher
 
@@ -28,7 +28,7 @@ abstract class AbstractRiver<E, T extends Client> implements River {
     protected AbstractRiver(){}
 
     final Publisher<RiverItem> exportCatalogItemsAsPublisher(final RiverConfig config){
-        new ObservableToPublisherAdapter<RiverItem>(exportCatalogItemsAsRiverItems(config))
+        new PublisherAdapter<RiverItem>(exportCatalogItemsAsRiverItems(config))
     }
 
     final rx.Observable<RiverItem> exportCatalogItemsAsRiverItems(final RiverConfig config){

@@ -420,7 +420,7 @@ final class HTTPClient {
         return conn as HttpURLConnection
     }
 
-    private static StringBuffer addParams(String s, Map<String, String> params, String charset) {
+    static StringBuffer addParams(String s, Map<String, String> params, String charset) {
         StringBuffer buffer = new StringBuffer(s)
         boolean first = true
         params?.keySet()?.each { key ->

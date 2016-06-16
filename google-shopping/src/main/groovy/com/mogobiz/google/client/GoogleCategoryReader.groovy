@@ -4,8 +4,8 @@
 
 package com.mogobiz.google.client
 
+import rx.Subscriber
 import rx.Subscription
-import rx.subscriptions.Subscriptions
 
 /**
  *
@@ -19,31 +19,35 @@ final class GoogleCategoryReader {
         final String taxonomy = 'taxonomy.' + locale?.getLanguage()?.toLowerCase() + '-' + locale?.getCountry()?.toUpperCase() + '.csv'
         InputStream is = GoogleCategoryReader.class.getResourceAsStream(taxonomy)
         final String text = is?.getText('utf-8')
-        rx.Observable.create(new rx.Observable.OnSubscribeFunc<GoogleCategoryItem>() {
+        rx.Observable.create(new rx.Observable.OnSubscribe<GoogleCategoryItem>() {
             @Override
-            Subscription onSubscribe(rx.Observer observer) {
+            void call(Subscriber<? super GoogleCategoryItem> subscriber) {
                 try{
+                    def subscription = new InnerSubscription()
+                    subscriber.add(subscription)
+                    subscriber.onStart()
                     text?.eachLine {String line, int count ->
                         if(line.trim().length() > 0){
                             def tokens = line.trim().split(';').collect {token ->
                                 token.trim().length() > 0 ? token.trim() : []
                             }.flatten() as String[]
-                            observer.onNext(
-                                    new GoogleCategoryItem(
-                                            locale:locale,
-                                            tokens:tokens
-                                    )
-                            )
+                            if(!subscription.isUnsubscribed()){
+                                subscriber.onNext(
+                                        new GoogleCategoryItem(
+                                                locale:locale,
+                                                tokens:tokens
+                                        )
+                                )
+                            }
                         }
                     }
                 }
                 catch(Throwable th){
-                    observer.onError(th)
+                    subscriber.onError(th)
                 }
 
-                observer.onCompleted()
+                subscriber.onCompleted()
 
-                return Subscriptions.empty()
             }
         })
     }
@@ -53,4 +57,17 @@ final class GoogleCategoryReader {
 class GoogleCategoryItem{
     Locale locale
     String[] tokens
+}
+
+class InnerSubscription implements Subscription{
+    private boolean unsubscribed = false;
+    @Override
+    void unsubscribe() {
+        unsubscribed = true
+    }
+
+    @Override
+    boolean isUnsubscribed() {
+        return unsubscribed
+    }
 }

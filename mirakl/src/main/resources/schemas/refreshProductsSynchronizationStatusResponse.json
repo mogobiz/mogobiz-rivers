@@ -2,6 +2,14 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "refresh products synchronization status response",
   "type": "object",
-  "$ref": "common.json#/definitions/synchronizationStatusResponse",
+  "extends": {
+    "$ref": "common.json#/definitions/synchronizationStatusResponse"
+  },
+  "javaType": "com.mogobiz.mirakl.client.io.ProductsSynchronizationStatusResponse",
+  "properties": {
+    "product_deleted": {"type": "integer"},
+    "product_inserted": {"type": "integer"},
+    "product_updated": {"type": "integer"}
+  },
   "required": []
 }

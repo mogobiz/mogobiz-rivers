@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "product id type",
+  "javaType": "com.mogobiz.mirakl.client.domain.ProductIdType",
+  "enum": ["SKU", "ISBN", "UPC", "EAN", "SHOP_SKU"]
+}

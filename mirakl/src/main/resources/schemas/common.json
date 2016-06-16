@@ -267,6 +267,31 @@
         "level": {"type": "integer"},
         "parent_code": {"type": "string"}
       }
+    },
+    "product": {
+      "javaType": "com.mogobiz.mirakl.client.domain.Product",
+      "properties": {
+        "product_sku": {"type": "string"},
+        "product_description": {"type": "string"},
+        "product_title": {"type": "string"},
+        "category_code": {"type": "string"},
+        "active": {"type": "boolean"},
+        "product_references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/product_reference"
+          }
+        },
+        "shop_skus": {"type": "string"},
+        "brand": {"type": "string"},
+        "action": {"type": "string"},
+        "product_url": {"type": "string"},
+        "media_url": {"type": "string"},
+        "authorized_shops-id": {"type": "string"},
+        "variant_group_code": {"type": "string"},
+        "logistic_class": {"type": "string"}
+      }
     }
   }
 }

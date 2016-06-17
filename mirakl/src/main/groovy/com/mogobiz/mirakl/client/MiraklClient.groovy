@@ -395,7 +395,11 @@ final class MiraklClient{
             ).toString()) //TODO add line feed ?
         }
         buffer.append(items.toString())
-        importItems(ImportOffersResponse.class, config, offersApi(), buffer.toString().getBytes(DEFAULT_CHARSET), "offers.csv", params)
+        final body = buffer.toString()
+        if(config.debug){
+            log.info(body)
+        }
+        importItems(ImportOffersResponse.class, config, offersApi(), body.getBytes(DEFAULT_CHARSET), "offers.csv", params)
     }
 
     /**

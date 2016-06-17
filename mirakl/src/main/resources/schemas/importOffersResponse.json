@@ -6,7 +6,9 @@
   "javaInterfaces": ["com.mogobiz.mirakl.client.io.ImportResponse"],
   "properties": {
     "import_id": {"type": "integer", "javaName": "import_id"},
-    "product_import_id": {"type": "integer"}
+    "product_import_id": {"type": "integer"},
+    "message": {"type": "string"},
+    "status": {"type": "integer"}
   },
   "required": ["hierarchies_import_id"]
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2015 Mogobiz SARL. All rights reserved.
+ */
+
 package com.mogobiz.mirakl.client.domain
 
 import java.text.SimpleDateFormat
@@ -10,9 +14,8 @@ import com.mogobiz.mirakl.client.domain.validation.Validation
 import scala.beans.BeanProperty
 
 /**
-  *
-  * Created by smanciot on 13/04/16.
-  */
+ *
+ */
 trait MiraklItem {
   val code: String
   var action: BulkAction

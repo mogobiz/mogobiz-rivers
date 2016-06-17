@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2015 Mogobiz SARL. All rights reserved.
+ */
 package com.mogobiz.mirakl.client.domain.validation
 
 import java.util.regex.Pattern
@@ -5,9 +8,8 @@ import java.util.regex.Pattern
 import com.mogobiz.mirakl.client.domain.ValidationType
 
 /**
-  *
-  * Created by smanciot on 17/04/16.
-  */
+ *
+ */
 trait Validation {
   val `type`: ValidationType
   val validation: String

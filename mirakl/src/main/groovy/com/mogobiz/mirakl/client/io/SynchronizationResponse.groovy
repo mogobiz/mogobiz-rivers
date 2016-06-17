@@ -1,8 +1,10 @@
+/*
+ * Copyright (C) 2015 Mogobiz SARL. All rights reserved.
+ */
 package com.mogobiz.mirakl.client.io
 
 /**
  *
- * Created by smanciot on 02/04/16.
  */
 interface SynchronizationResponse {
 

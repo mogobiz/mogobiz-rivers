@@ -20,6 +20,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.mogobiz</groupId>
+            <artifactId>mogobiz-tools</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.mogobiz.rivers</groupId>
             <artifactId>mogobiz-http-client</artifactId>
             <version>${project.version}</version>

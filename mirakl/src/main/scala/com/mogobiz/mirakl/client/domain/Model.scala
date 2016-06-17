@@ -1,5 +1,6 @@
 package com.mogobiz.mirakl.client.domain
 
+import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.mogobiz.common.client.{BulkItem, BulkAction}
@@ -180,21 +181,22 @@ class MiraklAttribute(var action: BulkAction = BulkAction.UPDATE, val transforma
   }
 }
 
-class MiraklProduct(val code: String, val label: String, val description:String, val category: String, val active: Option[Boolean] = None, val references:Seq[ProductReference] = Seq.empty, val skus: Seq[String] = Seq.empty, val brand: String, val url: Option[String] = None, val media: Option[String] = None, val shops: Seq[String] = Seq.empty, val group: Option[String] = None, var action: BulkAction = BulkAction.UPDATE) extends BulkItem with MiraklItem{
+class MiraklProduct(val code: String, val label: String, val description: Option[String], val category: String, val active: Option[Boolean] = None, val references: Seq[ProductReference] = Seq.empty, val shopSkus: Seq[String] = Seq.empty, val brand: Option[String], val url: Option[String] = None, val media: Option[String] = None, val authorizedShops: Seq[String] = Seq.empty, val variantGroupCode: Option[String] = None, val logisticClass: Option[String] = None, var action: BulkAction = BulkAction.UPDATE) extends BulkItem with MiraklItem{
   override val property2Value: String => String = {
     case "product-sku" => code
-    case "product-description" => description
+    case "product-description" => description.getOrElse("")
     case "product-title" => label
     case "category-code" => category
     case "active" => active.getOrElse(true).toString
     case "product-references" => references.map{reference => s"${reference.getReferenceType}|${reference.getReference}"}.mkString(",")
-    case "shop-skus" => skus.mkString(",")
-    case "brand" => Option(brand).getOrElse("")
+    case "shop-skus" => shopSkus.mkString(",")
+    case "brand" => brand.getOrElse("")
     case "update-delete" => action.toString.toLowerCase
     case "product-url" => url.getOrElse("")
     case "media-url" => media.getOrElse("")
-    case "authorized-shop-ids" => shops.mkString(",")
-    case "variant-group-code" => group.getOrElse("")
+    case "authorized-shop-ids" => authorizedShops.mkString(",")
+    case "variant-group-code" => variantGroupCode.getOrElse("")
+    case "logistic-class" => logisticClass.getOrElse("")
     case _ => ""
   }
 }
@@ -204,17 +206,17 @@ class MiraklAttributeValue(val attribute: String, val value: Option[String] = No
 class MiraklOffer(
                    val sku: String,
                    val productId: String,
-                   val productIdType: ProductIdType = ProductIdType.SKU,
+                   val productIdType: ProductIdType = ProductIdType.SHOP_SKU,
                    val description: String,
-                   val price: Double,
-                   val quantity: Int = 0,
+                   val price: Long,
+                   val quantity: Option[Long] = None,
                    val state: String,
                    val internalDescription: Option[String] = None,
                    val priceAdditionalInfo: Option[String] = None,
-                   val minQuantityAlert: Option[Int] = None,
+                   val minQuantityAlert: Option[Long] = None,
                    val availableStartDate: Option[Date] = None,
                    val availableEndDate: Option[Date] = None,
-                   val discountPrice: Option[Double] = None,
+                   val discountPrice: Option[Long] = None,
                    val discountStartDate: Option[Date] = None,
                    val discountEndDate: Option[Date] = None,
                    val discountRanges: Option[String] = None,
@@ -223,16 +225,29 @@ class MiraklOffer(
                    val attributes: Seq[MiraklAttributeValue] = Seq.empty,
                    val product: Option[MiraklProduct] = None
                  ) extends BulkItem with MiraklItem{
-  def this(sku: String, productId: String, productIdType: ProductIdType = ProductIdType.SKU, description: String, price: Double, quantity: Int = 0, state: String){
-    this(sku, productId, productIdType, description, price, quantity, state)
-  }
-  def this(sku: String, productId: String, productIdType: ProductIdType = ProductIdType.SKU, description: String, price: Double, quantity: Int = 0, state: String, attributes: Seq[MiraklAttributeValue], product: Option[MiraklProduct]){
-    this(sku, productId, productIdType, description, price, quantity, state, attributes = attributes, product = product)
-  }
   lazy val code = sku
+  def format(d: Date) = new SimpleDateFormat("yyyy-MM-dd").format(d)
+  def format(l: Long) = (l.toDouble / 100.0).toString
   lazy val values: Map[String, Option[String]] = attributes.map(a => a.attribute -> a.value).toMap
   override val property2Value: String => String = {
     case "sku" => code
+    case "product-id" => productId
+    case "product-id-type" => productIdType.toString
+    case "description" => description
+    case "internal-description" => internalDescription.getOrElse("")
+    case "price" => format(price)
+    case "price-additional-info" => priceAdditionalInfo.getOrElse("")
+    case "quantity" => s"${quantity.getOrElse("")}"
+    case "min-quantity-alert" => s"${minQuantityAlert.getOrElse("")}"
+    case "state" => state
+    case "available-start-date" => availableStartDate.map(format).getOrElse("")
+    case "available-end-date" => availableEndDate.map(format).getOrElse("")
+    case "discount-price" => discountPrice.map(format).getOrElse("")
+    case "discount-start-date" => discountStartDate.map(format).getOrElse("")
+    case "discount-end-date" => discountEndDate.map(format).getOrElse("")
+    case "discount-ranges" => discountRanges.getOrElse("")
+    case "leadtime-to-ship" => s"${leadtimeToShip.getOrElse("")}"
+    case "update-delete" => action.toString.toLowerCase
     case x if values contains x => values(x).getOrElse("")
     case _ => ""
   }
@@ -256,7 +271,7 @@ object MiraklApi {
 
   val attributesApi = "/api/products/attributes/imports"
 
-  val productsHeader = "product-sku;product-description;product-title;category-code;active;product-references;shop-skus;brand;update-delete;product-url;media-url;authorized-shop-ids;variant-group-code"
+  val productsHeader = "product-sku;product-description;product-title;category-code;active;product-references;shop-skus;brand;update-delete;product-url;media-url;authorized-shop-ids;variant-group-code;logistic-class"
 
   val productsApi = "/api/products/synchros"
 

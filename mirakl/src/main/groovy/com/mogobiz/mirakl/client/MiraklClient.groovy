@@ -34,15 +34,13 @@ import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
 import com.mogobiz.mirakl.client.io.SynchronizationResponse
 import groovy.util.logging.Slf4j
-import scala.Option
-import scala.collection.Iterable
 
 import static com.mogobiz.mirakl.client.domain.MiraklApi.*
 
 
 import static com.mogobiz.http.client.HTTPClient.*
 
-import static scala.collection.JavaConverters.*
+import static com.mogobiz.tools.ScalaTools.*
 
 /**
  *
@@ -383,11 +381,20 @@ final class MiraklClient{
         params << [shop: config?.clientConfig?.merchant_id]
         params << [import_mode: mode.toString()]
         def buffer = new StringBuffer()
-        buffer.append(items.toString())
+        if(!products || products.size() == 0){
+            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}
+        }
         if(products?.size() > 0){
             params << [with_products: true]
-            buffer.append(new MiraklItems<MiraklProduct>(productsHeader(), toScalaList(products), ";").toString()) //TODO add line feed ?
+            buffer.append(new MiraklItems<MiraklProduct>(
+                    productsHeader(),
+                    toScalaList(
+                        products.unique { a, b -> a.code() <=> b.code() }
+                    ),
+                    ";"
+            ).toString()) //TODO add line feed ?
         }
+        buffer.append(items.toString())
         importItems(ImportOffersResponse.class, config, offersApi(), buffer.toString().getBytes(DEFAULT_CHARSET), "offers.csv", params)
     }
 
@@ -584,12 +591,5 @@ final class MiraklClient{
         headers
     }
 
-    static <T> scala.collection.immutable.List<T> toScalaList(List<T> list) {
-        ((collectionAsScalaIterableConverter(list).asScala()) as Iterable<T>).toList()
-    }
-
-    static <T> Option<T> toScalaOption(T o){
-        Option.apply(o)
-    }
 }
 

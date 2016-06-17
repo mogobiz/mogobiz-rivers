@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2015 Mogobiz SARL. All rights reserved.
+ */
 package com.mogobiz.mirakl.rivers
 
 import akka.stream.scaladsl._
@@ -10,9 +13,48 @@ import rx.internal.reactivestreams.PublisherAdapter
 import scala.concurrent.{Future, ExecutionContext}
 
 /**
-  *
-  * Created by smanciot on 15/06/16.
-  */
++----------+
+|          |
+|  Source  |  Entity
+|          |
++----------+
+     |
+     v
++----------+
+|          |
+|    map   |  In
+|          |
++----------+
+     |
+     v
++----------+
+|          |
+|  group   |
+|          |
++----------+
+     |
+     v
++----------+        +----------+
+|          |------->|          |
+|  balance |        |   bulk   |
+|          |------->|          |
++----------+        +----------+
+                       |    |
+                       |    |
+                       |    |
++---------+            |    |
+|         |<-----------'    |
+|  merge  |                 |
+|         |<----------------'
++---------+
+     |
+     v
++----------+
+|          |
+|   Sink   | Out
+|          |
++----------+
+ */
 object MiraklRiverFlow {
 
   def synchronize[Entity, In, Out](river: MiraklRiver[Entity, In, Out], config: RiverConfig, balanceSize: Int = 2, bulkSize: Int = 100, subscriber: Subscriber[Out]): Unit = {
@@ -59,7 +101,7 @@ object MiraklRiverFlow {
 trait MiraklRiver[Entity, In, Out] {
   def exportCatalogItemsAsRiverItems(config: RiverConfig): Observable[In] = {
     retrieveCatalogItems(config).flatMap(new Func1[Entity, Observable[In]](){
-      override def call(t: Entity): Observable[In] = Observable.just(asRiverItem(t, config))
+      override def call(e: Entity): Observable[In] = Observable.just(asRiverItem(e, config))
     })
   }
 

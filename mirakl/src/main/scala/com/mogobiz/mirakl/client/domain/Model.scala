@@ -210,7 +210,7 @@ class MiraklOffer(
                    val sku: String,
                    val productId: String,
                    val productIdType: ProductIdType = ProductIdType.SHOP_SKU,
-                   val description: String,
+                   val description: Option[String],
                    val price: Long,
                    val quantity: Option[Long] = None,
                    val state: String,
@@ -236,7 +236,7 @@ class MiraklOffer(
     case "sku" => code
     case "product-id" => productId
     case "product-id-type" => productIdType.toString
-    case "description" => description
+    case "description" => description.getOrElse("")
     case "internal-description" => internalDescription.getOrElse("")
     case "price" => format(price)
     case "price-additional-info" => priceAdditionalInfo.getOrElse("")

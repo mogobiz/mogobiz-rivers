@@ -379,25 +379,36 @@ final class MiraklClient{
         List<MiraklOffer> list = []
         list.addAll(offers)
         list = list.unique { a, b -> a.code() <=> b.code()}
+
+        // import products using P21
+        Long productImportId = null
+        if(!products || products.size() == 0){
+            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}.unique { a, b -> a.code() <=> b.code() }
+        }
+        if(products?.size() > 0){
+            productImportId = synchronizeProducts(config, products).synchroId
+        }
+
+        // import offers using OF01
         def items = new MiraklItems(config.clientConfig.config.offersHeader as String, toScalaList(list), ";")
         def params = [:]
         params << [shop: config?.clientConfig?.merchant_id]
         params << [import_mode: mode.toString()]
-        def buffer = new StringBuffer()
-        if(!products || products.size() == 0){
-            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}.unique { a, b -> a.code() <=> b.code() }
-        }
-        Long productImportId = null
-        if(products?.size() > 0){
-            productImportId = synchronizeProducts(config, products).synchroId
-        }
-        buffer.append(items.toString())
-        final body = buffer.toString()
+//        params << [with_products: "true"]
+        final body = items.toString()
         if(config.debug && log.isDebugEnabled()){
             log.debug(body)
         }
         def response = importItems(ImportOffersResponse.class, config, offersApi(), body.getBytes(DEFAULT_CHARSET), "offers.csv", config.clientConfig.credentials.apiKey, params)
         response.setProductImportId(productImportId)
+
+        // synchronize products using P21
+        Long productSynchroId = null
+        if(products?.size() > 0){
+            productSynchroId = synchronizeProducts(config, products).synchroId
+        }
+        response.setProductSynchroId(productSynchroId)
+
         response
     }
 

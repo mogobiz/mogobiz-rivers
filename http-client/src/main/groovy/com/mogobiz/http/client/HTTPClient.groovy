@@ -132,7 +132,8 @@ final class HTTPClient {
                 conn.setRequestProperty('Content-Type', 'application/x-www-form-urlencoded')
             }
             final String b = params ? addParams(body, params, charset).toString() : body
-            log.debug(b)
+            if(log.isDebugEnabled())
+                log.debug(b)
             byte[] bytes = b?.getBytes(charset) ?: new byte[0]
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
@@ -201,7 +202,8 @@ final class HTTPClient {
             String charset = config['charset'] ? config['charset'] : DEFAULT_CHARSET
             conn.setRequestProperty('Accept-Charset', charset)
             final def s = params ? addParams(content, params, charset).toString() : content
-            log.debug(s)
+            if(log.isDebugEnabled())
+                log.debug(s)
             byte[] bytes = s?.getBytes(charset) ?: new byte[0]
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
@@ -329,7 +331,7 @@ final class HTTPClient {
         String text = conn.responseCode >= 400 ? conn.errorStream?.getText(charset ? charset : DEFAULT_CHARSET) :
                 conn.content?.getText(charset ? charset : DEFAULT_CHARSET)
         boolean debug = config['debug'] ? config['debug'] : false
-        if (debug) {
+        if (log.isDebugEnabled()) {
             log.debug(text)
         }
         return text
@@ -383,7 +385,8 @@ final class HTTPClient {
                 if (cookies) {
                     headers.setHeader('Cookie', cookies as String)
                 }
-                log.debug('Perform redirection to -> ' + location)
+                if(log.isDebugEnabled())
+                    log.debug('Perform redirection to -> ' + location)
                 switch (conn.requestMethod) {
                     case METHOD.GET:
                         return doGet(config, location, null, headers)
@@ -399,7 +402,8 @@ final class HTTPClient {
 
     private static HttpURLConnection openConnection(Map config = [:], String url) {
         def conn
-        log.debug('Open connection to -> ' + url)
+        if(log.isDebugEnabled())
+            log.debug('Open connection to -> ' + url)
         String proxyHost = config['proxyHost']
         String proxyPort = config['proxyPort']
         String proxyUser = config['proxyUser']
@@ -444,7 +448,8 @@ final class HTTPClient {
             headers.append('\t').append(key).append(': ').append(requestProperties.get(key).get(0)).append('\r\n')
         }
         headers.append('}')
-        log.debug(headers.toString())
+        if(log.isDebugEnabled())
+            log.debug(headers.toString())
     }
 
     private static void outputDuration(String url, String method, long before) {
@@ -542,9 +547,11 @@ class AuthenticatorSelector extends Authenticator
         UserPassword up = proxies.get(proxy)
         if (up != null)
         {
-            log.debug("**************" + proxy + "**********************")
-            log.debug(up.user + ":**********")
-            log.debug("**************" + proxy + "**********************")
+            if(log.isDebugEnabled()){
+                log.debug("**************" + proxy + "**********************")
+                log.debug(up.user + ":**********")
+                log.debug("**************" + proxy + "**********************")
+            }
             return new PasswordAuthentication(up.user, up.pass.toCharArray())
         }
         else

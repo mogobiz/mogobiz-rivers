@@ -27,6 +27,10 @@ class ClientConfig {
 
 class Credentials{
     /**
+     * front key - mirakl
+     */
+    String frontKey
+    /**
      * api key - mirakl
      */
     String apiKey

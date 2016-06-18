@@ -209,7 +209,7 @@ class MiraklAttributeValue(val attribute: String, val value: Option[String] = No
 class MiraklOffer(
                    val sku: String,
                    val productId: String,
-                   val productIdType: ProductIdType = ProductIdType.SHOP_SKU,
+                   val productIdType: ProductIdType = ProductIdType.SKU,
                    val description: Option[String],
                    val price: Long,
                    val quantity: Option[Long] = None,
@@ -252,6 +252,7 @@ class MiraklOffer(
     case "leadtime-to-ship" => s"${leadtimeToShip.getOrElse("")}"
     case "update-delete" => action.toString.toLowerCase
     case x if values contains x => values(x).getOrElse("")
+    case y if product.isDefined => product.get.property2Value(y)
     case _ => ""
   }
 }

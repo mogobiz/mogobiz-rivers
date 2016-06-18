@@ -341,7 +341,7 @@ final class MiraklClient{
      * @param products - products
      * @return attributes synchronization tracking id
      */
-    static String synchronizeProducts(RiverConfig config, List<MiraklProduct> products){
+    static SynchronizationResponse synchronizeProducts(RiverConfig config, List<MiraklProduct> products){
         def items = new MiraklItems(productsHeader(), toScalaList(products), ";")
         importItems(Synchronization.class, config, productsApi(), items, "products.csv")
     }
@@ -376,30 +376,29 @@ final class MiraklClient{
      * @return offers synchronization tracking id
      */
     static ImportOffersResponse importOffers(RiverConfig config, List<MiraklOffer> offers = [], List<MiraklProduct> products = [], OfferImportMode mode = OfferImportMode.NORMAL){
-        def items = new MiraklItems(config.clientConfig.config.offersHeader as String, toScalaList(offers), ";")
+        List<MiraklOffer> list = []
+        list.addAll(offers)
+        list = list.unique { a, b -> a.code() <=> b.code()}
+        def items = new MiraklItems(config.clientConfig.config.offersHeader as String, toScalaList(list), ";")
         def params = [:]
         params << [shop: config?.clientConfig?.merchant_id]
         params << [import_mode: mode.toString()]
         def buffer = new StringBuffer()
         if(!products || products.size() == 0){
-            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}
+            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}.unique { a, b -> a.code() <=> b.code() }
         }
+        Long productImportId = null
         if(products?.size() > 0){
-            params << [with_products: true]
-            buffer.append(new MiraklItems<MiraklProduct>(
-                    productsHeader(),
-                    toScalaList(
-                        products.unique { a, b -> a.code() <=> b.code() }
-                    ),
-                    ";"
-            ).toString()) //TODO add line feed ?
+            productImportId = synchronizeProducts(config, products).synchroId
         }
         buffer.append(items.toString())
         final body = buffer.toString()
-        if(config.debug){
-            log.info(body)
+        if(config.debug && log.isDebugEnabled()){
+            log.debug(body)
         }
-        importItems(ImportOffersResponse.class, config, offersApi(), body.getBytes(DEFAULT_CHARSET), "offers.csv", params)
+        def response = importItems(ImportOffersResponse.class, config, offersApi(), body.getBytes(DEFAULT_CHARSET), "offers.csv", config.clientConfig.credentials.apiKey, params)
+        response.setProductImportId(productImportId)
+        response
     }
 
     /**
@@ -483,11 +482,12 @@ final class MiraklClient{
             String api,
             MiraklItems<U> items,
             String fileName,
+            String key = null,
             Map<String, String> params = [:],
             String partName = "file",
             String mimeType = "text/csv",
             String charset = DEFAULT_CHARSET){
-        importItems(classz, config, api, items.toString().getBytes(charset), fileName, params, partName, mimeType, charset)
+        importItems(classz, config, api, items.toString().getBytes(charset), fileName, key, params, partName, mimeType, charset)
     }
 
     static <T> T importItems(
@@ -496,22 +496,27 @@ final class MiraklClient{
             String api,
             byte[] bytes,
             String fileName,
+            String key = null,
             Map<String, String> params = [:],
             String partName = "file",
             String mimeType = "text/csv",
             String charset = DEFAULT_CHARSET){
-        def part = MultipartFactory.createFilePart(partName, fileName, bytes, false, "$mimeType; charset=$charset", charset)
-        def headers= authenticate(config)
+        def parts = []
+        parts << MultipartFactory.createFilePart(partName, fileName, bytes, false, "$mimeType; charset=$charset", charset)
+        params?.each {k,v ->
+            parts << MultipartFactory.createParamPart(k, v)
+        }
+        def headers= key ? authenticate(key) : authenticate(config)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
         final String url = "${config?.clientConfig?.merchant_url}$api"
-        final String u = params ? addParams(url.indexOf('?') < 0 ? url + '?' : url, params, charset).toString() : url
+//        final String u = params ? addParams(url.indexOf('?') < 0 ? url + '?' : url, params, charset).toString() : url
         try{
             conn = client.doMultipart(
                     [debug: config.debug],
-                    u,
-                    [part],
+                    url,
+                    parts,
                     headers,
                     true
             )
@@ -586,12 +591,21 @@ final class MiraklClient{
 
     /**
      * add headers to authenticate Operator
-     * @param config - river configuration
+     * @param config - river configuration from which the front key will be extracted
      * @return http headers with authorization
      */
     private static HttpHeaders authenticate(RiverConfig config){
+        authenticate(config?.clientConfig?.credentials?.frontKey)
+    }
+
+    /**
+     * add headers to authenticate Operator
+     * @param key - api key to use
+     * @return http headers with authorization
+     */
+    private static HttpHeaders authenticate(String key){
         def headers = new HttpHeaders()
-        headers.setHeader("Authorization", config?.clientConfig?.credentials?.apiKey)
+        headers.setHeader("Authorization", key)
         headers
     }
 

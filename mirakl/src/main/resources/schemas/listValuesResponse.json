@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Get information about operator's values lists",
+  "type": "object",
+  "properties": {
+    "values_lists": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "$ref": "common.json#/definitions/values"
+      }
+    }
+  },
+  "required": []
+}

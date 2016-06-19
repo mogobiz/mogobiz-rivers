@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Import offers response",
+  "type": "object",
+  "javaType": "com.mogobiz.mirakl.client.io.ImportOffersResponse",
+  "javaInterfaces": ["com.mogobiz.mirakl.client.io.ImportResponse"],
+  "properties": {
+    "import_id": {"type": "integer", "javaName": "import_id"},
+    "product_import_id": {"type": "integer"},
+    "product_synchro_id": {"type": "integer"},
+    "message": {"type": "string"},
+    "status": {"type": "integer"}
+  },
+  "required": ["hierarchies_import_id"]
+}

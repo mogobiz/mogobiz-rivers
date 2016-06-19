@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Search Shops response",
+  "type": "object",
+  "javaType": "com.mogobiz.mirakl.client.io.SearchShopsResponse",
+  "properties": {
+    "shops": { "type": "array", "items": {"type": "object", "$ref": "common.json#/definitions/outputShop"} },
+    "total_count": {"type": "integer"}
+  },
+  "required": []
+}

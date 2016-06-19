@@ -16,7 +16,7 @@ import rx.Observable
 import rx.functions.Action1
 import rx.functions.Func0
 import rx.functions.Func1
-import rx.internal.reactivestreams.ObservableToPublisherAdapter
+import rx.internal.reactivestreams.PublisherAdapter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -107,7 +107,7 @@ abstract class Rivers<T extends River> {
     }
 
     Publisher<RiverItem> publisher(RiverConfig config){
-        new ObservableToPublisherAdapter<RiverItem>(
+        new PublisherAdapter<RiverItem>(
                 Observable.defer(
                         {
                             // mergeWith(loadRivers(), null, config)

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "refresh categories synchronization status response",
+  "type": "object",
+  "extends": {
+    "$ref": "common.json#/definitions/synchronizationStatusResponse"
+  },
+  "javaType": "com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse",
+  "properties": {
+    "category_deleted": {"type": "integer"},
+    "category_inserted": {"type": "integer"},
+    "category_updated": {"type": "integer"}
+  },
+  "required": []
+}

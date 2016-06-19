@@ -16,6 +16,11 @@
     <name>mogobiz basic http client</name>
     <dependencies>
         <dependency>
+            <groupId>com.mogobiz</groupId>
+            <artifactId>mogobiz-tools</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>jakarta-regexp</groupId>
             <artifactId>jakarta-regexp</artifactId>
         </dependency>

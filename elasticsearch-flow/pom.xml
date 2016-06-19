@@ -61,7 +61,6 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-stream-experimental_${scala.major.version}</artifactId>
-            <version>1.0-M3</version>
         </dependency>
 
         <!-- spray -->
@@ -115,7 +114,7 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava-reactive-streams</artifactId>
-            <version>0.3.0</version>
+            <version>1.0.1</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -125,10 +124,19 @@
             </exclusions>
         </dependency>
 
-        <!-- rxjava-groovy -->
+        <!-- rxjava -->
         <dependency>
-            <groupId>com.netflix.rxjava</groupId>
-            <artifactId>rxjava-groovy</artifactId>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>1.0.15</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- rxgroovy -->
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxgroovy</artifactId>
+            <version>1.0.3</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -137,6 +145,20 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!--
+        <dependency>
+            <groupId>com.netflix.rxjava</groupId>
+            <artifactId>rxjava-groovy</artifactId>
+            <version>0.20.7</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        //-->
 
         <dependency>
             <groupId>org.slf4j</groupId>

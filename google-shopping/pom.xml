@@ -77,6 +77,12 @@
             <artifactId>nekohtml</artifactId>
         </dependency>
 
+        <!-- regexp -->
+        <dependency>
+            <groupId>jakarta-regexp</groupId>
+            <artifactId>jakarta-regexp</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

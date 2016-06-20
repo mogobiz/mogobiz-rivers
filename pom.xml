@@ -8,7 +8,6 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>mogobiz-grails</artifactId>
-        <relativePath>../mogobiz-pim/pom.xml</relativePath>
         <version>1.0.0-RC2</version>
     </parent>
     <artifactId>rivers</artifactId>
@@ -26,4 +25,41 @@
         <module>mirakl</module>
         <module>mirakl-flow</module>
     </modules>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- build-helper-maven-plugin -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>add-groovy-sources</id>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>add-source</goal>
+                            </goals>
+                            <configuration>
+                                <sources>
+                                    <source>src/main/groovy</source>
+                                </sources>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>add-test-groovy-sources</id>
+                            <phase>generate-test-sources</phase>
+                            <goals>
+                                <goal>add-test-source</goal>
+                            </goals>
+                            <configuration>
+                                <sources>
+                                    <source>src/test/groovy</source>
+                                </sources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

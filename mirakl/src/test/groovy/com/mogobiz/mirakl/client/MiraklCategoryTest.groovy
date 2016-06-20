@@ -4,7 +4,8 @@ import com.mogobiz.common.client.BulkAction
 import com.mogobiz.mirakl.client.domain.MiraklApi
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 
-import static com.mogobiz.mirakl.client.MiraklClient.toScalaOption
+import static com.mogobiz.tools.ScalaTools.*
+
 /**
  *
  * Created by smanciot on 27/03/16.

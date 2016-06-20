@@ -11,7 +11,7 @@ import com.mogobiz.mirakl.client.domain.MiraklValue
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 
-import static com.mogobiz.mirakl.client.MiraklClient.toScalaOption
+import static com.mogobiz.tools.ScalaTools.*
 
 /**
  *
@@ -19,12 +19,11 @@ import static com.mogobiz.mirakl.client.MiraklClient.toScalaOption
  */
 class MiraklClientTest extends GroovyTestCase{
 
-    def MIRAKL_API_KEY = '096401e5-c3e8-42fe-9891-ed94cd4c1a89' //front api key
+    def FRONT_API_KEY = '096401e5-c3e8-42fe-9891-ed94cd4c1a89' //front api key
 
-//    def FRONT_KEY = 'de901fbc-804e-4733-a5bd-8765c41c921f'
-//    def OPERATOR_KEY = '3c404360-7b63-4f34-beb4-2d564fde2e03'
+    def API_KEY = '75d5edfa-94a1-478b-aad4-dbf9c37ef70e' //shop api key
 
-    def SHOP_ID = "2000"
+    def SHOP_ID = "2002"
 
     def MIRAKL_URL = 'https://ebiznext-dev.mirakl.net'
 
@@ -140,8 +139,8 @@ class MiraklClientTest extends GroovyTestCase{
         }
     }
 
-    private RiverConfig riverConfig(String apiKey = MIRAKL_API_KEY) {
-        def clientConfig = new ClientConfig(merchant_id: SHOP_ID, merchant_url: MIRAKL_URL, credentials: new Credentials(apiKey: apiKey))
+    private RiverConfig riverConfig(String frontKey = FRONT_API_KEY, String apiKey = API_KEY) {
+        def clientConfig = new ClientConfig(merchant_id: SHOP_ID, merchant_url: MIRAKL_URL, credentials: new Credentials(frontKey: frontKey, apiKey: apiKey))
         def riverConfig = new RiverConfig(clientConfig: clientConfig)
         riverConfig
     }

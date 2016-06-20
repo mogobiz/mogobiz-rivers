@@ -6,56 +6,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<!--
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>rivers</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>1.0.0-RC2</version>
     </parent>
-//-->
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-cfp</artifactId>
-    <version>1.0.0-RC2</version>
     <name>mogobiz cfp client</name>
-    <!-- distributionManagement -->
-    <distributionManagement>
-        <repository>
-            <id>mogobiz.release</id>
-            <name>Internal Release Repository</name>
-            <url>http://art.ebiznext.com/artifactory/libs-release-local</url>
-        </repository>
-        <snapshotRepository>
-            <id>mogobiz.snapshots</id>
-            <name>Internal Snapshot Repository</name>
-            <url>http://art.ebiznext.com/artifactory/libs-snapshot-local</url>
-        </snapshotRepository>
-    </distributionManagement>
-    <repositories>
-        <repository>
-            <id>mogobiz.release</id>
-            <name>Internal Release Repository</name>
-            <url>http://art.ebiznext.com/artifactory/libs-release-local</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>mogobiz.snapshots</id>
-            <name>Internal Snapshot Repository</name>
-            <url>http://art.ebiznext.com/artifactory/libs-snapshot-local</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <dependencies>
 
         <dependency>
@@ -68,44 +27,37 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scalap</artifactId>
-            <version>${scala.version}</version>
         </dependency>
 
         <!-- akka -->
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_${scala.major.version}</artifactId>
-            <version>${akka.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-testkit_${scala.major.version}</artifactId>
-            <version>${akka.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-stream-experimental_${scala.major.version}</artifactId>
-            <version>${akka.stream.version}</version>
         </dependency>
 
         <!-- spray -->
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-client_${scala.major.version}</artifactId>
-            <version>1.3.2</version>
         </dependency>
 
         <!-- json4s -->
         <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-native_${scala.major.version}</artifactId>
-            <version>3.2.9</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
@@ -116,14 +68,17 @@
         <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-jackson_${scala.major.version}</artifactId>
-            <version>3.2.9</version>
         </dependency>
 
         <!-- logging -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.1.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -131,21 +86,18 @@
         <dependency>
             <groupId>net.databinder.dispatch</groupId>
             <artifactId>dispatch-core_${scala.major.version}</artifactId>
-            <version>0.11.2</version>
         </dependency>
 
         <!-- groovy -->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>${groovy.version}</version>
         </dependency>
 
         <!-- rxjava-reactive-streams -->
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava-reactive-streams</artifactId>
-            <version>1.0.1</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -159,7 +111,6 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>
-            <version>1.0.15</version>
             <scope>compile</scope>
         </dependency>
 
@@ -167,8 +118,6 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxgroovy</artifactId>
-            <version>1.0.3</version>
-            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.groovy</groupId>
@@ -176,26 +125,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--
+
+        <!-- tika -->
         <dependency>
-            <groupId>com.netflix.rxjava</groupId>
-            <artifactId>rxjava-groovy</artifactId>
-            <version>0.20.7</version>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-all</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
         </dependency>
-        //-->
 
         <!-- junit -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -205,32 +145,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.1.6</version>
-                <executions>
-                    <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
-    <properties>
-        <groovy.version>2.1.8</groovy.version>
-        <scala.major.version>2.11</scala.major.version>
-        <scala.version>${scala.major.version}.2</scala.version>
-        <akka.version>2.3.12</akka.version>
-        <akka.stream.version>1.0-M3</akka.stream.version>
-    </properties>
 </project>

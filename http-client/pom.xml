@@ -31,7 +31,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.8</version>
+            <scope>provided</scope>
         </dependency>
         <!-- groovy -->
         <dependency>
@@ -42,7 +42,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

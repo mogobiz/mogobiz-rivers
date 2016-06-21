@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "offer import mode",
+  "javaType": "com.mogobiz.mirakl.client.domain.OfferImportMode",
+  "enum": ["NORMAL", "PARTIAL_UPDATE", "REPLACE"]
+}

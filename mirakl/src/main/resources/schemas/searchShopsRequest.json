@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Search Shops response",
+  "type": "object",
+  "javaType": "com.mogobiz.mirakl.client.io.SearchShopsRequest",
+  "properties": {
+    "shop_ids": {"type": "array", "items": {"type": "string", "maxItems": 100}},
+    "premium": {"enum": ["ALL", "TRUE", "FALSE"], "default": "ALL"},
+    "state": {"$ref": "common.json#/definitions/premiumState"},
+    "updated_since": {"type": "string", "format": "date"},
+    "paginate": {"type": "boolean", "default": "true"}
+  },
+  "required": []
+}

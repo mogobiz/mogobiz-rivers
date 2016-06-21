@@ -8,13 +8,18 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>rivers</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-http-client</artifactId>
     <packaging>jar</packaging>
     <name>mogobiz basic http client</name>
     <dependencies>
+        <dependency>
+            <groupId>com.mogobiz</groupId>
+            <artifactId>mogobiz-tools</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>jakarta-regexp</groupId>
             <artifactId>jakarta-regexp</artifactId>
@@ -26,7 +31,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.8</version>
+            <scope>provided</scope>
         </dependency>
         <!-- groovy -->
         <dependency>
@@ -37,7 +42,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

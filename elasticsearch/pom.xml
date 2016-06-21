@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>rivers</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-elasticsearch</artifactId>
@@ -41,7 +41,6 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava-reactive-streams</artifactId>
-            <version>0.3.0</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -51,9 +50,18 @@
             </exclusions>
         </dependency>
 
+        <!-- rxjava -->
         <dependency>
-            <groupId>com.netflix.rxjava</groupId>
-            <artifactId>rxjava-groovy</artifactId>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- rxgroovy -->
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxgroovy</artifactId>
+            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.groovy</groupId>
@@ -61,6 +69,8 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- scala -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
@@ -69,16 +79,23 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_${scala.major.version}</artifactId>
         </dependency>
+
         <!-- groovy -->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!-- nekohtml -->
+        <dependency>
+            <groupId>net.sourceforge.nekohtml</groupId>
+            <artifactId>nekohtml</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
             <scope>provided</scope>
         </dependency>
 
@@ -86,13 +103,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
             <scope>test</scope>
         </dependency>
 

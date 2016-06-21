@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>rivers</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,7 +28,6 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava-reactive-streams</artifactId>
-            <version>0.3.0</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -38,9 +37,18 @@
             </exclusions>
         </dependency>
 
+        <!-- rxjava -->
         <dependency>
-            <groupId>com.netflix.rxjava</groupId>
-            <artifactId>rxjava-groovy</artifactId>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- rxgroovy -->
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxgroovy</artifactId>
+            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.groovy</groupId>
@@ -48,6 +56,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>

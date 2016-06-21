@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Get attributes configuration",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "$ref": "common.json#/definitions/attribute"
+      }
+    }
+  },
+  "required": []
+}

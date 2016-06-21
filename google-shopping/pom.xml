@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>rivers</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,9 +29,18 @@
             <artifactId>mogobiz-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- rxjava -->
         <dependency>
-            <groupId>com.netflix.rxjava</groupId>
-            <artifactId>rxjava-groovy</artifactId>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- rxgroovy -->
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxgroovy</artifactId>
+            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.groovy</groupId>
@@ -39,6 +48,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- reactive-streams -->
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
@@ -47,6 +63,7 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_${scala.major.version}</artifactId>
         </dependency>
+
         <!-- groovy -->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
@@ -54,24 +71,33 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- nekohtml -->
+        <dependency>
+            <groupId>net.sourceforge.nekohtml</groupId>
+            <artifactId>nekohtml</artifactId>
+        </dependency>
+
+        <!-- regexp -->
+        <dependency>
+            <groupId>jakarta-regexp</groupId>
+            <artifactId>jakarta-regexp</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${sl4j.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.8</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>${sl4j.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -79,13 +105,9 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <sl4j.version>1.7.5</sl4j.version>
-    </properties>
     <build>
         <plugins>
             <!-- build-helper-maven-plugin -->

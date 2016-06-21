@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "transformation type",
+  "javaType": "com.mogobiz.mirakl.client.domain.TransformationType",
+  "enum": ["ADDITION", "DIVISION", "MULTIPLICATION", "SUBTRACTION", "CONSTANT", "DATE", "REGEXP", "ROUND_DECIMAL", "UPPER_CASE", "LOWER_CASE", "CAMEL_CASE", "CAPITALIZE", "REMOVE_HTML"]
+}

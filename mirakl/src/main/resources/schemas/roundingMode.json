@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "rounding mode",
+  "javaType": "com.mogobiz.mirakl.client.domain.RoundingMode",
+  "enum": ["HALF_UP", "HALF_DOWN", "CEILING", "FLOOR"]
+}

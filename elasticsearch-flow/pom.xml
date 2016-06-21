@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>rivers</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <groupId>com.mogobiz.rivers</groupId>
     <artifactId>mogobiz-elasticsearch-flow</artifactId>
@@ -44,7 +44,6 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scalap</artifactId>
-            <version>${scala.version}</version>
         </dependency>
 
         <!-- akka -->
@@ -55,27 +54,23 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-testkit_${scala.major.version}</artifactId>
-            <version>${akka.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-stream-experimental_${scala.major.version}</artifactId>
-            <version>1.0-M3</version>
         </dependency>
 
         <!-- spray -->
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-client_${scala.major.version}</artifactId>
-            <version>1.3.2</version>
         </dependency>
 
         <!-- json4s -->
         <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-native_${scala.major.version}</artifactId>
-            <version>3.2.11</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
@@ -86,14 +81,12 @@
         <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-jackson_${scala.major.version}</artifactId>
-            <version>3.2.11</version>
         </dependency>
 
         <!-- logging -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.1.2</version>
             <scope>provided</scope>
         </dependency>
 
@@ -101,7 +94,6 @@
         <dependency>
             <groupId>net.databinder.dispatch</groupId>
             <artifactId>dispatch-core_${scala.major.version}</artifactId>
-            <version>0.11.2</version>
         </dependency>
 
         <!-- groovy -->
@@ -115,7 +107,6 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava-reactive-streams</artifactId>
-            <version>0.3.0</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -125,10 +116,17 @@
             </exclusions>
         </dependency>
 
-        <!-- rxjava-groovy -->
+        <!-- rxjava -->
         <dependency>
-            <groupId>com.netflix.rxjava</groupId>
-            <artifactId>rxjava-groovy</artifactId>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- rxgroovy -->
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxgroovy</artifactId>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -141,7 +139,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

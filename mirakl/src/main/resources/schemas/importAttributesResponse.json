@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Import hierarchies response",
+  "type": "object",
+  "javaType": "com.mogobiz.mirakl.client.io.ImportAttributesResponse",
+  "javaInterfaces": ["com.mogobiz.mirakl.client.io.ImportResponse"],
+  "properties": {
+    "attributes_import_id": {"type": "integer", "javaName": "import_id"}
+  },
+  "required": ["hierarchies_import_id"]
+}

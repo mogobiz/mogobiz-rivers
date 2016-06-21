@@ -9,6 +9,7 @@ import com.mogobiz.http.client.header.HttpHeaders
 import com.mogobiz.http.client.multipart.FilePart
 import com.mogobiz.http.client.multipart.ParamPart
 import com.mogobiz.http.client.multipart.Part
+import com.mogobiz.tools.MimeTypeTools
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
@@ -131,7 +132,8 @@ final class HTTPClient {
                 conn.setRequestProperty('Content-Type', 'application/x-www-form-urlencoded')
             }
             final String b = params ? addParams(body, params, charset).toString() : body
-            log.debug(b)
+            if(log.isDebugEnabled())
+                log.debug(b)
             byte[] bytes = b?.getBytes(charset) ?: new byte[0]
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
@@ -200,7 +202,8 @@ final class HTTPClient {
             String charset = config['charset'] ? config['charset'] : DEFAULT_CHARSET
             conn.setRequestProperty('Accept-Charset', charset)
             final def s = params ? addParams(content, params, charset).toString() : content
-            log.debug(s)
+            if(log.isDebugEnabled())
+                log.debug(s)
             byte[] bytes = s?.getBytes(charset) ?: new byte[0]
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
@@ -276,9 +279,9 @@ final class HTTPClient {
                     writer.append("--" + boundary).append(CRLF)
                     writer.append("Content-Disposition: form-data; name=\"" + key
                             + "\"; filename=\"" + filePart.fileName + "\"").append(CRLF)
-                    String contentType = (binary ? (filePart.contentType ? filePart.contentType :
-                            URLConnection.guessContentTypeFromName(filePart.fileName)) :
-                            "text/plain; charset=" + charset)
+                    String contentType = (filePart.contentType ? filePart.contentType : binary ? (
+                            MimeTypeTools.detectMimeType(filePart.bodyPart)+"; charset=$charset") :
+                            "text/plain; charset=$charset")
                     writer.append("Content-Type: " + contentType).append(CRLF)
                     if(binary){
                         writer.append("Content-Transfer-Encoding: binary").append(CRLF)
@@ -300,7 +303,7 @@ final class HTTPClient {
             }
 
             // End of multipart/form-data.
-            writer.append("--" + boundary + "--").append(CRLF)
+            writer.append("--" + boundary + "--").append(CRLF).flush()
 
             return handleRedirection(conn, config, follow)
         }
@@ -312,7 +315,7 @@ final class HTTPClient {
         }
     }
 
-    def closeConnection(HttpURLConnection conn) {
+    def static closeConnection(HttpURLConnection conn) {
         try {
             conn?.inputStream?.close()
             conn?.outputStream?.close()
@@ -323,18 +326,18 @@ final class HTTPClient {
         }
     }
 
-    def String getText(Map config = [:], HttpURLConnection conn) {
+    def static String getText(Map config = [:], HttpURLConnection conn) {
         String charset = config['charset']
         String text = conn.responseCode >= 400 ? conn.errorStream?.getText(charset ? charset : DEFAULT_CHARSET) :
                 conn.content?.getText(charset ? charset : DEFAULT_CHARSET)
         boolean debug = config['debug'] ? config['debug'] : false
-        if (debug) {
+        if (log.isDebugEnabled()) {
             log.debug(text)
         }
         return text
     }
 
-    def GPathResult parseTextAsXML(Map config = [:], HttpURLConnection conn, SAXParser parser = null) {
+    def static GPathResult parseTextAsXML(Map config = [:], HttpURLConnection conn, SAXParser parser = null) {
         def text = getText(config, conn)
         def slurper = parser ? new XmlSlurper(parser) : new XmlSlurper()
         try {
@@ -346,7 +349,7 @@ final class HTTPClient {
         }
     }
 
-    def Map parseTextAsJSON(Map config = [:], HttpURLConnection conn) {
+    def static Map parseTextAsJSON(Map config = [:], HttpURLConnection conn) {
         try {
             return new JsonSlurper().parseText(getText(config, conn)) as Map
         }
@@ -356,7 +359,7 @@ final class HTTPClient {
         }
     }
 
-    def SAXParser getHtmlParser(Map config = [:]) {
+    def static SAXParser getHtmlParser(Map config = [:]) {
         def parser = new SAXParser()
         String charset = config['charset']
         parser.setProperty('http://cyberneko.org/html/properties/default-encoding', charset ? charset : DEFAULT_CHARSET)
@@ -382,7 +385,8 @@ final class HTTPClient {
                 if (cookies) {
                     headers.setHeader('Cookie', cookies as String)
                 }
-                log.debug('Perform redirection to -> ' + location)
+                if(log.isDebugEnabled())
+                    log.debug('Perform redirection to -> ' + location)
                 switch (conn.requestMethod) {
                     case METHOD.GET:
                         return doGet(config, location, null, headers)
@@ -398,7 +402,8 @@ final class HTTPClient {
 
     private static HttpURLConnection openConnection(Map config = [:], String url) {
         def conn
-        log.debug('Open connection to -> ' + url)
+        if(log.isDebugEnabled())
+            log.debug('Open connection to -> ' + url)
         String proxyHost = config['proxyHost']
         String proxyPort = config['proxyPort']
         String proxyUser = config['proxyUser']
@@ -419,7 +424,7 @@ final class HTTPClient {
         return conn as HttpURLConnection
     }
 
-    private static StringBuffer addParams(String s, Map<String, String> params, String charset) {
+    static StringBuffer addParams(String s, Map<String, String> params, String charset) {
         StringBuffer buffer = new StringBuffer(s)
         boolean first = true
         params?.keySet()?.each { key ->
@@ -443,7 +448,8 @@ final class HTTPClient {
             headers.append('\t').append(key).append(': ').append(requestProperties.get(key).get(0)).append('\r\n')
         }
         headers.append('}')
-        log.debug(headers.toString())
+        if(log.isDebugEnabled())
+            log.debug(headers.toString())
     }
 
     private static void outputDuration(String url, String method, long before) {
@@ -541,9 +547,11 @@ class AuthenticatorSelector extends Authenticator
         UserPassword up = proxies.get(proxy)
         if (up != null)
         {
-            log.debug("**************" + proxy + "**********************")
-            log.debug(up.user + ":**********")
-            log.debug("**************" + proxy + "**********************")
+            if(log.isDebugEnabled()){
+                log.debug("**************" + proxy + "**********************")
+                log.debug(up.user + ":**********")
+                log.debug("**************" + proxy + "**********************")
+            }
             return new PasswordAuthentication(up.user, up.pass.toCharArray())
         }
         else

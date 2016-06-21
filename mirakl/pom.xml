@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2015 Mogobiz SARL. All rights reserved.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.mogobiz</groupId>
+        <artifactId>rivers</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.mogobiz.rivers</groupId>
+    <artifactId>mogobiz-mirakl</artifactId>
+    <name>mogobiz mirakl rivers</name>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.mogobiz</groupId>
+            <artifactId>mogobiz-tools</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mogobiz.rivers</groupId>
+            <artifactId>mogobiz-http-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mogobiz.rivers</groupId>
+            <artifactId>mogobiz-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>mogobiz-common-flow</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- rxjava -->
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- rxgroovy -->
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxgroovy</artifactId>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_${scala.major.version}</artifactId>
+        </dependency>
+
+        <!-- groovy -->
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- nekohtml -->
+        <dependency>
+            <groupId>net.sourceforge.nekohtml</groupId>
+            <artifactId>nekohtml</artifactId>
+        </dependency>
+
+        <!-- regexp -->
+        <dependency>
+            <groupId>jakarta-regexp</groupId>
+            <artifactId>jakarta-regexp</artifactId>
+        </dependency>
+
+        <!-- scala -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scalap</artifactId>
+        </dependency>
+
+        <!-- junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <!-- build-helper-maven-plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+            <!-- jsonschema2pojo-maven-plugin -->
+            <plugin>
+                <groupId>org.jsonschema2pojo</groupId>
+                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
+                <configuration>
+                    <sourceDirectory>${basedir}/src/main/resources/schemas</sourceDirectory>
+                    <targetPackage>com.mogobiz.mirakl.client.io</targetPackage>
+                    <includeAdditionalProperties>false</includeAdditionalProperties>
+                    <includeAccessors>true</includeAccessors>
+                    <includeHashcodeAndEquals>false</includeHashcodeAndEquals>
+                    <includeToString>false</includeToString>
+                    <useLongIntegers>true</useLongIntegers>
+                </configuration>
+            </plugin>
+            <!-- scala-maven-plugin -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

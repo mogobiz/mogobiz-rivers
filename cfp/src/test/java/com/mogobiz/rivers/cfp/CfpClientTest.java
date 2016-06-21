@@ -10,7 +10,7 @@ import static scala.collection.JavaConversions.*;
 
 import org.junit.Test;
 import rx.Subscriber;
-import rx.internal.reactivestreams.RxSubscriberToRsSubscriberAdapter;
+import rx.internal.reactivestreams.SubscriberAdapter;
 import scala.collection.Seq;
 import scala.runtime.BoxedUnit;
 
@@ -109,7 +109,7 @@ public class CfpClientTest {
                 }
             }
         };
-        CfpClient.loadAllConferences("http://cfp.devoxx.be", new RxSubscriberToRsSubscriberAdapter<CfpConferenceDetails>(subscriber));
+        CfpClient.loadAllConferences("http://cfp.devoxx.be", new SubscriberAdapter<CfpConferenceDetails>(subscriber));
         Thread.sleep(15000);
     }
 }

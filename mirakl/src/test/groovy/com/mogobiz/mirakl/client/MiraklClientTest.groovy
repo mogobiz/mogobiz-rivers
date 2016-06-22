@@ -27,6 +27,8 @@ class MiraklClientTest extends GroovyTestCase{
 
     def MIRAKL_URL = 'https://ebiznext-dev.mirakl.net'
 
+    def waitingStatus = [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING, SynchronizationStatus.QUEUED]
+
     void testSynchronizeCategories(){
         RiverConfig riverConfig = riverConfig()
         def categories = []
@@ -40,7 +42,7 @@ class MiraklClientTest extends GroovyTestCase{
         def synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
         assertNotNull(synchronizationStatusResponse)
         assertFalse(synchronizationStatusResponse.hasErrorReport)
-        while(synchronizationStatusResponse.status in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
+        while(synchronizationStatusResponse.status in waitingStatus){
             Thread.sleep(1000)
             synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
         }
@@ -73,7 +75,7 @@ class MiraklClientTest extends GroovyTestCase{
         def trackingImportStatus = MiraklClient.trackHierarchiesImportStatusResponse(riverConfig, trackingId)
         assertNotNull(trackingImportStatus)
         assertFalse(trackingImportStatus.hasErrorReport)
-        while(trackingImportStatus.importStatus in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
+        while(trackingImportStatus.importStatus in waitingStatus){
             Thread.sleep(1000)
             trackingImportStatus = MiraklClient.trackHierarchiesImportStatusResponse(riverConfig, trackingId)
         }
@@ -102,7 +104,7 @@ class MiraklClientTest extends GroovyTestCase{
         def trackingImportStatus = MiraklClient.trackValuesImportStatusResponse(riverConfig, trackingId)
         assertNotNull(trackingImportStatus)
         assertFalse(trackingImportStatus.hasErrorReport)
-        while(trackingImportStatus.importStatus in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
+        while(trackingImportStatus.importStatus in waitingStatus){
             Thread.sleep(1000)
             trackingImportStatus = MiraklClient.trackValuesImportStatusResponse(riverConfig, trackingId)
         }
@@ -129,7 +131,7 @@ class MiraklClientTest extends GroovyTestCase{
         def trackingImportStatus = MiraklClient.trackAttributesImportStatusResponse(riverConfig, trackingId)
         assertNotNull(trackingImportStatus)
         assertFalse(trackingImportStatus.hasErrorReport)
-        while(trackingImportStatus.importStatus in [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING]){
+        while(trackingImportStatus.importStatus in waitingStatus){
             Thread.sleep(1000)
             trackingImportStatus = MiraklClient.trackAttributesImportStatusResponse(riverConfig, trackingId)
         }

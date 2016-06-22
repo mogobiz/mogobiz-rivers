@@ -73,7 +73,9 @@ final class MiraklClient{
      */
     static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
         def items = new MiraklItems(categoriesHeader(), toScalaList(categories), ";")
-        importItems(Synchronization.class, config, categoriesApi(), items, "categories.csv")
+        def response = importItems(Synchronization.class, config, categoriesApi(), items, "categories.csv")
+        response.setIds(categories.collect {it.code})
+        response
     }
 
     /**
@@ -147,7 +149,9 @@ final class MiraklClient{
      */
     static ImportResponse importHierarchies(RiverConfig config, List<MiraklHierarchy> hierarchies){
         def items = new MiraklItems(hierarchiesHeader(), toScalaList(hierarchies), ";")
-        importItems(ImportHierarchiesResponse.class, config, hierarchiesApi(), items, "hierarchies.csv")
+        def response = importItems(ImportHierarchiesResponse.class, config, hierarchiesApi(), items, "hierarchies.csv")
+        response.setIds(hierarchies.collect {it.code})
+        response
     }
 
     /**
@@ -235,7 +239,9 @@ final class MiraklClient{
             }
         }
         def items = new MiraklItems<MiraklValue>(valuesHeader(), toScalaList(values), ";")
-        importItems(ImportValuesResponse.class, config, valuesApi(), items, "values_lists.csv")
+        def response = importItems(ImportValuesResponse.class, config, valuesApi(), items, "values_lists.csv")
+        response.setIds(values.collect {it.code})
+        response
     }
 
     /**
@@ -309,7 +315,9 @@ final class MiraklClient{
      */
     static ImportResponse importAttributes(RiverConfig config, List<MiraklAttribute> attributes = []){
         def items = new MiraklItems(attributesHeader(), toScalaList(attributes), ";")
-        importItems(ImportAttributesResponse.class, config, attributesApi(), items, "attributes.csv")
+        def response = importItems(ImportAttributesResponse.class, config, attributesApi(), items, "attributes.csv")
+        response.setIds(attributes.collect {it.code})
+        response
     }
 
     /**
@@ -343,7 +351,9 @@ final class MiraklClient{
      */
     static SynchronizationResponse synchronizeProducts(RiverConfig config, List<MiraklProduct> products){
         def items = new MiraklItems(productsHeader(), toScalaList(products), ";")
-        importItems(Synchronization.class, config, productsApi(), items, "products.csv")
+        def response = importItems(Synchronization.class, config, productsApi(), items, "products.csv")
+        response.setIds(products?.collect {it.code()})
+        response
     }
 
     /**
@@ -408,6 +418,9 @@ final class MiraklClient{
             productSynchroId = synchronizeProducts(config, products).synchroId
         }
         response.setProductSynchroId(productSynchroId)
+
+        response.setIds(list?.collect {it.code()})
+        response.setProductIds(products?.collect {it.code()})
 
         response
     }

@@ -184,7 +184,11 @@
       "javaType": "com.mogobiz.mirakl.client.io.Synchronization",
       "javaInterfaces": ["com.mogobiz.mirakl.client.io.SynchronizationResponse"],
       "properties": {
-        "synchro_id": {"type": "integer"}
+        "synchro_id": {"type": "integer"},
+        "ids": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
       }
     },
     "synchronizationStatus": {

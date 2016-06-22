@@ -10,4 +10,5 @@ interface SynchronizationResponse {
 
     Long getSynchroId()
 
+    List<String> getIds()
 }

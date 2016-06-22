@@ -10,4 +10,5 @@ interface ImportResponse {
 
     Long getImportId()
 
+    List<String> getIds()
 }

@@ -5,7 +5,11 @@
   "javaType": "com.mogobiz.mirakl.client.io.ImportAttributesResponse",
   "javaInterfaces": ["com.mogobiz.mirakl.client.io.ImportResponse"],
   "properties": {
-    "attributes_import_id": {"type": "integer", "javaName": "import_id"}
+    "attributes_import_id": {"type": "integer", "javaName": "import_id"},
+    "ids": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
   },
   "required": ["hierarchies_import_id"]
 }

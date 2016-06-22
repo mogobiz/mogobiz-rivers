@@ -9,7 +9,15 @@
     "product_import_id": {"type": "integer"},
     "product_synchro_id": {"type": "integer"},
     "message": {"type": "string"},
-    "status": {"type": "integer"}
+    "status": {"type": "integer"},
+    "ids": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "productIds": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
   },
   "required": ["hierarchies_import_id"]
 }

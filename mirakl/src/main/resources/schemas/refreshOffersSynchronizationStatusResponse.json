@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "refresh offers synchronization status response",
+  "type": "object",
+  "extends": {
+    "$ref": "common.json#/definitions/synchronizationStatusResponse"
+  },
+  "javaType": "com.mogobiz.mirakl.client.io.OffersSynchronizationStatusResponse",
+  "properties": {
+    "import_id": {"type": "integer"},
+    "mode": {"type": "string"},
+    "type": {"type": "string"},
+    "offer_deleted": {"type": "integer"},
+    "offer_inserted": {"type": "integer"},
+    "offer_updated": {"type": "integer"}
+  },
+  "required": []
+}

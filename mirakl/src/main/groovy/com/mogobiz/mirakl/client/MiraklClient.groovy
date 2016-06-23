@@ -28,11 +28,13 @@ import com.mogobiz.mirakl.client.io.ImportValuesResponse
 import com.mogobiz.mirakl.client.io.ListAttributesResponse
 import com.mogobiz.mirakl.client.io.ListHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ListValuesResponse
+import com.mogobiz.mirakl.client.io.OffersSynchronizationStatusResponse
 import com.mogobiz.mirakl.client.io.ProductsSynchronizationStatusResponse
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
 import com.mogobiz.mirakl.client.io.SynchronizationResponse
+import com.mogobiz.mirakl.client.io.SynchronizationStatusResponse
 import groovy.util.logging.Slf4j
 
 import static com.mogobiz.mirakl.client.domain.MiraklApi.*
@@ -110,7 +112,7 @@ final class MiraklClient{
      * @return The list of hierarchies
      */
     static ListHierarchiesResponse listHierarchies(RiverConfig config, String hierarchy = null, int max_level = -1){
-        def headers= authenticate(config)
+        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -185,7 +187,7 @@ final class MiraklClient{
      * @return Operator Values Lists
      */
     static ListValuesResponse listValues(RiverConfig config, String code = null){
-        def headers= authenticate(config)
+        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -276,7 +278,7 @@ final class MiraklClient{
      * @return List of attributes configuration
      */
     static ListAttributesResponse listAttributes(RiverConfig config, String hierarchy = null, Long max_level = null){
-        def headers= authenticate(config)
+        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -431,8 +433,8 @@ final class MiraklClient{
      * @param importId - the identifier of the import
      * @return offers synchronisation status
      */
-    static ImportStatusResponse trackOffersImportStatusResponse(RiverConfig config, Long importId){
-        trackStatus(ImportStatusResponse.class, config,  offersApi(), importId)
+    static OffersSynchronizationStatusResponse trackOffersImportStatusResponse(RiverConfig config, Long importId){
+        trackStatus(OffersSynchronizationStatusResponse.class, config,  offersApi(), importId, config?.clientConfig?.credentials?.apiKey)
     }
 
     /**
@@ -442,7 +444,7 @@ final class MiraklClient{
      * @return offers synchronization error report
      */
     static String loadOffersSynchronizationErrorReport(RiverConfig config, Long importId){
-        loadSynchronizationErrorReport(config, offersApi(), importId)
+        loadSynchronizationErrorReport(config, offersApi(), importId, config?.clientConfig?.credentials?.apiKey)
     }
 
 
@@ -451,7 +453,7 @@ final class MiraklClient{
      ******************************************************************************************************************/
 
     static <T extends SearchShopsResponse> T searchShops(Class<T> classz = SearchShopsResponse.class, RiverConfig config, SearchShopsRequest request){
-        def headers= authenticate(config)
+        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -530,7 +532,7 @@ final class MiraklClient{
         params?.each {k,v ->
             parts << MultipartFactory.createParamPart(k, v)
         }
-        def headers= key ? authenticate(key) : authenticate(config)
+        def headers= key ? authenticate(key) : authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -559,8 +561,8 @@ final class MiraklClient{
      * Tracking Status helper
      ******************************************************************************************************************/
 
-    static <T> T trackStatus(Class<T> classz, RiverConfig config, String api, Long trackingId){
-        def headers= authenticate(config)
+    static <T> T trackStatus(Class<T> classz, RiverConfig config, String api, Long trackingId, String key = null){
+        def headers= key ? authenticate(key) : authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -584,8 +586,8 @@ final class MiraklClient{
         ret
     }
 
-    static String loadSynchronizationErrorReport(RiverConfig config, String api, Long synchro){
-        def headers= authenticate(config)
+    static String loadSynchronizationErrorReport(RiverConfig config, String api, Long synchro, String key = null){
+        def headers= key ? authenticate(key) : authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -612,15 +614,6 @@ final class MiraklClient{
     /******************************************************************************************************************
      * Authorization helper
      ******************************************************************************************************************/
-
-    /**
-     * add headers to authenticate Operator
-     * @param config - river configuration from which the front key will be extracted
-     * @return http headers with authorization
-     */
-    private static HttpHeaders authenticate(RiverConfig config){
-        authenticate(config?.clientConfig?.credentials?.frontKey)
-    }
 
     /**
      * add headers to authenticate Operator

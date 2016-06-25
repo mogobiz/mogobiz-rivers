@@ -19,7 +19,7 @@ object ESRiversFlow {
 
     import GenericRiversFlow._
 
-    publish(rivers, config,balanceSize, bulkSize, subscriber)
+    publish(rivers, config, balanceSize, bulkSize, subscriber)
   }
 
 }

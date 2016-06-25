@@ -35,7 +35,7 @@ abstract class AbstractRivers<T extends River> extends AbstractGenericRivers<Bul
         for(T river : riverLoader.iterator()){
             rivers.put(river.type, river)
         }
-        rivers.values()
+        rivers.values() as List<T>
     }
 
     T loadRiver(String type){

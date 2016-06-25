@@ -21,7 +21,7 @@ import scala.collection.JavaConversions._
 /**
  *
  */
-trait GenericRivers[In, Out] {
+trait GenericRivers[In, Out] extends BootedRiversSystem{
 
 //  type Flow <: GenericRiver[In, Out]
 
@@ -35,7 +35,7 @@ trait GenericRivers[In, Out] {
 
   final def loadRiver(key: String): GenericRiver[In, Out] = loadRivers.getOrElse(key, null)
 
-  def dispatcher: ExecutionContext
+  def dispatcher: ExecutionContext = system.dispatcher
 
   def publisher(config: RiverConfig): Publisher[In] = {
     new PublisherAdapter[In](
@@ -67,8 +67,4 @@ trait GenericRivers[In, Out] {
   }
 }
 
-abstract class AbstractGenericRivers[In, Out] extends GenericRivers[In, Out] with BootedRiversSystem{
-
-  override val dispatcher: ExecutionContext = system.dispatcher
-
-}
+abstract class AbstractGenericRivers[In, Out] extends GenericRivers[In, Out]

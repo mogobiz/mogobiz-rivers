@@ -99,7 +99,7 @@ object GenericRiversFlow {
 
       override def bulk(config: RiverConfig, items: util.List[In], ec: ExecutionContext): Future[Out] = gr.bulk(config, items, ec)
 
-      override def river: Class[GenericRiver[In, Out]] = gr.getClass.asInstanceOf
+      override def loadRivers: util.List[GenericRiver[In, Out]] = List(gr)
     }
     publish(rivers, config, balanceSize, bulkSize, subscriber)
   }

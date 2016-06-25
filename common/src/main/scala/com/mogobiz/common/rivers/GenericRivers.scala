@@ -5,7 +5,6 @@
 package com.mogobiz.common.rivers
 
 import java.util
-import util.ServiceLoader
 
 import akka.dispatch.Futures
 import com.mogobiz.common.rivers.spi.{GenericRiver, RiverConfig}
@@ -23,17 +22,7 @@ import scala.collection.JavaConversions._
  */
 trait GenericRivers[In, Out] extends BootedRiversSystem{
 
-//  type Flow <: GenericRiver[In, Out]
-
-  def river: Class[GenericRiver[In, Out]]
-
-  final val riverLoader: ServiceLoader[GenericRiver[In, Out]] = ServiceLoader.load(river)
-
-  final lazy val loadRivers: Map[String, GenericRiver[In, Out]] = riverLoader.iterator().toList.map(river => river.getType -> river).toMap
-
-  final def rivers: List[GenericRiver[In, Out]] = loadRivers.values.toList
-
-  final def loadRiver(key: String): GenericRiver[In, Out] = loadRivers.getOrElse(key, null)
+  def loadRivers: util.List[GenericRiver[In, Out]]
 
   def dispatcher: ExecutionContext = system.dispatcher
 
@@ -42,7 +31,7 @@ trait GenericRivers[In, Out] extends BootedRiversSystem{
       Observable.defer(
         new Func0[Observable[In]]() {
           override def call: Observable[In] =
-            Observable.merge(rivers.map(_.exportCatalogItemsAsRiverItems(config)))
+            Observable.merge(loadRivers.map(_.exportCatalogItemsAsRiverItems(config)))
         }
       )
     )
@@ -58,7 +47,7 @@ trait GenericRivers[In, Out] extends BootedRiversSystem{
 
   def export(config: RiverConfig) = {
     var futures: List[Future[Out]] = List.empty
-    Observable.merge(rivers.map(_.exportCatalogItems(config, dispatcher, 100))).subscribe(new Action1[Future[Out]]() {
+    Observable.merge(loadRivers.map(_.exportCatalogItems(config, dispatcher, 100))).subscribe(new Action1[Future[Out]]() {
       override def call(future: Future[Out]): Unit = futures ++= List(future)
     }, new Action1[Throwable]() {
       override def call(t: Throwable): Unit = t.printStackTrace(System.err)

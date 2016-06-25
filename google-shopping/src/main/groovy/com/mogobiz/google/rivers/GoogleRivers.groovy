@@ -8,6 +8,7 @@ import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
 import com.mogobiz.common.client.Client
 import com.mogobiz.common.rivers.AbstractGenericRivers
+import com.mogobiz.common.rivers.AbstractRivers
 import com.mogobiz.common.rivers.spi.GenericRiver
 import com.mogobiz.common.rivers.spi.RiverConfig
 import com.mogobiz.google.client.GoogleClient
@@ -18,7 +19,7 @@ import scala.concurrent.Future
 
 /**
  */
-class GoogleRivers extends AbstractGenericRivers<BulkItem, BulkResponse> {
+class GoogleRivers extends AbstractRivers<GoogleRiver> {
 
     static GoogleRivers instance
 

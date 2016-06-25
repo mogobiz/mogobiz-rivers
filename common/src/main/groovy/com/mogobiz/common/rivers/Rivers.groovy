@@ -12,4 +12,6 @@ import com.mogobiz.common.rivers.spi.River
  */
 interface Rivers<T extends River> extends GenericRivers<BulkItem, BulkResponse>{
 
+    Class<T> river()
+
 }

@@ -57,7 +57,7 @@ final class ESBORivers extends AbstractESRivers<ESBORiver> {
     @Override
     protected Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, int bulkSize = 100, ExecutionContext ec) {
         Collection<Observable<Future<BulkResponse>>> iterable = []
-        loadRivers().each { ESBORiver river ->
+        loadRivers().each { river ->
             iterable << river.exportCatalogItems(config, ec, bulkSize)
         }
         iterable

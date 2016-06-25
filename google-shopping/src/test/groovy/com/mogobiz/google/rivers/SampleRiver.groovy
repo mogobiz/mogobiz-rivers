@@ -39,11 +39,6 @@ class SampleRiver extends AbstractGoogleRiver<Sample> {
     }
 
     @Override
-    GoogleClient getClient() {
-        return GoogleClient.instance
-    }
-
-    @Override
     String getType() {
         return 'sample'
     }

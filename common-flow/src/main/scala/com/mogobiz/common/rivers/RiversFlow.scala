@@ -20,7 +20,7 @@ object RiversFlow extends BootedRiversSystem {
 
   implicit val flowMaterializer = ActorFlowMaterializer()
 
-  def exportRiversItemsWithSubscription(publisher: Publisher[RiverItem], config: RiverConfig, client: Client, balanceSize:Int = 2, bulkSize: Int = 100, subscriber: Subscriber[BulkResponse]): Unit = {
+  def exportRiversItemsWithSubscription(publisher: Publisher[BulkItem], config: RiverConfig, client: Client, balanceSize:Int = 2, bulkSize: Int = 100, subscriber: Subscriber[BulkResponse]): Unit = {
     subscribe(exportRiversItems(publisher, config, client, balanceSize, bulkSize))(Seq(subscriber)).run()
   }
 
@@ -69,11 +69,10 @@ object RiversFlow extends BootedRiversSystem {
    +----------+
 
   */
-  def exportRiversItems(publisher: Publisher[RiverItem], config: RiverConfig, client: Client, balanceSize:Int = 2, bulkSize: Int = 100): Source[BulkResponse] = Source() { implicit b =>
+  def exportRiversItems(publisher: Publisher[BulkItem], config: RiverConfig, client: Client, balanceSize:Int = 2, bulkSize: Int = 100): Source[BulkResponse] = Source() { implicit b =>
     import FlowGraphImplicits._
 
-    val source: Source[RiverItem] = Source(publisher)
-    val map = Flow[RiverItem].map[BulkItem](_.asBulkItem(config))
+    val source: Source[BulkItem] = Source(publisher)
     val group = Flow[BulkItem].grouped(bulkSize)
 
     import scala.collection.JavaConversions._
@@ -86,7 +85,7 @@ object RiversFlow extends BootedRiversSystem {
       val balance = Balance[Seq[BulkItem]]
       val merge = Merge[BulkResponse]
 
-      source ~> map ~> group ~> balance
+      source ~> group ~> balance
 
       1 to balanceSize foreach{ _ =>
         balance ~> bulk ~> merge
@@ -95,7 +94,7 @@ object RiversFlow extends BootedRiversSystem {
       merge ~> undefinedSink
     }
     else{
-      source ~> map ~> group ~> bulk ~> undefinedSink
+      source ~> group ~> bulk ~> undefinedSink
     }
 
     undefinedSink

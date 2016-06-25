@@ -22,7 +22,7 @@ final class ESBORivers extends AbstractESRivers<ESBORiver> {
     /**
      *
      */
-    private ESBORivers() { super(ESBORiver.class) }
+    private ESBORivers() {  }
 
     static ESBORivers getInstance() {
         if (instance == null) {
@@ -35,7 +35,7 @@ final class ESBORivers extends AbstractESRivers<ESBORiver> {
     ESIndexResponse createCompanyIndex(RiverConfig config) {
         ESIndexResponse response = new ESIndexResponse(acknowledged: true, error: null)
         def mappings = [:]
-        loadRivers().each { river ->
+        loadRivers().each { ESBORiver river ->
             mappings.putAll(river.defineESMappingAsMap())
         }
         def index = config.clientConfig.config.index as String
@@ -55,11 +55,17 @@ final class ESBORivers extends AbstractESRivers<ESBORiver> {
     }
 
     @Override
-    protected Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, ExecutionContext ec) {
+    protected Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, int bulkSize = 100, ExecutionContext ec) {
         Collection<Observable<Future<BulkResponse>>> iterable = []
-        loadRivers().each { river ->
-            iterable << river.exportCatalogItems(config, ec, 100)
+        loadRivers().each { ESBORiver river ->
+            iterable << river.exportCatalogItems(config, ec, bulkSize)
         }
         iterable
     }
+
+    @Override
+    Class<ESBORiver> river() {
+        ESBORiver.class
+    }
+
 }

@@ -4,26 +4,11 @@
 
 package com.mogobiz.common.rivers.spi
 
+import com.mogobiz.common.client.BulkItem
 import com.mogobiz.common.client.BulkResponse
-import com.mogobiz.common.client.SearchResponse
-import org.reactivestreams.Publisher
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 
 /**
  */
-public interface River {
+public interface River extends GenericRiver<BulkItem, BulkResponse> {
 
-    Publisher<RiverItem> exportCatalogItemsAsPublisher(final RiverConfig config)
-
-    rx.Observable<RiverItem> exportCatalogItemsAsRiverItems(final RiverConfig config)
-
-    rx.Observable<Future<BulkResponse>> exportCatalogItems(
-            final RiverConfig config,
-            final ExecutionContext ec,
-            final int count)
-
-    SearchResponse retrieveCatalogPreviousItems(final RiverConfig config)
-
-    String getType()
 }

@@ -48,7 +48,7 @@ abstract class AbstractRiver<E> extends AbstractGenericRiver<E, BulkItem, BulkRe
         }.asBulkItem(config)
     }
 
-    public static String getUuid(E e) {
+    public String getUuid(E e) {
         e.toString()
     }
 

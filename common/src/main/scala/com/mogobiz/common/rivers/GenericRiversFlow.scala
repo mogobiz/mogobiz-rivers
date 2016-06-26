@@ -15,14 +15,14 @@ import scala.collection.JavaConversions._
 /**
 +----------+
 |          |
-|  Source  |  Entity
+|  Source  |  In
 |          |
 +----------+
      |
      v
 +----------+
 |          |
-|    map   |  In
+|    map   |
 |          |
 +----------+
      |
@@ -93,7 +93,7 @@ object GenericRiversFlow {
 
   }
 
-  def synchronize[Entity, In, Out](gr: GenericRiver[In, Out], config: RiverConfig, balanceSize: Int = 2, bulkSize: Int = 100, subscriber: Subscriber[Out]): Unit = {
+  def synchronize[In, Out](gr: GenericRiver[In, Out], config: RiverConfig, balanceSize: Int = 2, bulkSize: Int = 100, subscriber: Subscriber[Out]): Unit = {
     val rivers = new GenericRivers[In, Out] {
       import java.util
 

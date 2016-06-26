@@ -16,14 +16,11 @@
     <modules>
         <module>http-client</module>
         <module>common</module>
-        <module>common-flow</module>
         <module>elasticsearch-mappings</module>
         <module>elasticsearch</module>
-        <module>elasticsearch-flow</module>
         <module>google-shopping</module>
         <module>cfp</module>
         <module>mirakl</module>
-        <module>mirakl-flow</module>
     </modules>
     <build>
         <pluginManagement>

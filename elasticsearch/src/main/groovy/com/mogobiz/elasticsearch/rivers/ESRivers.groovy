@@ -28,7 +28,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
     /**
      *
      */
-    private ESRivers() { super(ESRiver.class) }
+    private ESRivers() {  }
 
     static ESRivers getInstance() {
         if (instance == null) {
@@ -40,7 +40,7 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
     @Override
     ESIndexResponse createCompanyIndex(RiverConfig config) {
         def mappings = []
-        loadRivers().each { river ->
+        loadRivers().each { ESRiver river ->
             mappings << river.defineESMapping()
         }
         ESIndexResponse response = new ESIndexResponse(acknowledged: true, error: null)
@@ -299,13 +299,18 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
     }
 
     @Override
-    protected Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, ExecutionContext ec) {
+    protected Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, int bulkSize = 100, ExecutionContext ec) {
         Collection<Observable<Future<BulkResponse>>> iterable = []
         iterable << client.upsert(config, [new Item(id: 1L, type: 'i18n', map: ['languages': config.languages])], ec)
         loadRivers().each { river ->
-            iterable << river.exportCatalogItems(config, ec, 100)
+            iterable << river.exportCatalogItems(config, ec, bulkSize)
         }
         iterable
+    }
+
+    @Override
+    Class<ESRiver> river() {
+        ESRiver.class
     }
 
 }

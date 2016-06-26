@@ -7,8 +7,7 @@ package com.mogobiz.common
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.stream.scaladsl._
-import akka.stream.stage.{TerminationDirective, Directive, Context, PushStage}
-
+import akka.stream.stage.{Context, Directive, PushStage, TerminationDirective}
 import org.reactivestreams.Subscriber
 
 /**

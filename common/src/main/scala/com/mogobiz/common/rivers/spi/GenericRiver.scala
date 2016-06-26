@@ -13,14 +13,17 @@ import rx.internal.reactivestreams.PublisherAdapter
 import scala.beans.BeanProperty
 import scala.concurrent.{Future, ExecutionContext}
 
+trait Transformation[E, In] {
+  def asRiverItem(e:E, config: RiverConfig): In
+}
+
 /**
   *
   */
-trait GenericRiver[In, Out] {
-  type U
+trait GenericRiver[In, Out] extends Transformation[AnyRef, In]{
   def exportCatalogItemsAsRiverItems(config: RiverConfig): Observable[In] = {
-    retrieveCatalogItems(config).flatMap(new Func1[U, Observable[In]](){
-      override def call(e: U): Observable[In] = Observable.just(asRiverItem(e, config))
+    retrieveCatalogItems(config).flatMap(new Func1[AnyRef, Observable[In]](){
+      override def call(e: AnyRef): Observable[In] = Observable.just(asRiverItem(e, config))
     })
   }
 
@@ -33,9 +36,7 @@ trait GenericRiver[In, Out] {
     })
   }
 
-  def retrieveCatalogItems(config: RiverConfig): Observable[U]
-
-  def asRiverItem(e:U, config: RiverConfig): In
+  def retrieveCatalogItems(config: RiverConfig): Observable[AnyRef]
 
   import java.util
 
@@ -48,10 +49,7 @@ trait GenericRiver[In, Out] {
   def getType: String
 }
 
-abstract class AbstractGenericRiver[Entity, In, Out] extends GenericRiver[In, Out]{
-  override type U = Entity
-  override def asRiverItem(e:Entity, config: RiverConfig): In
-}
+abstract class AbstractGenericRiver[In, Out] extends GenericRiver[In, Out]
 
 import java.util
 import scala.collection.JavaConversions._

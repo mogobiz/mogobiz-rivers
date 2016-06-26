@@ -157,7 +157,8 @@ class MiraklClientTest extends GroovyTestCase{
                 "category${indice}Label",
                 action,
                 toScalaOption(parent),
-                logisticClass
+                logisticClass,
+                ''
         )
     }
 

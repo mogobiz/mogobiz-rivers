@@ -21,7 +21,7 @@ abstract class AbstractRiver<E> extends AbstractGenericRiver<E, BulkItem, BulkRe
     abstract Item asItem(E e, RiverConfig config)
 
     @Override
-    BulkItem asRiverItem(E e, RiverConfig config){ // FIXME
+    BulkItem asRiverItem(Object e, RiverConfig config){ // FIXME
         final String type = getType()
         final String uuid = getUuid(e as E)
 

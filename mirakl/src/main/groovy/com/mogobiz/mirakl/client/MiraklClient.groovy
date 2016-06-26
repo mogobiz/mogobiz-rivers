@@ -76,7 +76,7 @@ final class MiraklClient{
     static SynchronizationResponse synchronizeCategories(RiverConfig config, List<MiraklCategory> categories){
         def items = new MiraklItems(categoriesHeader(), toScalaList(categories), ";")
         def response = importItems(Synchronization.class, config, categoriesApi(), items, "categories.csv")
-        response.setIds(categories.collect {it.code})
+        response.setIds(categories.collect {it.uuid()})
         response
     }
 

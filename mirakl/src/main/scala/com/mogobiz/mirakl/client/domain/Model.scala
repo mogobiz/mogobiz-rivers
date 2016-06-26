@@ -63,7 +63,9 @@ class MiraklCategory(
                            override val label: String,
                            action: BulkAction,
                            parent: Option[MiraklCategory] = None,
-                           logisticClass: String = "")
+                           logisticClass: String = "",
+                           val uuid: String = ""
+                    )
   extends AbstractMiraklItem[MiraklCategory](code, label, action, parent) {
 
   def this(code: String, label: String, parent: Option[MiraklCategory]){

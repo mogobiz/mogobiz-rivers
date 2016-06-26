@@ -34,11 +34,6 @@
             <artifactId>mogobiz-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>mogobiz-common-flow</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- rxjava -->
         <dependency>

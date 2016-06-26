@@ -23,17 +23,17 @@ class GoogleRiversTest extends GroovyTestCase {
     }
 
     public void testExport(){
-        GoogleRivers.instance.export(buildConfig())
+        GoogleRivers.instance.export(buildConfig(), 10)
     }
 
-    private RiverConfig buildConfig() {
+    private static RiverConfig buildConfig() {
         new RiverConfig(
                 debug: true,
                 clientConfig: buildClientConfig()
         )
     }
 
-    private ClientConfig buildClientConfig(){
+    private static ClientConfig buildClientConfig(){
         new ClientConfig(
                 debug: true,
                 merchant_id: MERCHANT_ID,

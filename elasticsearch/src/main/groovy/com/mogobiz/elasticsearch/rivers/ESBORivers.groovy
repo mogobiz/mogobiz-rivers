@@ -41,15 +41,23 @@ final class ESBORivers extends AbstractESRivers<ESBORiver> {
         def index = config.clientConfig.config.index as String
         def exists = client.indexExists(config.clientConfig.url, index)
         if (!exists) {
+            def clientConfig = config.clientConfig
+            def conf = [debug: clientConfig?.debug]
+            def credentials = clientConfig?.credentials
+            if(credentials){
+                conf << [username: credentials.client_id]
+                conf << [password: credentials.client_secret]
+            }
             response = client.createIndex(
                     config.clientConfig.url,
                     index,
                     new ESIndexSettings(
-                            number_of_replicas: config.clientConfig.config.replicas as Integer ?: 1,
+                            number_of_replicas: clientConfig.config.replicas as Integer ?: 1,
                             refresh_interval: "1s"
                     ),
                     mappings,
-                    [debug: config.debug])
+                    conf
+            )
         }
         response
     }

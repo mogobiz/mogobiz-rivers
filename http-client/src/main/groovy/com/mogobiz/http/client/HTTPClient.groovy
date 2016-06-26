@@ -13,6 +13,7 @@ import com.mogobiz.tools.MimeTypeTools
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
+import org.apache.commons.codec.binary.Base64
 import org.cyberneko.html.parsers.SAXParser
 import org.xml.sax.SAXParseException
 
@@ -60,7 +61,7 @@ final class HTTPClient {
 
     HttpURLConnection doHead(
             final Map config = [:], String url,
-            final Map<String, String> params = null, final HttpHeaders headers = null, final boolean follow = true) {
+            final Map<String, String> params = null, final HttpHeaders headers = new HttpHeaders(), final boolean follow = true) {
         long before = System.currentTimeMillis()
         boolean debug = config['debug'] ? config['debug'] : false
         String method = METHOD.HEAD
@@ -71,6 +72,7 @@ final class HTTPClient {
             conn.requestMethod = method
             conn.setDoOutput(false)
             conn.setRequestProperty("Accept-Charset", charset)
+            authenticate(config, headers)
             addHeaders(headers, ['Accept-Charset'], conn)
 
             if (debug) {
@@ -88,7 +90,7 @@ final class HTTPClient {
 
     HttpURLConnection doGet(
             final Map config = [:], String url,
-            final Map<String, String> params = null, final HttpHeaders headers = null, final boolean follow = true) {
+            final Map<String, String> params = null, final HttpHeaders headers = new HttpHeaders(), final boolean follow = true) {
         long before = System.currentTimeMillis()
         boolean debug = config['debug'] ? config['debug'] : false
         String method = METHOD.GET
@@ -99,6 +101,7 @@ final class HTTPClient {
             conn.requestMethod = method
             conn.setDoOutput(false)
             conn.setRequestProperty("Accept-Charset", charset)
+            authenticate(config, headers)
             addHeaders(headers, ['Accept-Charset'], conn)
 
             if (debug) {
@@ -118,7 +121,7 @@ final class HTTPClient {
             final Map config = [:],
             final String url,
             final Map<String, String> params = null,
-            final String body = '', final HttpHeaders headers = null, boolean follow = true) {
+            final String body = '', final HttpHeaders headers = new HttpHeaders(), boolean follow = true) {
         long before = System.currentTimeMillis()
         boolean debug = config['debug'] ? config['debug'] : false
         String method = METHOD.POST
@@ -138,6 +141,7 @@ final class HTTPClient {
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
             conn.setRequestProperty('Length', '' + len)
+            authenticate(config, headers)
             addHeaders(headers, ['Accept-Charset', 'Content-Length', 'Length'], conn)
 
             if (debug) {
@@ -161,7 +165,7 @@ final class HTTPClient {
     HttpURLConnection doDelete(
             final Map config = [:],
             final String url,
-            final Map<String, String> params = null, final HttpHeaders headers = null, final boolean follow = true) {
+            final Map<String, String> params = null, final HttpHeaders headers = new HttpHeaders(), final boolean follow = true) {
         long before = System.currentTimeMillis()
         boolean debug = config['debug'] ? config['debug'] : false
         String method = METHOD.DELETE
@@ -172,6 +176,7 @@ final class HTTPClient {
             conn.setDoOutput(false)
             conn.requestMethod = method
             conn.setRequestProperty('Accept-Charset', charset)
+            authenticate(config, headers)
             addHeaders(headers, ['Accept-Charset'], conn)
 
             if (debug) {
@@ -191,7 +196,7 @@ final class HTTPClient {
             final Map config = [:],
             final String url,
             final Map<String, String> params = null,
-            final String content = '', final HttpHeaders headers = null, final boolean follow = true) {
+            final String content = '', final HttpHeaders headers = new HttpHeaders(), final boolean follow = true) {
         long before = System.currentTimeMillis()
         boolean debug = config['debug'] ? config['debug'] : false
         String method = METHOD.PUT
@@ -208,6 +213,7 @@ final class HTTPClient {
             int len = bytes.length
             conn.setRequestProperty('Content-Length', '' + len)
             conn.setRequestProperty('Length', '' + len)
+            authenticate(config, headers)
             addHeaders(headers, ['Accept-Charset', 'Content-Length', 'Length'], conn)
 
             if (debug) {
@@ -232,7 +238,7 @@ final class HTTPClient {
             final Map config = [:],
             final String url,
             final List<Part> parts = null,
-            final HttpHeaders headers = null,
+            final HttpHeaders headers = new HttpHeaders(),
             final boolean follow = true){
         long before = System.currentTimeMillis()
         boolean debug = config['debug'] ? config['debug'] : false
@@ -251,6 +257,7 @@ final class HTTPClient {
             conn.requestMethod = method
             conn.setRequestProperty('Accept-Charset', charset)
             conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary)
+            authenticate(config, headers)
             addHeaders(headers, ['Accept-Charset', 'Content-Type'], conn)
 
             outputHeaders(conn)
@@ -312,6 +319,15 @@ final class HTTPClient {
             if (debug) {
                 outputDuration(url, method, before)
             }
+        }
+    }
+
+    def authenticate(Map config = [:], HttpHeaders headers = new HttpHeaders()){
+        def username = config['username'] as String
+        def password = config['password'] as String
+        def basic = Base64.encodeBase64String("$username:$password".bytes)
+        if(username && password){
+            headers.addHeader("Authorization", "Basic $basic")
         }
     }
 

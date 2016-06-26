@@ -415,6 +415,13 @@ final class ESClient implements Client {
             final RiverConfig config,
             final List<BulkItem> items,
             ExecutionContext ec){
+        def clientConfig = config.clientConfig
+        def conf = [debug: clientConfig?.debug]
+        def credentials = clientConfig?.credentials
+        if(credentials){
+            conf << [username: credentials.client_id]
+            conf << [password: credentials.client_secret]
+        }
         final String crlf = System.getProperty("line.separator")
         StringBuffer buffer = new StringBuffer()
         items?.each { item ->
@@ -457,7 +464,7 @@ final class ESClient implements Client {
                 try{
                     def debug = config.clientConfig.debug
                     conn = client.doPost(
-                            [debug:debug],
+                            conf,
                             new StringBuffer(config.clientConfig?.url).append('/_bulk?refresh=false').toString(),
                             null,
                             body)
@@ -511,8 +518,8 @@ final class ESClient implements Client {
         }, ec))
     }
 
-    static boolean indexExists(String url, String index){
-        return HTTPClient.instance.doHead([debug:true], url + '/' + index).responseCode == 200
+    static boolean indexExists(String url, String index, Map config = [debug:true]){
+        return HTTPClient.instance.doHead(config, url + '/' + index).responseCode == 200
     }
 
     /**
@@ -586,8 +593,16 @@ final class ESClient implements Client {
         new ESSearchResponse(total: total, hits: hits, aggregations: aggregations)
     }
 
+    @Override
     SearchResponse search(Request request) {
-        ESSearchResponse response = search(new ESRequest(request.properties))
+        def clientConfig = request.clientConfig
+        def conf = [debug: clientConfig?.debug]
+        def credentials = clientConfig?.credentials
+        if(credentials){
+            conf << [username: credentials.client_id]
+            conf << [password: credentials.client_secret]
+        }
+        ESSearchResponse response = search(new ESRequest(request.properties), conf)
         new SearchResponse(total: response.total, hits: response.hits.collect {hit -> new Item(id: hit.id, map: hit)})
     }
 }

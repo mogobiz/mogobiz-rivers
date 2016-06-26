@@ -14,14 +14,14 @@ import java.text.SimpleDateFormat
 /**
  *
  */
-abstract class AbstractRiver<E> extends AbstractGenericRiver<E, BulkItem, BulkResponse> implements River{
+abstract class AbstractRiver<E> extends AbstractGenericRiver<BulkItem, BulkResponse> implements River{
 
     protected AbstractRiver(){}
 
     abstract Item asItem(E e, RiverConfig config)
 
     @Override
-    BulkItem asRiverItem(Object e, RiverConfig config){ // FIXME
+    BulkItem asRiverItem(Object e, RiverConfig config){
         final String type = getType()
         final String uuid = getUuid(e as E)
 

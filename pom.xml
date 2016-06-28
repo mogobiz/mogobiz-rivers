@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.mogobiz</groupId>
         <artifactId>mogobiz-grails</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1-RC2</version>
     </parent>
     <artifactId>rivers</artifactId>
     <packaging>pom</packaging>

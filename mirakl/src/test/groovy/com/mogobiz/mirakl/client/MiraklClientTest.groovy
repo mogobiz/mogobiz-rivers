@@ -4,6 +4,7 @@ import com.mogobiz.common.client.BulkAction
 import com.mogobiz.common.client.ClientConfig
 import com.mogobiz.common.client.Credentials
 import com.mogobiz.common.rivers.spi.RiverConfig
+import com.mogobiz.mirakl.client.domain.AttributeType
 import com.mogobiz.mirakl.client.domain.MiraklAttribute
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.domain.MiraklHierarchy
@@ -22,6 +23,8 @@ class MiraklClientTest extends GroovyTestCase{
     def FRONT_API_KEY = '096401e5-c3e8-42fe-9891-ed94cd4c1a89' //front api key
 
     def API_KEY = '75d5edfa-94a1-478b-aad4-dbf9c37ef70e' //shop api key
+
+    // operator api key f4f291be-43f9-46b9-b888-ef867903e55c
 
     def SHOP_ID = "2002"
 
@@ -63,6 +66,10 @@ class MiraklClientTest extends GroovyTestCase{
         RiverConfig riverConfig = riverConfig()
         def hierarchiesResponse = MiraklClient.listHierarchies(riverConfig)
         assertNotNull(hierarchiesResponse)
+    }
+
+    void testLoadHierarchiesRecursively(){
+        loadHierarchiesRecursively(riverConfig())
     }
 
     void testImportHierarchies(){
@@ -189,5 +196,26 @@ class MiraklClientTest extends GroovyTestCase{
             )
         }
         ret
+    }
+
+    private loadHierarchiesRecursively(RiverConfig riverConfig, String hierarchyCode = null, int level = 1){
+        def hierarchiesResponse = MiraklClient.listHierarchies(riverConfig, hierarchyCode, level)
+        assertNotNull(hierarchiesResponse)
+        hierarchiesResponse.hierarchies?.findAll {
+            it.level as int == level && (!hierarchyCode || it.parentCode == hierarchyCode)
+        }?.each {hierarchie ->
+            def attributesResponse = MiraklClient.listAttributes(riverConfig, hierarchie.code)
+            attributesResponse.attributes?.findAll {it.type == AttributeType.LIST && it.typeParameter}?.each { attribute ->
+                def valuesResponse = MiraklClient.listValues(riverConfig, attribute.typeParameter)
+                StringBuffer buffer = new StringBuffer()
+                buffer.append("${attribute.variant ? "variation" : "feature"} ${attribute.label}:[\n")
+                valuesResponse.valuesLists.first().values.each {value ->
+                    buffer.append("\t${value.code}:${value.label}\n")
+                }
+                buffer.append("]\n")
+                log.info(buffer.toString())
+            }
+            loadHierarchiesRecursively(riverConfig, hierarchie.code, level+1)
+        }
     }
 }

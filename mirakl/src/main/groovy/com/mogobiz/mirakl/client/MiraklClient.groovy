@@ -112,7 +112,7 @@ final class MiraklClient{
      * @return The list of hierarchies
      */
     static ListHierarchiesResponse listHierarchies(RiverConfig config, String hierarchy = null, int max_level = -1){
-        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
+        def headers= authenticate(config?.clientConfig?.credentials?.apiKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -187,7 +187,7 @@ final class MiraklClient{
      * @return Operator Values Lists
      */
     static ListValuesResponse listValues(RiverConfig config, String code = null){
-        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
+        def headers= authenticate(config?.clientConfig?.credentials?.apiKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null
@@ -278,7 +278,7 @@ final class MiraklClient{
      * @return List of attributes configuration
      */
     static ListAttributesResponse listAttributes(RiverConfig config, String hierarchy = null, Long max_level = null){
-        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
+        def headers= authenticate(config?.clientConfig?.credentials?.apiKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
         def ret = null

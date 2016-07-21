@@ -34,8 +34,13 @@ import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
 import com.mogobiz.mirakl.client.io.SynchronizationResponse
-import com.mogobiz.mirakl.client.io.SynchronizationStatusResponse
 import groovy.util.logging.Slf4j
+import org.apache.commons.vfs2.FileObject
+import org.apache.commons.vfs2.FileSystemOptions
+import org.apache.commons.vfs2.Selectors
+import org.apache.commons.vfs2.impl.StandardFileSystemManager
+import org.apache.commons.vfs2.provider.sftp.IdentityInfo
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder
 
 import static com.mogobiz.mirakl.client.domain.MiraklApi.*
 
@@ -611,6 +616,44 @@ final class MiraklClient{
         ret
     }
 
+    static synchronizeImports(MiraklSftpConfig config){
+        def sysManager = new StandardFileSystemManager()
+
+        //create options for sftp
+        FileSystemOptions options = new FileSystemOptions();
+        //ssh key
+        SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(options, "no");
+        //set root directory to user home
+        SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(options, false);
+        //timeout
+        SftpFileSystemConfigBuilder.getInstance().setTimeout(options, 10000);
+
+        if (config.keyPath) {
+            SftpFileSystemConfigBuilder.getInstance().setIdentityInfo(options, new IdentityInfo(new File(config.keyPath), config.passphrase?.bytes));
+        }
+
+        final remoteURL = "sftp://$config.username${config.keyPath ? ":$config.password" : ""}@$config.remoteHost$config.remotePath"
+
+        try {
+            sysManager.init()
+
+            FileObject localFile = sysManager.resolveFile(config.localPath)
+
+            FileObject remoteFile = sysManager.resolveFile(remoteURL, options)
+
+            //Selectors.SELECT_FILES --> A FileSelector that selects only the base file/folder.
+            localFile.copyFrom(remoteFile, Selectors.SELECT_FILES)
+
+
+        } catch (Exception e) {
+            log.error(e.message, e)
+            return false
+        }finally{
+            sysManager.close()
+        }
+        return true
+    }
+
     /******************************************************************************************************************
      * Authorization helper
      ******************************************************************************************************************/
@@ -626,5 +669,14 @@ final class MiraklClient{
         headers
     }
 
+    static class MiraklSftpConfig{
+        String remoteHost = "127.0.0.1"
+        String remotePath = "/home/mirakl/imports"
+        String localPath = "/tmp"
+        String username = "mirakl"
+        String password = ""
+        String keyPath = "/home/mirakl/.ssh/id_dsa"
+        String passphrase = null
+    }
 }
 

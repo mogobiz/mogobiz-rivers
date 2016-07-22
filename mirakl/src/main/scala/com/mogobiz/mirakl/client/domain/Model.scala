@@ -188,14 +188,14 @@ class MiraklAttribute(var action: BulkAction = BulkAction.UPDATE, val transforma
 
 class MiraklProduct(val code: String, val label: String, val description: Option[String], val category: String, val active: Option[Boolean] = None, val references: Seq[ProductReference] = Seq.empty, val shopSkus: Seq[String] = Seq.empty, val brand: Option[String], val url: Option[String] = None, val media: Option[String] = None, val authorizedShops: Seq[String] = Seq.empty, val variantGroupCode: Option[String] = None, val logisticClass: Option[String] = None, var action: BulkAction = BulkAction.UPDATE) extends BulkItem with MiraklItem{
   override val property2Value: String => String = {
-    case "product-sku" => code
-    case "product-description" => description.getOrElse("")
-    case "product-title" => label
-    case "category-code" => category
+    case "product-sku" | "mogobiz-identifier" => code
+    case "product-description" | "mogobiz-description" => description.getOrElse("")
+    case "product-title" | "mogobiz-title" => label
+    case "category-code" | "mogobiz-category" => category
     case "active" => active.getOrElse(true).toString
     case "product-references" => references.map{reference => s"${reference.getReferenceType}|${reference.getReference}"}.mkString(",")
     case "shop-skus" => shopSkus.mkString(",")
-    case "brand" => brand.getOrElse("")
+    case "brand" | "mogobiz-brand" => brand.getOrElse("")
     case "update-delete" => action.toString.toLowerCase
     case "product-url" => url.getOrElse("")
     case "media-url" => media.getOrElse("")

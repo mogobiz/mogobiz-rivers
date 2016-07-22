@@ -285,4 +285,6 @@ object MiraklApi {
 
   val offersApi = "/api/offers/imports"
 
+  val importProductsApi = "/api/products/imports"
+
 }

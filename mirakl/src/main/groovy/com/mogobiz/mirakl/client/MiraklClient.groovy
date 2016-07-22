@@ -29,6 +29,7 @@ import com.mogobiz.mirakl.client.io.ListAttributesResponse
 import com.mogobiz.mirakl.client.io.ListHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ListValuesResponse
 import com.mogobiz.mirakl.client.io.OffersSynchronizationStatusResponse
+import com.mogobiz.mirakl.client.io.ProductsImportStatusResponse
 import com.mogobiz.mirakl.client.io.ProductsSynchronizationStatusResponse
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
@@ -383,6 +384,36 @@ final class MiraklClient{
         loadSynchronizationErrorReport(config, productsApi(), importId)
     }
 
+    /**
+     * P42 - refresh products import synchronisation status (Front Mirakl Catalog Integration)
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return products synchronisation status
+     */
+    static ProductsImportStatusResponse trackProductsImportStatusResponse(RiverConfig config, Long importId){
+        trackStatus(ProductsImportStatusResponse.class, config, importProductsApi(), importId, config?.clientConfig?.credentials?.apiKey)
+    }
+
+    /**
+     * P44 - get errors report file for products import synchronisation (Front Mirakl Catalog Integration)
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return products import synchronization error report
+     */
+    static String loadProductsImportSynchronizationErrorReport(RiverConfig config, Long importId){
+        loadSynchronizationErrorReport(config, importProductsApi(), importId, config?.clientConfig?.credentials?.apiKey)
+    }
+
+    /**
+     * P47 - get transformation errors report file for products import synchronisation (Front Mirakl Catalog Integration)
+     * @param config - river configuration
+     * @param importId - tracking id
+     * @return products import transformation error report
+     */
+    static String loadProductsImportTransformationErrorReport(RiverConfig config, Long importId){
+        loadSynchronizationErrorReport(config, importProductsApi(), importId, config?.clientConfig?.credentials?.apiKey, "transformation_error_report")
+    }
+
     /******************************************************************************************************************
      * Offers api
      ******************************************************************************************************************/
@@ -588,7 +619,7 @@ final class MiraklClient{
         ret
     }
 
-    static String loadSynchronizationErrorReport(RiverConfig config, String api, Long synchro, String key = null){
+    static String loadSynchronizationErrorReport(RiverConfig config, String api, Long synchro, String key = null, String report = "error_report"){
         def headers= key ? authenticate(key) : authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
@@ -596,7 +627,7 @@ final class MiraklClient{
         try{
             conn = client.doGet(
                     [debug: config.debug],
-                    "${config?.clientConfig?.merchant_url}$api/$synchro/error_report",
+                    "${config?.clientConfig?.merchant_url}$api/$synchro/$report",
                     [:],
                     headers,
                     true

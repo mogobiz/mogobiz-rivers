@@ -193,7 +193,7 @@
     },
     "synchronizationStatus": {
       "javaType": "com.mogobiz.mirakl.client.domain.SynchronizationStatus",
-      "enum": ["WAITING", "RUNNING", "COMPLETE", "FAILED", "CANCELLED", "QUEUED"]
+      "enum": ["WAITING", "RUNNING", "COMPLETE", "FAILED", "CANCELLED", "QUEUED", "SENT", "TRANSFORMATION_WAITING", "TRANSFORMATION_RUNNING", "TRANSFORMATION_FAILED"]
     },
     "synchronizationStatusResponse": {
       "javaType": "com.mogobiz.mirakl.client.io.SynchronizationStatusResponse",

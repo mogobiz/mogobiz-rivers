@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "refresh products import synchronization status response",
+  "type": "object",
+  "extends": {
+    "$ref": "common.json#/definitions/importStatusResponse"
+  },
+  "javaType": "com.mogobiz.mirakl.client.io.ProductsImportStatusResponse",
+  "properties": {
+    "date_created": {"type": "date"},
+    "has_new_product_report": {"type": "boolean"},
+    "has_transformation_error_report": {"type": "boolean"},
+    "has_transformed_file": {"type": "boolean"},
+    "import_id": {"type": "integer"},
+    "reason_status": {"type": "string"},
+    "transform_lines_in_error": {"type": "integer"},
+    "transform_lines_in_succes": {"type": "integer"},
+    "transform_lines_read": {"type": "integer"},
+    "transform_lines_with_warning": {"type": "integer"}
+  },
+  "required": []
+}

@@ -188,7 +188,7 @@ class MiraklAttribute(var action: BulkAction = BulkAction.UPDATE, val transforma
 
 class MiraklProduct(val code: String, val label: String, val description: Option[String], val category: String, val active: Option[Boolean] = None, val references: Seq[ProductReference] = Seq.empty, val shopSkus: Seq[String] = Seq.empty, val brand: Option[String], val url: Option[String] = None, val media: Option[String] = None, val authorizedShops: Seq[String] = Seq.empty, val variantGroupCode: Option[String] = None, val logisticClass: Option[String] = None, var action: BulkAction = BulkAction.UPDATE) extends BulkItem with MiraklItem{
   override val property2Value: String => String = {
-    case "product-sku" | "mogobiz-identifier" => code
+    case "product-sku" | "mogobiz-identifier" => code // mogobiz ticketType uuid
     case "product-description" | "mogobiz-description" => description.getOrElse("")
     case "product-title" | "mogobiz-title" => label
     case "category-code" | "mogobiz-category" => category
@@ -198,9 +198,9 @@ class MiraklProduct(val code: String, val label: String, val description: Option
     case "brand" | "mogobiz-brand" => brand.getOrElse("")
     case "update-delete" => action.toString.toLowerCase
     case "product-url" => url.getOrElse("")
-    case "media-url" => media.getOrElse("")
+    case "media-url" | "mogobiz-media" => media.getOrElse("")
     case "authorized-shop-ids" => authorizedShops.mkString(",")
-    case "variant-group-code" => variantGroupCode.getOrElse("")
+    case "variant-group-code" | "mogobiz-product-identifier" => variantGroupCode.getOrElse("") //mogobiz product code
     case "logistic-class" => logisticClass.getOrElse("")
     case _ => ""
   }

@@ -666,12 +666,16 @@ final class MiraklClient{
             sysManager.init()
 
             FileObject localFile = sysManager.resolveFile(config.localPath)
+            if(!localFile.exists()){
+                localFile.createFolder()
+            }
 
             FileObject remoteFile = sysManager.resolveFile(remoteURL, options)
 
             //Selectors.SELECT_FILES --> A FileSelector that selects only the base file/folder.
             localFile.copyFrom(remoteFile, Selectors.SELECT_FILES)
 
+            remoteFile.delete(Selectors.SELECT_FILES)
 
         } catch (Exception e) {
             log.error(e.message, e)

@@ -704,7 +704,7 @@ final class MiraklClient{
     static class MiraklSftpConfig{
         String remoteHost = "127.0.0.1"
         String remotePath = "/home/mirakl/imports"
-        String localPath = "/tmp"
+        String localPath = "/usr/local/mogobiz/data/mirakl/imports"
         String username = "mirakl"
         String password = ""
         String keyPath = "/home/mirakl/.ssh/id_dsa"

@@ -186,7 +186,10 @@ class MiraklAttribute(var action: BulkAction = BulkAction.UPDATE, val transforma
   }
 }
 
-class MiraklProduct(val code: String, val label: String, val description: Option[String], val category: String, val active: Option[Boolean] = None, val references: Seq[ProductReference] = Seq.empty, val shopSkus: Seq[String] = Seq.empty, val brand: Option[String], val url: Option[String] = None, val media: Option[String] = None, val authorizedShops: Seq[String] = Seq.empty, val variantGroupCode: Option[String] = None, val logisticClass: Option[String] = None, var action: BulkAction = BulkAction.UPDATE) extends BulkItem with MiraklItem{
+class MiraklAttributeValue(val attribute: String, val value: Option[String] = None)
+
+class MiraklProduct(val code: String, val label: String, val description: Option[String], val category: String, val active: Option[Boolean] = None, val references: Seq[ProductReference] = Seq.empty, val shopSkus: Seq[String] = Seq.empty, val brand: Option[String], val url: Option[String] = None, val media: Option[String] = None, val authorizedShops: Seq[String] = Seq.empty, val variantGroupCode: Option[String] = None, val logisticClass: Option[String] = None, var action: BulkAction = BulkAction.UPDATE, val attributes: Seq[MiraklAttributeValue] = Seq.empty) extends BulkItem with MiraklItem{
+  lazy val values: Map[String, Option[String]] = attributes.map(a => a.attribute -> a.value).toMap
   override val property2Value: String => String = {
     case "product-sku" | "mogobiz-identifier" => code // mogobiz ticketType uuid
     case "product-description" | "mogobiz-description" => description.getOrElse("")
@@ -202,11 +205,10 @@ class MiraklProduct(val code: String, val label: String, val description: Option
     case "authorized-shop-ids" => authorizedShops.mkString(",")
     case "variant-group-code" | "mogobiz-product-identifier" => variantGroupCode.getOrElse("") //mogobiz product code
     case "logistic-class" => logisticClass.getOrElse("")
+    case x if values contains x => values(x).getOrElse("")
     case _ => ""
   }
 }
-
-class MiraklAttributeValue(val attribute: String, val value: Option[String] = None)
 
 class MiraklOffer(
                    val sku: String,
@@ -227,13 +229,11 @@ class MiraklOffer(
                    val discountRanges: Option[String] = None,
                    val leadtimeToShip: Option[Int] = None,
                    var action: BulkAction = BulkAction.UPDATE,
-                   val attributes: Seq[MiraklAttributeValue] = Seq.empty,
                    val product: Option[MiraklProduct] = None
                  ) extends BulkItem with MiraklItem{
   lazy val code = sku
   def format(d: Date) = new SimpleDateFormat("yyyy-MM-dd").format(d)
   def format(l: Long) = (l.toDouble / 100.0).toString
-  lazy val values: Map[String, Option[String]] = attributes.map(a => a.attribute -> a.value).toMap
   override val property2Value: String => String = {
     case "sku" => code
     case "product-id" => productId
@@ -253,7 +253,6 @@ class MiraklOffer(
     case "discount-ranges" => discountRanges.getOrElse("")
     case "leadtime-to-ship" => s"${leadtimeToShip.getOrElse("")}"
     case "update-delete" => action.toString.toLowerCase
-    case x if values contains x => values(x).getOrElse("")
     case y if product.isDefined => product.get.property2Value(y)
     case _ => ""
   }

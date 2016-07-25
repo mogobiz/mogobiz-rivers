@@ -10,6 +10,7 @@ import java.util.Date
 import com.mogobiz.common.client.{BulkItem, BulkAction}
 import com.mogobiz.mirakl.client.domain.transformation.Transformation
 import com.mogobiz.mirakl.client.domain.validation.Validation
+import com.mogobiz.tools.CsvLine
 
 import scala.beans.BeanProperty
 
@@ -31,6 +32,30 @@ trait MiraklItem {
   }
   val property2Value: String => String = {
     case _ => ""
+  }
+}
+
+import scala.collection.JavaConverters._
+
+class MiraklReportItem(val lineNumber: Long, val keys: List[String], val fields: Map[String, String], val errorMessage: Option[String] = None) extends CsvLine with MiraklItem {
+  def this(line: CsvLine, errorMessage: Option[String]){
+    this(
+      line.getNumber.toLong,
+      line.getKeys.toList ++ List("error-line-number", "error-message"),
+      line.getFields.asScala.toMap,
+      errorMessage
+    )
+  }
+  def this(line: CsvLine){
+    this(line, None)
+  }
+  override val code: String = ""
+  override var action: BulkAction = BulkAction.UPDATE
+  override val property2Value: String => String = {
+    case "error-line-number" if errorMessage.isDefined => "\""+s"$lineNumber"+"\""
+    case "error-message" => "\""+errorMessage.getOrElse("")+"\""
+    case key if fields.contains(key) => "\""+Option(fields(key)).getOrElse("")+"\""
+    case _ => "\"\""
   }
 }
 

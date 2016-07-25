@@ -18,6 +18,8 @@ import com.mogobiz.mirakl.client.domain.MiraklOffer
 import com.mogobiz.mirakl.client.domain.MiraklProduct
 import com.mogobiz.mirakl.client.domain.MiraklValue
 import com.mogobiz.mirakl.client.domain.OfferImportMode
+import com.mogobiz.mirakl.client.domain.MiraklReportItem
+import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
 import com.mogobiz.mirakl.client.io.ImportAttributesResponse
 import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
@@ -42,6 +44,8 @@ import org.apache.commons.vfs2.Selectors
 import org.apache.commons.vfs2.impl.StandardFileSystemManager
 import org.apache.commons.vfs2.provider.sftp.IdentityInfo
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder
+
+import java.util.regex.Pattern
 
 import static com.mogobiz.mirakl.client.domain.MiraklApi.*
 
@@ -394,6 +398,47 @@ final class MiraklClient{
         trackStatus(ProductsImportStatusResponse.class, config, importProductsApi(), importId, config?.clientConfig?.credentials?.apiKey)
     }
 
+    def static final Pattern IMPORT_PRODUCTS = ~/(.*)-(.*)-(.*)(\.csv)/
+
+    /**
+     * P43 - send product integration reports
+     * @param config - river configuration
+     * @param fileName - file name received for integration
+     * @param status - status of the integration
+     * @param reportItems - integration report for each product
+     */
+    static void sendProductIntegrationReports(RiverConfig config, String fileName, SynchronizationStatus status, List<MiraklReportItem> reportItems = []){
+        final matcher = IMPORT_PRODUCTS.matcher(fileName)
+        if(matcher.find() && matcher.groupCount() == 4){
+            final shopId = matcher.group(1)
+            final importId = matcher.group(2)
+            final name = matcher.group(3)
+            boolean failed = SynchronizationStatus.FAILED.equals(status)
+            def params = [:]
+            params << [status: (failed ? SynchronizationStatus.FAILED.toString() : SynchronizationStatus.COMPLETE.toString())]
+            def body = null
+            if(reportItems?.size() > 0){
+                def keys = reportItems.first().keys()
+                def header = keys.mkString(";")
+                def items = new MiraklItems(header, toScalaList(reportItems), ";")
+                body = items.toString()
+                if(config.debug && log.isDebugEnabled()){
+                    log.debug(body)
+                }
+            }
+            importItems(
+                    null,
+                    config,
+                    importProductsApi()+"/$importId",
+                    body?.getBytes(DEFAULT_CHARSET),
+                    "$shopId-$importId-$name${failed ? "-errors" : ""}.csv",
+                    null,
+                    params,
+                    failed ? "errors_file" : "products_file"
+            )
+        }
+    }
+
     /**
      * P44 - get errors report file for products import synchronisation (Front Mirakl Catalog Integration)
      * @param config - river configuration
@@ -561,9 +606,11 @@ final class MiraklClient{
             String mimeType = "text/csv",
             String charset = DEFAULT_CHARSET){
         def parts = []
-        parts << MultipartFactory.createFilePart(partName, fileName, bytes, false, "$mimeType; charset=$charset", charset)
-        params?.each {k,v ->
-            parts << MultipartFactory.createParamPart(k, v)
+        if(bytes){
+            parts << MultipartFactory.createFilePart(partName, fileName, bytes, false, "$mimeType; charset=$charset", charset)
+            params?.each {k,v ->
+                parts << MultipartFactory.createParamPart(k, v)
+            }
         }
         def headers= key ? authenticate(key) : authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
@@ -580,10 +627,12 @@ final class MiraklClient{
                     true
             )
             def responseCode = conn.responseCode
-            if(responseCode != 201){
+            if(responseCode != 201 || responseCode != 204){
                 log.error("$responseCode: ${conn.responseMessage}")
             }
-            ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), classz) as T
+            if(classz){
+                ret = new ObjectMapper().readValue(getText([debug: config.debug], conn), classz) as T
+            }
         }
         finally{
             closeConnection(conn)

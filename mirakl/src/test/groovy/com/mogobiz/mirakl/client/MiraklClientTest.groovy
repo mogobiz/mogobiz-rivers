@@ -8,9 +8,15 @@ import com.mogobiz.mirakl.client.domain.AttributeType
 import com.mogobiz.mirakl.client.domain.MiraklAttribute
 import com.mogobiz.mirakl.client.domain.MiraklCategory
 import com.mogobiz.mirakl.client.domain.MiraklHierarchy
+import com.mogobiz.mirakl.client.domain.MiraklReportItem
 import com.mogobiz.mirakl.client.domain.MiraklValue
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.SearchShopsRequest
+import com.mogobiz.tools.CsvLine
+import com.mogobiz.tools.Reader
+import rx.functions.Action1
+
+import java.util.regex.Pattern
 
 import static com.mogobiz.tools.ScalaTools.*
 
@@ -150,7 +156,7 @@ class MiraklClientTest extends GroovyTestCase{
 
     private RiverConfig riverConfig(String frontKey = FRONT_API_KEY, String apiKey = API_KEY) {
         def clientConfig = new ClientConfig(merchant_id: SHOP_ID, merchant_url: MIRAKL_URL, credentials: new Credentials(frontKey: frontKey, apiKey: apiKey))
-        def riverConfig = new RiverConfig(clientConfig: clientConfig)
+        def riverConfig = new RiverConfig(debug: true, clientConfig: clientConfig)
         riverConfig
     }
 
@@ -217,5 +223,31 @@ class MiraklClientTest extends GroovyTestCase{
             }
             loadHierarchiesRecursively(riverConfig, hierarchie.code, level+1)
         }
+    }
+
+    void testIntegrationReport(){
+        final Pattern IMPORT_PRODUCTS = ~/(.*)-(.*)-(.*)(\.csv)/
+        final fileName = "2003-2087-offers.csv"
+        final matcher = IMPORT_PRODUCTS.matcher(fileName)
+        assertTrue(matcher.find() && matcher.groupCount() == 4)
+        final shopId = matcher.group(1)
+        assertEquals("2003", shopId)
+        final importId = matcher.group(2)
+        assertEquals("2087", importId)
+        final name = matcher.group(3)
+        assertEquals("offers", name)
+        def offers = MiraklClientTest.class.getResource(fileName).path
+        assertNotNull(offers)
+        rx.Observable<CsvLine> lines = Reader.parseCsvFile(offers)
+        def results = lines.toBlocking()
+        List<MiraklReportItem> reportItems = []
+        results.forEach(new Action1<CsvLine>() {
+            @Override
+            void call(CsvLine csvLine) {
+                reportItems << new MiraklReportItem(csvLine)
+            }
+        })
+        assertEquals(5, reportItems.size())
+        MiraklClient.sendProductIntegrationReports(riverConfig(), fileName, SynchronizationStatus.COMPLETE, reportItems)
     }
 }

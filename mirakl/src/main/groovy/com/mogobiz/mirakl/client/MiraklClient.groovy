@@ -627,7 +627,7 @@ final class MiraklClient{
                     true
             )
             def responseCode = conn.responseCode
-            if(responseCode != 201 || responseCode != 204){
+            if(responseCode != 201 && responseCode != 204){
                 log.error("$responseCode: ${conn.responseMessage}")
             }
             if(classz){

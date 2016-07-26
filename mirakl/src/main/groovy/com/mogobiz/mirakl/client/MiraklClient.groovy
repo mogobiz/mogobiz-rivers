@@ -474,10 +474,10 @@ final class MiraklClient{
         list = list.unique { a, b -> a.code() <=> b.code()}
 
         if(!products || products.size() == 0){
-            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}.unique { a, b -> a.code() <=> b.code() }
+            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}.unique { a, b -> a.variantGroupCode().get() <=> b.variantGroupCode().get() }
         }
 
-        // import products and offers using OF01
+        // import products and offers using OF01 - products synchronization P21 is handled through sftp synchronization
         def items = new MiraklItems(config.clientConfig.config.offersHeader as String, toScalaList(list), ";")
         def params = [:]
         params << [shop: config?.clientConfig?.merchant_id]
@@ -489,18 +489,8 @@ final class MiraklClient{
         }
         def response = importItems(ImportOffersResponse.class, config, offersApi(), body.getBytes(DEFAULT_CHARSET), "offers.csv", config.clientConfig.credentials.apiKey, params)
 
-        // TODO products synchronization should be handled through sftp synchronization
-        if(config?.clientConfig?.credentials?.frontKey){
-            // synchronize products using P21
-            Long productSynchroId = null
-            if(products?.size() > 0){
-                productSynchroId = synchronizeProducts(config, products).synchroId
-            }
-            response.setProductSynchroId(productSynchroId)
-        }
-
         response.setIds(list?.collect {it.code()})
-        response.setProductIds(products?.collect {it.code()})
+        response.setProductIds(products?.collect {it.variantGroupCode().get()})
 
         response
     }

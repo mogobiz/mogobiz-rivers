@@ -524,7 +524,7 @@ final class MiraklClient{
      * @param config - river configuration
      * @param lastRequestDate - The last request date
      * @param sort - Sort by
-     * @param channels - List of the channel codes to filter with. If specified, only offers linked to the given channels will be returned. Otherwise, offers will be returned regarless of their channels.
+     * @param channels - List of the channel codes to filter with. If specified, only offers linked to the given channels will be returned. Otherwise, offers will be returned regardless of their channels.
      * @return the offers updated and deleted since the last request date if specified, otherwise all active offers
      */
     static List<Offer> exportOffers(RiverConfig config, Date lastRequestDate = null, String sort = null, List<String> channels = null){

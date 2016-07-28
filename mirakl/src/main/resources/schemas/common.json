@@ -296,6 +296,41 @@
         "variant_group_code": {"type": "string"},
         "logistic_class": {"type": "string"}
       }
+    },
+    "offer": {
+      "javaType": "com.mogobiz.mirakl.client.domain.Offer",
+      "properties": {
+        "offer-id": {"type": "string"},
+        "product-sku": {"type": "string"},
+        "min-shipping-price": {"type": "number"},
+        "min-shipping-price-additional": {"type": "number"},
+        "min-shipping-zone": {"type": "string"},
+        "min-shipping-type": {"type": "string"},
+        "price": {"type": "number"},
+        "total-price": {"type": "number"},
+        "price-additional-info": {"type": "string"},
+        "quantity": {"type": "integer"},
+        "description": {"type": "string"},
+        "state-code": {"type": "string"},
+        "shop-id": {"type": "integer"},
+        "shop-name": {"type": "string"},
+        "professional": {"type": "boolean"},
+        "premium": {"type": "boolean"},
+        "logistic-class": {"type": "string"},
+        "active": {"type": "boolean"},
+        "favorite-rank": {"type": "integer"},
+        "channels": {"type": "string"},
+        "deleted": {"type": "boolean"},
+        "origin-price": {"type": "number"},
+        "discount-start-date": {"type": "string", "format": "date-time"},
+        "discount-end-date": {"type": "string", "format": "date-time"},
+        "discount-price": {"type": "number"},
+        "currency-iso-code": {"type": "string"},
+        "discount-ranges": {"type": "string"},
+        "available-start-date": {"type": "string", "format": "date-time"},
+        "available-end-date": {"type": "string", "format": "date-time"},
+        "leadtime-to-ship": {"type": "integer"}
+      }
     }
   }
 }

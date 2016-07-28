@@ -319,4 +319,6 @@ object MiraklApi {
   val productReferences = "mogobiz-product-references"
   val media = "mogobiz-media"
   val brand = "mogobiz-brand"
+
+  val exportOffersHeader = "offer-id;product-sku;min-shipping-price;min-shipping-price-additional;min-shipping-zone;min-shipping-type;price;total-price;price-additional-info;quantity;description;state-code;shop-id;shop-name;professional;premium;logistic-class;active;favorite-rank;channels;deleted;origin-price;discount-start-date;discount-end-date;available-start-date;available-end-date;discount-price;currency-iso-code;discount-ranges;leadtime-to-ship"
 }

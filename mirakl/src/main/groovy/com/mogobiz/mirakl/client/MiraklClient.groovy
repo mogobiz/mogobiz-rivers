@@ -17,6 +17,7 @@ import com.mogobiz.mirakl.client.domain.MiraklItems
 import com.mogobiz.mirakl.client.domain.MiraklOffer
 import com.mogobiz.mirakl.client.domain.MiraklProduct
 import com.mogobiz.mirakl.client.domain.MiraklValue
+import com.mogobiz.mirakl.client.domain.Offer
 import com.mogobiz.mirakl.client.domain.OfferImportMode
 import com.mogobiz.mirakl.client.domain.MiraklReportItem
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
@@ -37,6 +38,8 @@ import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
 import com.mogobiz.mirakl.client.io.SynchronizationResponse
+import com.mogobiz.tools.CsvLine
+import com.mogobiz.tools.Reader
 import groovy.util.logging.Slf4j
 import org.apache.commons.vfs2.FileObject
 import org.apache.commons.vfs2.FileSystemOptions
@@ -44,6 +47,7 @@ import org.apache.commons.vfs2.Selectors
 import org.apache.commons.vfs2.impl.StandardFileSystemManager
 import org.apache.commons.vfs2.provider.sftp.IdentityInfo
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder
+import rx.functions.Action1
 
 import java.util.regex.Pattern
 
@@ -515,6 +519,58 @@ final class MiraklClient{
         loadSynchronizationErrorReport(config, offersApi(), importId, config?.clientConfig?.credentials?.apiKey)
     }
 
+    /**
+     * OF51 - export offers updated and deleted since the last request date. If the lastRequestDate param is not set the api returns all the active offers
+     * @param config - river configuration
+     * @param lastRequestDate - The last request date
+     * @param sort - Sort by
+     * @param channels - List of the channel codes to filter with. If specified, only offers linked to the given channels will be returned. Otherwise, offers will be returned regarless of their channels.
+     * @return the offers updated and deleted since the last request date if specified, otherwise all active offers
+     */
+    static List<Offer> exportOffers(RiverConfig config, Date lastRequestDate = null, String sort = null, List<String> channels = null){
+        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
+        headers.setHeader("Accept", "application/json")
+        def conn = null
+        List<Offer> ret = []
+        try{
+            def params = [:]
+            if(lastRequestDate){
+                //TODO last_request_date format ?
+            }
+            if(channels?.size() > 0){
+                params << [channels: channels.join(",")]
+            }
+            params << [sort: sort ?: "offerId"]
+            conn = client.doGet(
+                    [debug: config.debug],
+                    "${config?.clientConfig?.merchant_url}/api/offers/export",
+                    params,
+                    headers,
+                    true
+            )
+            def responseCode = conn.responseCode
+            if(responseCode != 200){
+                log.error("$responseCode: ${conn.responseMessage}")
+            }
+            else{
+                def text = getText([debug: config.debug], conn)
+                rx.Observable<CsvLine> lines = Reader.parseText(text)
+                def results = lines.toBlocking()
+                def mapper = new ObjectMapper()
+                def keys = exportOffersHeader().split(";")
+                results.forEach(new Action1<CsvLine>() {
+                    @Override
+                    void call(CsvLine csvLine) {
+                        ret << mapper.convertValue(csvLine.fields.subMap(keys) /*exclude additional fields*/, Offer.class)
+                    }
+                })
+            }
+        }
+        finally {
+            closeConnection(conn)
+        }
+        ret
+    }
 
     /******************************************************************************************************************
      * Shop api

@@ -22,6 +22,7 @@ import com.mogobiz.mirakl.client.domain.OfferImportMode
 import com.mogobiz.mirakl.client.domain.MiraklReportItem
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
+import com.mogobiz.mirakl.client.io.ExportOffersResponse
 import com.mogobiz.mirakl.client.io.ImportAttributesResponse
 import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ImportOffersResponse
@@ -527,11 +528,11 @@ final class MiraklClient{
      * @param channels - List of the channel codes to filter with. If specified, only offers linked to the given channels will be returned. Otherwise, offers will be returned regardless of their channels.
      * @return the offers updated and deleted since the last request date if specified, otherwise all active offers
      */
-    static List<Offer> exportOffers(RiverConfig config, Date lastRequestDate = null, String sort = null, List<String> channels = null){
-        def headers= authenticate(config?.clientConfig?.credentials?.frontKey)
+    static ExportOffersResponse exportOffers(RiverConfig config, Date lastRequestDate = null, String sort = null, List<String> channels = null){
+        def headers = authenticate(config?.clientConfig?.credentials?.frontKey)
         headers.setHeader("Accept", "application/json")
         def conn = null
-        List<Offer> ret = []
+        ExportOffersResponse ret = new ExportOffersResponse()
         try{
             def params = [:]
             if(lastRequestDate){
@@ -558,12 +559,14 @@ final class MiraklClient{
                 def results = lines.toBlocking()
                 def mapper = new ObjectMapper()
                 def keys = exportOffersHeader().split(";")
+                def offers = []
                 results.forEach(new Action1<CsvLine>() {
                     @Override
                     void call(CsvLine csvLine) {
-                        ret << mapper.convertValue(csvLine.fields.subMap(keys) /*exclude additional fields*/, Offer.class)
+                        offers << mapper.convertValue(csvLine.fields.subMap(keys) /*exclude additional fields*/, Offer.class)
                     }
                 })
+                ret.setOffers(offers)
             }
         }
         finally {

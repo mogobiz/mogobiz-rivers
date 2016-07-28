@@ -252,8 +252,9 @@ class MiraklClientTest extends GroovyTestCase{
     }
 
     void testExportOffers(){
-        def offers = MiraklClient.exportOffers(riverConfig())
-        assertNotNull(offers)
+        def exportOffersResponse = MiraklClient.exportOffers(riverConfig())
+        assertNotNull(exportOffersResponse)
+        def offers = exportOffersResponse.offers
         assertTrue(offers.size() > 0)
     }
 }

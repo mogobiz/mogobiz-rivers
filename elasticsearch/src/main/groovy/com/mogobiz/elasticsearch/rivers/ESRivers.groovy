@@ -296,14 +296,23 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
         }
 
         if (response.acknowledged) {
-            response = client.createIndex(
-                    config.clientConfig.url,
-                    config.clientConfig.config.index as String,
-                    new ESIndexSettings(number_of_replicas: 0, refresh_interval: "-1"),
-                    mappings,
-                    conf,
-                    config.languages as String[],
-                    config.defaultLang)
+            final url = config.clientConfig.url
+            final index = config.clientConfig.config.index as String
+            final settings = new ESIndexSettings(number_of_replicas: 0, refresh_interval: "-1")
+            exists = client.indexExists(config.clientConfig.url, index, conf)
+            if(!exists){
+                response = client.createIndex(
+                        url,
+                        index,
+                        settings,
+                        mappings,
+                        conf,
+                        config.languages as String[],
+                        config.defaultLang)
+            }
+            else{
+                client.updateIndex(url, index, settings, conf)
+            }
         }
 
         response

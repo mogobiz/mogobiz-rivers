@@ -440,21 +440,24 @@ final class ESClient implements Client {
             }
             def map = [:]
             switch(item.action){
-                case([BulkAction.INDEX, BulkAction.INSERT]):
-                    map << [index:action]
-                    break
-                case(BulkAction.UPDATE):
+                // always perform upsert
+                case([BulkAction.INDEX, BulkAction.INSERT, BulkAction.UPDATE]):
                     action << ([_retry_on_conflict:3] as Map)
                     map << [update:action]
                     item.map = [doc:item.map, doc_as_upsert:true]
+                    break
+                case(BulkAction.DELETE):
+                    map << [delete: action]
                     break
                 default:
                     break
             }
             builder.call(map)
             buffer.append(builder.toString()).append(crlf)
-            builder.call(item.map)
-            buffer.append(builder.toString()).append(crlf)
+            if(item.action != BulkAction.DELETE){
+                builder.call(item.map)
+                buffer.append(builder.toString()).append(crlf)
+            }
         }
         final String body = buffer.toString()
         Future<BulkResponse> f = Futures.future(new Callable<BulkResponse>() {

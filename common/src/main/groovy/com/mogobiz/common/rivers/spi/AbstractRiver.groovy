@@ -40,7 +40,7 @@ abstract class AbstractRiver<E> extends AbstractGenericRiver<BulkItem, BulkRespo
                 return new BulkItem(
                         action: BulkAction.UPDATE,
                         type : getType(),
-                        id : id,
+                        id : getType() + "_" + id,
                         parent: item.parent,
                         map : item.map
                 )

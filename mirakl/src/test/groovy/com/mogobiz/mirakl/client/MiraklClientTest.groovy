@@ -40,10 +40,7 @@ class MiraklClientTest extends GroovyTestCase{
 
     void testSynchronizeCategories(){
         RiverConfig riverConfig = riverConfig()
-        def categories = []
-        (1..10).each {
-            categories << createCategory(it)
-        }
+        List<MiraklCategory> categories = loadHierarchiesRecursively(riverConfig)
         def synchronization = MiraklClient.synchronizeCategories(riverConfig, categories)
         assertNotNull(synchronization)
         def synchro = synchronization.synchroId
@@ -74,10 +71,6 @@ class MiraklClientTest extends GroovyTestCase{
         assertNotNull(hierarchiesResponse)
     }
 
-    void testLoadHierarchiesRecursively(){
-        loadHierarchiesRecursively(riverConfig())
-    }
-
     void testImportHierarchies(){
         RiverConfig riverConfig = riverConfig()
         def hierarchies = MiraklClient.listHierarchies(riverConfig).hierarchies.collect {new MiraklHierarchy(it)}
@@ -106,11 +99,17 @@ class MiraklClientTest extends GroovyTestCase{
 
     void testImportListOfValues(){
         RiverConfig riverConfig = riverConfig()
-        def listOfValues = []
-        (1..5).each {
-            listOfValues.addAll(createValues(it))
+        def listValuesResponse = MiraklClient.listValues(riverConfig)
+        assertNotNull(listValuesResponse)
+        def listOfValues = listValuesResponse.valuesLists
+        List<MiraklValue> values = []
+        listOfValues.each{value ->
+            def parent = new MiraklValue(value.code, value.label)
+            value.values.each{
+                values << new MiraklValue(it.code, it.label, toScalaOption(parent))
+            }
         }
-        def importValuesResponse = MiraklClient.importValues(riverConfig, listOfValues)
+        def importValuesResponse = MiraklClient.importValues(riverConfig, values)
         assertNotNull(importValuesResponse)
         def trackingId = importValuesResponse.importId
         assertNotNull(trackingId)
@@ -160,51 +159,7 @@ class MiraklClientTest extends GroovyTestCase{
         riverConfig
     }
 
-    private static MiraklCategory createCategory(
-            int indice,
-            String logisticClass = 'A',
-            BulkAction action = BulkAction.INSERT,
-            MiraklCategory parent = null){
-        return new MiraklCategory(
-                "category$indice",
-                "category${indice}Label",
-                action,
-                toScalaOption(parent),
-                logisticClass,
-                ''
-        )
-    }
-
-    private static MiraklHierarchy createHierarchy(
-            int indice,
-            BulkAction action = BulkAction.INSERT,
-            MiraklCategory parent = null){
-        return new MiraklHierarchy(
-                "hierarchy$indice",
-                "hierarchy${indice}Label",
-                action,
-                toScalaOption(parent)
-        )
-    }
-
-    private static List<MiraklValue> createValues(
-            int indice){
-        def ret = []
-        def parent = new MiraklValue(
-                "values$indice",
-                "values${indice}Label"
-        )
-        (1..3).each {
-            ret << new MiraklValue(
-                    "value$it",
-                    "value${indice}_${it}Label",
-                    toScalaOption(parent)
-            )
-        }
-        ret
-    }
-
-    private loadHierarchiesRecursively(RiverConfig riverConfig, String hierarchyCode = null, int level = 1){
+    private loadHierarchiesRecursively(RiverConfig riverConfig, String hierarchyCode = null, int level = 1, List<MiraklCategory> categories = [], MiraklCategory parent = null){
         def hierarchiesResponse = MiraklClient.listHierarchies(riverConfig, hierarchyCode, level)
         assertNotNull(hierarchiesResponse)
         hierarchiesResponse.hierarchies?.findAll {
@@ -221,8 +176,11 @@ class MiraklClientTest extends GroovyTestCase{
                 buffer.append("]\n")
                 log.info(buffer.toString())
             }
-            loadHierarchiesRecursively(riverConfig, hierarchie.code, level+1)
+            def category = new MiraklCategory(hierarchie.code, hierarchie.label, toScalaOption(parent))
+            categories << category
+            loadHierarchiesRecursively(riverConfig, hierarchie.code, level+1, categories, category)
         }
+        categories
     }
 
     void testIntegrationReport(){
@@ -252,9 +210,10 @@ class MiraklClientTest extends GroovyTestCase{
     }
 
     void testExportOffers(){
-        def exportOffersResponse = MiraklClient.exportOffers(riverConfig())
+        def exportOffersResponse = MiraklClient.exportOffers(riverConfig(), new Date())
         assertNotNull(exportOffersResponse)
         def offers = exportOffersResponse.offers
-        assertTrue(offers.size() > 0)
+        assertNotNull(offers)
+//        assertTrue(offers.size() > 0)
     }
 }

@@ -50,6 +50,7 @@ import org.apache.commons.vfs2.provider.sftp.IdentityInfo
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder
 import rx.functions.Action1
 
+import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
 import static com.mogobiz.mirakl.client.domain.MiraklApi.*
@@ -536,7 +537,7 @@ final class MiraklClient{
         try{
             def params = [:]
             if(lastRequestDate){
-                //TODO last_request_date format ?
+                params << [last_request_date: new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(lastRequestDate)]
             }
             if(channels?.size() > 0){
                 params << [channels: channels.join(",")]

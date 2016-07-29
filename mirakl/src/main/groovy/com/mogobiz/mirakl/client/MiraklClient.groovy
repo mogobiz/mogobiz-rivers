@@ -17,10 +17,12 @@ import com.mogobiz.mirakl.client.domain.MiraklItems
 import com.mogobiz.mirakl.client.domain.MiraklOffer
 import com.mogobiz.mirakl.client.domain.MiraklProduct
 import com.mogobiz.mirakl.client.domain.MiraklValue
+import com.mogobiz.mirakl.client.domain.Offer
 import com.mogobiz.mirakl.client.domain.OfferImportMode
 import com.mogobiz.mirakl.client.domain.MiraklReportItem
 import com.mogobiz.mirakl.client.domain.SynchronizationStatus
 import com.mogobiz.mirakl.client.io.CategoriesSynchronizationStatusResponse
+import com.mogobiz.mirakl.client.io.ExportOffersResponse
 import com.mogobiz.mirakl.client.io.ImportAttributesResponse
 import com.mogobiz.mirakl.client.io.ImportHierarchiesResponse
 import com.mogobiz.mirakl.client.io.ImportOffersResponse
@@ -37,6 +39,8 @@ import com.mogobiz.mirakl.client.io.SearchShopsRequest
 import com.mogobiz.mirakl.client.io.SearchShopsResponse
 import com.mogobiz.mirakl.client.io.Synchronization
 import com.mogobiz.mirakl.client.io.SynchronizationResponse
+import com.mogobiz.tools.CsvLine
+import com.mogobiz.tools.Reader
 import groovy.util.logging.Slf4j
 import org.apache.commons.vfs2.FileObject
 import org.apache.commons.vfs2.FileSystemOptions
@@ -44,7 +48,9 @@ import org.apache.commons.vfs2.Selectors
 import org.apache.commons.vfs2.impl.StandardFileSystemManager
 import org.apache.commons.vfs2.provider.sftp.IdentityInfo
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder
+import rx.functions.Action1
 
+import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
 import static com.mogobiz.mirakl.client.domain.MiraklApi.*
@@ -474,10 +480,10 @@ final class MiraklClient{
         list = list.unique { a, b -> a.code() <=> b.code()}
 
         if(!products || products.size() == 0){
-            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}.unique { a, b -> a.code() <=> b.code() }
+            products = offers.findAll {it.product().isDefined()}.collect{it.product().get()}.unique { a, b -> a.variantGroupCode().get() <=> b.variantGroupCode().get() }
         }
 
-        // import products and offers using OF01
+        // import products and offers using OF01 - products synchronization P21 is handled through sftp synchronization
         def items = new MiraklItems(config.clientConfig.config.offersHeader as String, toScalaList(list), ";")
         def params = [:]
         params << [shop: config?.clientConfig?.merchant_id]
@@ -489,18 +495,8 @@ final class MiraklClient{
         }
         def response = importItems(ImportOffersResponse.class, config, offersApi(), body.getBytes(DEFAULT_CHARSET), "offers.csv", config.clientConfig.credentials.apiKey, params)
 
-        // TODO products synchronization should be handled through sftp synchronization
-        if(config?.clientConfig?.credentials?.frontKey){
-            // synchronize products using P21
-            Long productSynchroId = null
-            if(products?.size() > 0){
-                productSynchroId = synchronizeProducts(config, products).synchroId
-            }
-            response.setProductSynchroId(productSynchroId)
-        }
-
         response.setIds(list?.collect {it.code()})
-        response.setProductIds(products?.collect {it.code()})
+        response.setProductIds(products?.collect {it.variantGroupCode().get()})
 
         response
     }
@@ -525,6 +521,60 @@ final class MiraklClient{
         loadSynchronizationErrorReport(config, offersApi(), importId, config?.clientConfig?.credentials?.apiKey)
     }
 
+    /**
+     * OF51 - export offers updated and deleted since the last request date. If the lastRequestDate param is not set the api returns all the active offers
+     * @param config - river configuration
+     * @param lastRequestDate - The last request date
+     * @param sort - Sort by
+     * @param channels - List of the channel codes to filter with. If specified, only offers linked to the given channels will be returned. Otherwise, offers will be returned regardless of their channels.
+     * @return the offers updated and deleted since the last request date if specified, otherwise all active offers
+     */
+    static ExportOffersResponse exportOffers(RiverConfig config, Date lastRequestDate = null, String sort = null, List<String> channels = null){
+        def headers = authenticate(config?.clientConfig?.credentials?.frontKey)
+        headers.setHeader("Accept", "application/json")
+        def conn = null
+        ExportOffersResponse ret = new ExportOffersResponse()
+        try{
+            def params = [:]
+            if(lastRequestDate){
+                params << [last_request_date: new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(lastRequestDate)]
+            }
+            if(channels?.size() > 0){
+                params << [channels: channels.join(",")]
+            }
+            params << [sort: sort ?: "offerId"]
+            conn = client.doGet(
+                    [debug: config.debug],
+                    "${config?.clientConfig?.merchant_url}/api/offers/export",
+                    params,
+                    headers,
+                    true
+            )
+            def responseCode = conn.responseCode
+            if(responseCode != 200){
+                log.error("$responseCode: ${conn.responseMessage}")
+            }
+            else{
+                def text = getText([debug: config.debug], conn)
+                rx.Observable<CsvLine> lines = Reader.parseText(text)
+                def results = lines.toBlocking()
+                def mapper = new ObjectMapper()
+                def keys = exportOffersHeader().split(";")
+                def offers = []
+                results.forEach(new Action1<CsvLine>() {
+                    @Override
+                    void call(CsvLine csvLine) {
+                        offers << mapper.convertValue(csvLine.fields.subMap(keys) /*exclude additional fields*/, Offer.class)
+                    }
+                })
+                ret.setOffers(offers)
+            }
+        }
+        finally {
+            closeConnection(conn)
+        }
+        ret
+    }
 
     /******************************************************************************************************************
      * Shop api

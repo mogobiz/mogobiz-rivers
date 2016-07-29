@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Export offers response",
+  "type": "object",
+  "javaType": "com.mogobiz.mirakl.client.io.ExportOffersResponse",
+  "properties": {
+    "offers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "$ref": "common.json#/definitions/offer"
+      }
+    }
+  }
+}

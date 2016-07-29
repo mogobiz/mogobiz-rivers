@@ -216,19 +216,19 @@ class MiraklAttributeValue(val attribute: String, val value: Option[String] = No
 class MiraklProduct(val code: String, val label: String, val description: Option[String], val category: String, val active: Option[Boolean] = None, val references: Seq[ProductReference] = Seq.empty, val shopSkus: Seq[String] = Seq.empty, val brand: Option[String], val url: Option[String] = None, val media: Option[String] = None, val authorizedShops: Seq[String] = Seq.empty, val variantGroupCode: Option[String] = None, val logisticClass: Option[String] = None, var action: BulkAction = BulkAction.UPDATE, val attributes: Seq[MiraklAttributeValue] = Seq.empty) extends BulkItem with MiraklItem{
   lazy val values: Map[String, Option[String]] = attributes.map(a => a.attribute -> a.value).toMap
   override val property2Value: String => String = {
-    case "product-sku" | "mogobiz-identifier" => code // mogobiz ticketType uuid
-    case "product-description" | "mogobiz-description" => description.getOrElse("")
-    case "product-title" | "mogobiz-title" => label
-    case "category-code" | "mogobiz-category" => category
+    case "product-sku" | MiraklApi.identifier => code // mogobiz ticketType uuid
+    case "product-description" | MiraklApi.description => description.getOrElse("")
+    case "product-title" | MiraklApi.title => label
+    case "category-code" | MiraklApi.category => category
     case "active" => active.getOrElse(true).toString
-    case "product-references" => references.map{reference => s"${reference.getReferenceType}|${reference.getReference}"}.mkString(",")
+    case "product-references"  | MiraklApi.productReferences => references.map{reference => s"${reference.getReferenceType}|${reference.getReference}"}.mkString(",")
     case "shop-skus" => shopSkus.mkString(",")
-    case "brand" | "mogobiz-brand" => brand.getOrElse("")
+    case "brand" | MiraklApi.brand => brand.getOrElse("")
     case "update-delete" => action.toString.toLowerCase
     case "product-url" => url.getOrElse("")
-    case "media-url" | "mogobiz-media" => media.getOrElse("")
+    case "media-url" | MiraklApi.media => media.getOrElse("")
     case "authorized-shop-ids" => authorizedShops.mkString(",")
-    case "variant-group-code" | "mogobiz-product-identifier" => variantGroupCode.getOrElse("") //mogobiz product code
+    case "variant-group-code" | MiraklApi.variantIdentifier => variantGroupCode.getOrElse("") //mogobiz product uuid
     case "logistic-class" => logisticClass.getOrElse("")
     case x if values contains x => values(x).getOrElse("")
     case _ => ""
@@ -311,4 +311,14 @@ object MiraklApi {
 
   val importProductsApi = "/api/products/imports"
 
+  val identifier = "mogobiz-identifier"
+  val title = "mogobiz-title"
+  val category = "mogobiz-category"
+  val description = "mogobiz-description"
+  val variantIdentifier = "mogobiz-variant-identifier"
+  val productReferences = "mogobiz-product-references"
+  val media = "mogobiz-media"
+  val brand = "mogobiz-brand"
+
+  val exportOffersHeader = "offer-id;product-sku;min-shipping-price;min-shipping-price-additional;min-shipping-zone;min-shipping-type;price;total-price;price-additional-info;quantity;description;state-code;shop-id;shop-name;professional;premium;logistic-class;active;favorite-rank;channels;deleted;origin-price;discount-start-date;discount-end-date;available-start-date;available-end-date;discount-price;currency-iso-code;discount-ranges;leadtime-to-ship"
 }

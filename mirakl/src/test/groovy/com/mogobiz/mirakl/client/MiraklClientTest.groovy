@@ -210,10 +210,12 @@ class MiraklClientTest extends GroovyTestCase{
     }
 
     void testExportOffers(){
-        def exportOffersResponse = MiraklClient.exportOffers(riverConfig(), new Date())
+        Calendar c = Calendar.instance
+        c.add(Calendar.YEAR, -1)
+        def exportOffersResponse = MiraklClient.exportOffers(riverConfig(), c.getTime())
         assertNotNull(exportOffersResponse)
         def offers = exportOffersResponse.offers
         assertNotNull(offers)
-//        assertTrue(offers.size() > 0)
+        assertTrue(offers.size() > 0)
     }
 }

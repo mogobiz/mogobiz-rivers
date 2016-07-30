@@ -55,7 +55,8 @@ import java.util
 import scala.collection.JavaConversions._
 
 class RiverConfig{
-  @BeanProperty var idCatalog: Long = 0L
+  @Deprecated @BeanProperty var idCatalog: Long = 0L
+  @BeanProperty var idCatalogs: util.List[Long] = List()
   @BeanProperty var debug: Boolean = false
   @BeanProperty var dry_run: Boolean = false
   @BeanProperty var languages: util.List[String] = List("fr", "en", "es", "de")

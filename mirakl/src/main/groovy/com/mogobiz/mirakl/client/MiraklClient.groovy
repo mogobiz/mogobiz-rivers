@@ -235,25 +235,28 @@ final class MiraklClient{
      * VL01 - Send a file to create, update or delete values list (Front Mirakl Catalog Integration)
      * @param config - config
      * @param values - values
+     * @param all - update all values
      * @return values synchronization tracking id
      */
-    static ImportResponse importValues(RiverConfig config, List<MiraklValue> values = []){
+    static ImportResponse importValues(RiverConfig config, List<MiraklValue> values = [], boolean all = false){
         def itemsCollection = values.collect { item ->
             item.action = BulkAction.UPDATE
             "${item.parent.get().code}${item.code}"
         }
-        listValues(config).valuesLists.each{valuesList ->
-            valuesList.values.findAll {value ->
-                final str = "${valuesList.code}${value.code}"
-                !(str in itemsCollection)
-            }.each {value ->
-                def parent = new MiraklValue(valuesList.code, valuesList.label, BulkAction.UNKNOWN, toScalaOption(null))
-                values << new MiraklValue(
-                        value.code,
-                        value.label,
-                        BulkAction.DELETE,
-                        toScalaOption(parent)
-                )
+        if(all){
+            listValues(config).valuesLists.each{valuesList ->
+                valuesList.values.findAll {value ->
+                    final str = "${valuesList.code}${value.code}"
+                    !(str in itemsCollection)
+                }.each {value ->
+                    def parent = new MiraklValue(valuesList.code, valuesList.label, BulkAction.UNKNOWN, toScalaOption(null))
+                    values << new MiraklValue(
+                            value.code,
+                            value.label,
+                            BulkAction.DELETE,
+                            toScalaOption(parent)
+                    )
+                }
             }
         }
         def items = new MiraklItems<MiraklValue>(valuesHeader(), toScalaList(values), ";")

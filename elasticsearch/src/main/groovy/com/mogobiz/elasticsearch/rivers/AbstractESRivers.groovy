@@ -81,7 +81,7 @@ abstract class AbstractESRivers<T extends ESRiver> extends AbstractRivers<T> {
                                         river.exportCatalogItemsAsRiverItems(config)
                                     }
                             ).distinct(
-                                    { BulkItem item -> item.id } as Func1<BulkItem, String>
+                                    { BulkItem item -> item.type + "_" + item.id } as Func1<BulkItem, String>
                             ).startWith(i18n.asBulkItem(config))
                         } as Func0<Observable<BulkItem>>
                 )

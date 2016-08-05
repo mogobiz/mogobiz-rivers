@@ -30,8 +30,8 @@ trait GenericRiver[In, Out] extends Transformation[AnyRef, In]{
   import java.util
 
   @deprecated
-  def exportCatalogItems(config: RiverConfig, ec: ExecutionContext, count:Int = 100): Observable[Future[Out]] = {
-    exportCatalogItemsAsRiverItems(config).buffer(count).flatMap(new Func1[util.List[In], Observable[Future[Out]]](){
+  def exportCatalogItems(config: RiverConfig, ec: ExecutionContext): Observable[Future[Out]] = {
+    exportCatalogItemsAsRiverItems(config).buffer(config.bulkSize).flatMap(new Func1[util.List[In], Observable[Future[Out]]](){
       override def call(items: util.List[In]): Observable[Future[Out]] = Observable.just(bulk(config, items, ec))
     })
   }
@@ -68,4 +68,5 @@ class RiverConfig{
   @BeanProperty var countries: util.List[String] = List("DE","ES","FR","GB","US")
   @BeanProperty var idCategories: util.List[Long] = List()
   @BeanProperty var idProducts: util.List[Long] = List()
+  @BeanProperty var bulkSize: Int = 100
 }

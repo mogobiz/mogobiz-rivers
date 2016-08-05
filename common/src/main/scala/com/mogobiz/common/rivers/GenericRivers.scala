@@ -45,9 +45,9 @@ trait GenericRivers[In, Out] extends BootedRiversSystem{
     Futures.sequence(futures.toList, dispatcher).map(_.iterator())(dispatcher)
   }
 
-  def export(config: RiverConfig, bulkSize: Int = 100) = {
+  def export(config: RiverConfig) = {
     var futures: List[Future[Out]] = List.empty
-    Observable.merge(loadRivers.map(_.exportCatalogItems(config, dispatcher, bulkSize))).subscribe(new Action1[Future[Out]]() {
+    Observable.merge(loadRivers.map(_.exportCatalogItems(config, dispatcher))).subscribe(new Action1[Future[Out]]() {
       override def call(future: Future[Out]): Unit = futures ++= List(future)
     }, new Action1[Throwable]() {
       override def call(t: Throwable): Unit = t.printStackTrace(System.err)

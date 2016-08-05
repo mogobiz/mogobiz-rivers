@@ -36,11 +36,10 @@ abstract class AbstractESRivers<T extends ESRiver> extends AbstractRivers<T> {
 
     abstract ESIndexResponse createCompanyIndex(RiverConfig config)
 
-    protected abstract Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, int bulkSize, ExecutionContext ec)
+    protected abstract Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, ExecutionContext ec)
 
     @Override
-    final Future<Iterator<BulkResponse>> export(
-            RiverConfig config) {
+    final Future<Iterator<BulkResponse>> export(RiverConfig config) {
 
         AbstractRiverCache.purgeAll()
 

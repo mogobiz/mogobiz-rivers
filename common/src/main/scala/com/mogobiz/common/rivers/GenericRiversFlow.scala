@@ -57,7 +57,7 @@ import scala.collection.JavaConversions._
   */
 object GenericRiversFlow {
 
-  def publish[In, Out](rivers: GenericRivers[In, Out] with BootedRiversSystem, config: RiverConfig, balanceSize: Int = 2, bulkSize: Int = 100, subscriber: Subscriber[Out]): Unit = {
+  def publish[In, Out](rivers: GenericRivers[In, Out] with BootedRiversSystem, config: RiverConfig, balanceSize: Int = 2, subscriber: Subscriber[Out]): Unit = {
     implicit val system = rivers.system
     implicit val flowMaterializer = ActorFlowMaterializer()
     subscribe({
@@ -65,7 +65,7 @@ object GenericRiversFlow {
         import FlowGraphImplicits._
 
         val source: Source[In] = Source(rivers.publisher(config))
-        val group = Flow[In].grouped(bulkSize)
+        val group = Flow[In].grouped(config.bulkSize)
 
         val bulk = Flow[Seq[In]].mapAsyncUnordered[Out](items => rivers.bulk(config, seqAsJavaList(items.toList), rivers.dispatcher))
 
@@ -93,7 +93,7 @@ object GenericRiversFlow {
 
   }
 
-  def synchronize[In, Out](gr: GenericRiver[In, Out], config: RiverConfig, balanceSize: Int = 2, bulkSize: Int = 100, subscriber: Subscriber[Out]): Unit = {
+  def synchronize[In, Out](gr: GenericRiver[In, Out], config: RiverConfig, balanceSize: Int = 2, subscriber: Subscriber[Out]): Unit = {
     val rivers = new GenericRivers[In, Out] {
       import java.util
 
@@ -101,6 +101,6 @@ object GenericRiversFlow {
 
       override def loadRivers: util.List[GenericRiver[In, Out]] = List(gr)
     }
-    publish(rivers, config, balanceSize, bulkSize, subscriber)
+    publish(rivers, config, balanceSize, subscriber)
   }
 }

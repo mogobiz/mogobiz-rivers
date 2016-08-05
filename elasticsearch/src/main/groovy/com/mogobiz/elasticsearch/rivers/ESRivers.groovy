@@ -319,11 +319,11 @@ final class ESRivers extends AbstractESRivers<ESRiver> {
     }
 
     @Override
-    protected Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, int bulkSize = 100, ExecutionContext ec) {
+    protected Collection<Observable<Future<BulkResponse>>> iterable(RiverConfig config, ExecutionContext ec) {
         Collection<Observable<Future<BulkResponse>>> iterable = []
         iterable << client.upsert(config, [new Item(id: 1L, type: 'i18n', map: ['languages': config.languages])], ec)
         loadRivers().each { river ->
-            iterable << river.exportCatalogItems(config, ec, bulkSize)
+            iterable << river.exportCatalogItems(config, ec)
         }
         iterable
     }

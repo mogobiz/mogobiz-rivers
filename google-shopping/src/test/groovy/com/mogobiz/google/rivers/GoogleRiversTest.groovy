@@ -23,7 +23,7 @@ class GoogleRiversTest extends GroovyTestCase {
     }
 
     public void testExport(){
-        GoogleRivers.instance.export(buildConfig(), 10)
+        GoogleRivers.instance.export(buildConfig())
     }
 
     private static RiverConfig buildConfig() {

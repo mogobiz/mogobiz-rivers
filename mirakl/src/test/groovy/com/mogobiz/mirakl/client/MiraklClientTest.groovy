@@ -38,6 +38,8 @@ class MiraklClientTest extends GroovyTestCase{
 
     def waitingStatus = [SynchronizationStatus.WAITING, SynchronizationStatus.RUNNING, SynchronizationStatus.QUEUED]
 
+    def timeout = 500
+
     void testSynchronizeCategories(){
         RiverConfig riverConfig = riverConfig()
         List<MiraklCategory> categories = loadHierarchiesRecursively(riverConfig)
@@ -49,7 +51,7 @@ class MiraklClientTest extends GroovyTestCase{
         assertNotNull(synchronizationStatusResponse)
         assertFalse(synchronizationStatusResponse.hasErrorReport)
         while(synchronizationStatusResponse.status in waitingStatus){
-            Thread.sleep(1000)
+            Thread.sleep(timeout)
             synchronizationStatusResponse = MiraklClient.refreshCategoriesSynchronizationStatus(riverConfig, synchro)
         }
         assertEquals(SynchronizationStatus.COMPLETE, synchronizationStatusResponse.status)
@@ -82,7 +84,7 @@ class MiraklClientTest extends GroovyTestCase{
         assertNotNull(trackingImportStatus)
         assertFalse(trackingImportStatus.hasErrorReport)
         while(trackingImportStatus.importStatus in waitingStatus){
-            Thread.sleep(1000)
+            Thread.sleep(timeout)
             trackingImportStatus = MiraklClient.trackHierarchiesImportStatusResponse(riverConfig, trackingId)
         }
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
@@ -117,7 +119,7 @@ class MiraklClientTest extends GroovyTestCase{
         assertNotNull(trackingImportStatus)
         assertFalse(trackingImportStatus.hasErrorReport)
         while(trackingImportStatus.importStatus in waitingStatus){
-            Thread.sleep(1000)
+            Thread.sleep(timeout)
             trackingImportStatus = MiraklClient.trackValuesImportStatusResponse(riverConfig, trackingId)
         }
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)
@@ -144,7 +146,7 @@ class MiraklClientTest extends GroovyTestCase{
         assertNotNull(trackingImportStatus)
         assertFalse(trackingImportStatus.hasErrorReport)
         while(trackingImportStatus.importStatus in waitingStatus){
-            Thread.sleep(1000)
+            Thread.sleep(timeout)
             trackingImportStatus = MiraklClient.trackAttributesImportStatusResponse(riverConfig, trackingId)
         }
         assertEquals(SynchronizationStatus.COMPLETE, trackingImportStatus.importStatus)

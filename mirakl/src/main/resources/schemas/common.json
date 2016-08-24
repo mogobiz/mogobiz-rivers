@@ -218,7 +218,14 @@
       "javaType": "com.mogobiz.mirakl.client.domain.Value",
       "properties": {
         "code": {"type": "string"},
-        "label": {"type": "string"}
+        "label": {"type": "string"},
+        "label_translations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/translation"
+          }
+        }
       }
     },
     "values": {
@@ -244,9 +251,23 @@
         "code": {"type": "string"},
         "default_value": {"type": "string"},
         "description": {"type": "string"},
+        "description_translations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/translation"
+          }
+        },
         "example": {"type": "string"},
         "hierarchy_code": {"type": "string"},
         "label": {"type": "string"},
+        "label_translations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/translation"
+          }
+        },
         "required": {"type": "boolean"},
         "transformations": {"type": "string", "javaName": "transformationsAsString"},
         "type": {"$ref": "#/definitions/attributeType"},
@@ -269,7 +290,14 @@
         "code": {"type": "string"},
         "label": {"type": "string"},
         "level": {"type": "integer"},
-        "parent_code": {"type": "string"}
+        "parent_code": {"type": "string"},
+        "label_translations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/translation"
+          }
+        }
       }
     },
     "product": {
@@ -330,6 +358,17 @@
         "available-start-date": {"type": "string", "format": "date-time"},
         "available-end-date": {"type": "string", "format": "date-time"},
         "leadtime-to-ship": {"type": "integer"}
+      }
+    },
+    "translation": {
+      "javaType": "com.mogobiz.mirakl.client.domain.Translation",
+      "properties": {
+        "locale": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
       }
     }
   }

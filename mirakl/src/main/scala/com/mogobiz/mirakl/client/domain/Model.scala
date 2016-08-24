@@ -89,7 +89,9 @@ class MiraklCategory(
                            action: BulkAction,
                            parent: Option[MiraklCategory] = None,
                            logisticClass: String = "",
-                           val uuid: String = ""
+                           val uuid: String = "",
+                           val description: Option[String] = None,
+                           val mediaUrl: Option[String] = None
                     )
   extends AbstractMiraklItem[MiraklCategory](code, label, action, parent) {
 
@@ -107,6 +109,8 @@ class MiraklCategory(
     case "logistic-class" => Option(logisticClass).getOrElse("")
     case "update-delete" => action.toString.toLowerCase()
     case "parent-code" => parent.map(_.code).getOrElse("")
+    case "category-description" => description.getOrElse("")
+    case "media-url" => mediaUrl.getOrElse("")
     case _ => ""
   }
 }
@@ -180,8 +184,10 @@ class MiraklAttribute(var action: BulkAction = BulkAction.UPDATE, val transforma
     this(List.empty, List.empty) // TODO transformationsAsString -> transformations, validationsAsString -> validations
     setCode(attribute.getCode)
     setLabel(attribute.getLabel)
+    setLabelTranslations(attribute.getLabelTranslations)
     setHierarchyCode(attribute.getHierarchyCode)
     setDescription(attribute.getDescription)
+    setDescriptionTranslations(attribute.getDescriptionTranslations)
     setExample(attribute.getExample)
     setRequired(attribute.getRequired)
     setValuesList(attribute.getValuesList)
@@ -285,7 +291,7 @@ class MiraklOffer(
 
 object MiraklApi {
 
-  val categoriesHeader = "category-code;category-label;logistic-class;update-delete;parent-code"
+  val categoriesHeader = "category-code;category-label;logistic-class;update-delete;parent-code;category-description;media-url"
 
   val categoriesApi = "/api/categories/synchros"
 

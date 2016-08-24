@@ -1,6 +1,5 @@
 package com.mogobiz.mirakl.client
 
-import com.mogobiz.common.client.BulkAction
 import com.mogobiz.common.client.ClientConfig
 import com.mogobiz.common.client.Credentials
 import com.mogobiz.common.rivers.spi.RiverConfig

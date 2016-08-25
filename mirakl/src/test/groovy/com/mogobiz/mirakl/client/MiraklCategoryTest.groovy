@@ -19,19 +19,23 @@ class MiraklCategoryTest extends GroovyTestCase{
                 BulkAction.DELETE,
                 toScalaOption(null),
                 'A',
-                ''
+                '',
+                toScalaOption(null),
+                toScalaOption(null)
         )
         log.info(category1.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
-        assertEquals("category1;category1Label;A;delete;\n", category1.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
+        assertEquals("category1;category1Label;A;delete;;;\n", category1.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
         def category2 = new MiraklCategory(
                 'category2',
                 'category2Label',
                 BulkAction.DELETE,
                 toScalaOption(category1),
                 'A',
-                ''
+                '',
+                toScalaOption(null),
+                toScalaOption(null)
         )
         log.info(category2.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
-        assertEquals("category2;category2Label;A;delete;category1\n", category2.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
+        assertEquals("category2;category2Label;A;delete;category1;;\n", category2.append(new StringBuffer(), ";", MiraklApi.categoriesHeader()).toString())
     }
 }

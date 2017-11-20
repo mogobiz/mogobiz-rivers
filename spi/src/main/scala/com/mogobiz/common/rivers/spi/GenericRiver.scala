@@ -4,17 +4,19 @@
 
 package com.mogobiz.common.rivers.spi
 
-import com.mogobiz.common.client.ClientConfig
+import java.util
+import java.text.SimpleDateFormat
+
+import com.mogobiz.common.client._
 import org.reactivestreams.Publisher
 import rx.Observable
 import rx.functions.Func1
 import rx.internal.reactivestreams.PublisherAdapter
 
-import scala.beans.BeanProperty
 import scala.concurrent.{Future, ExecutionContext}
 
-trait Transformation[E, In] {
-  def asRiverItem(e:E, config: RiverConfig): In
+trait Transformation[A <: AnyRef, B <: AnyRef] {
+  def asRiverItem(e: A, config: RiverConfig): B
 }
 
 /**
@@ -27,8 +29,6 @@ trait GenericRiver[In, Out] extends Transformation[AnyRef, In]{
     })
   }
 
-  import java.util
-
   @deprecated
   def exportCatalogItems(config: RiverConfig, ec: ExecutionContext): Observable[Future[Out]] = {
     exportCatalogItemsAsRiverItems(config).buffer(config.bulkSize).flatMap(new Func1[util.List[In], Observable[Future[Out]]](){
@@ -37,8 +37,6 @@ trait GenericRiver[In, Out] extends Transformation[AnyRef, In]{
   }
 
   def retrieveCatalogItems(config: RiverConfig): Observable[AnyRef]
-
-  import java.util
 
   def bulk(config: RiverConfig, items: util.List[In], ec: ExecutionContext): Future[Out]
 
@@ -51,22 +49,40 @@ trait GenericRiver[In, Out] extends Transformation[AnyRef, In]{
 
 abstract class AbstractGenericRiver[In, Out] extends GenericRiver[In, Out]
 
-import java.util
-import scala.collection.JavaConversions._
+trait River extends GenericRiver[BulkItem, BulkResponse]
 
-class RiverConfig{
-  @BeanProperty var partial: Boolean = false
-  @BeanProperty var idCompany: Long = -1L
-  @BeanProperty var idCatalogs: util.List[Long] = List()
-  @BeanProperty var debug: Boolean = false
-  @BeanProperty var dry_run: Boolean = false
-  @BeanProperty var languages: util.List[String] = List("fr", "en", "es", "de")
-  @BeanProperty var defaultLang: String = "fr"
-  @BeanProperty var countryCode: String = "FR"
-  @BeanProperty var currencyCode: String = "EUR"
-  @BeanProperty var clientConfig: ClientConfig = null
-  @BeanProperty var countries: util.List[String] = List("DE","ES","FR","GB","US")
-  @BeanProperty var idCategories: util.List[Long] = List()
-  @BeanProperty var idProducts: util.List[Long] = List()
-  @BeanProperty var bulkSize: Int = 100
+trait RiverItem {
+  def getKey: String
+  def asBulkItem(config: RiverConfig): BulkItem
+}
+
+abstract class AbstractRiver[T <: AnyRef] extends AbstractGenericRiver[BulkItem, BulkResponse] with River{
+
+  override def asRiverItem(e: AnyRef, config: RiverConfig): BulkItem = {
+    val `type` = getType
+    val uuid = getUuid(e.asInstanceOf[T])
+    new RiverItem {
+      override def asBulkItem(config: RiverConfig): BulkItem = {
+        val item = asItem(e.asInstanceOf[T], config)
+        val id = item.getId
+        val map = item.getMap
+        map.put("imported", formatToIso8601(new util.Date()))
+        val bulkItem = new BulkItem
+        bulkItem.setAction(BulkAction.UPDATE)
+        bulkItem.setId(id)
+        bulkItem.setMap(map)
+        bulkItem.setParent(item.getParent)
+        bulkItem.setType(`type`)
+        bulkItem
+      }
+
+      override def getKey: String = s"${`type`}::$uuid"
+    }.asBulkItem(config)
+  }
+
+  def asItem(t: T, config: RiverConfig): Item
+
+  def getUuid(t: T): String = t.toString
+
+  def formatToIso8601(d: util.Date) = new SimpleDateFormat("yyyy-MM-dd\'T\'HH:mm:ss\'Z\'").format(d)
 }

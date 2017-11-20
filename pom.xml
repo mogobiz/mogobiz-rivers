@@ -16,6 +16,7 @@
     <modules>
         <module>http-client</module>
         <module>common</module>
+        <module>spi</module>
         <module>elasticsearch-mappings</module>
         <module>elasticsearch</module>
         <module>google-shopping</module>

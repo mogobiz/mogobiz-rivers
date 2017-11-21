@@ -15,7 +15,7 @@ import rx.internal.reactivestreams.PublisherAdapter
 
 import scala.concurrent.{Future, ExecutionContext}
 
-trait Transformation[A <: AnyRef, B <: AnyRef] {
+trait Transformation[A, B] {
   def asRiverItem(e: A, config: RiverConfig): B
 }
 

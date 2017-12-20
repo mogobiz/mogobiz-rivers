@@ -1,0 +1,19 @@
+apply plugin: 'java'
+
+dependencies {}
+
+publishing {
+    publications{
+        library(MavenPublication) {
+            groupId "com.mogobiz.rivers"
+            artifactId "mogobiz-elasticsearch-mappings"
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            // TODO replace with remote repository
+            url "$buildDir/repo"
+        }
+    }
+}

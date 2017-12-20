@@ -172,9 +172,9 @@ test {
 }
 
 dependencies {
+    compile project(':http-client')
+    compile project(':spi')
     compile "com.mogobiz:mogobiz-tools:${version}"
-    compile "com.mogobiz.rivers:mogobiz-http-client:${version}"
-    compile "com.mogobiz.rivers:mogobiz-spi:${version}"
     compile "org.reactivestreams:reactive-streams:1.0.0"
     compile "io.reactivex:rxjava-reactive-streams:1.0.1"
     compile "io.reactivex:rxjava:1.0.17"
@@ -183,7 +183,9 @@ dependencies {
     compile "org.scala-lang:scalap:2.11.8"
     compile "com.typesafe.akka:akka-actor_2.11:2.3.12"
     compile "com.fasterxml.jackson.core:jackson-databind:2.7.0"
-    compile "net.sourceforge.nekohtml:nekohtml:1.9.15"
+    compile("net.sourceforge.nekohtml:nekohtml:1.9.15"){
+        exclude group: "xerces", module: "xercesImpl"
+    }
     compile "jakarta-regexp:jakarta-regexp:1.4"
     compile "com.jcraft:jsch:0.1.53"
     compile "org.apache.commons:commons-vfs2:2.1"

@@ -6,16 +6,18 @@ test {
 }
 
 dependencies {
-    compile "com.mogobiz.rivers:mogobiz-elasticsearch-mappings:${version}"
-    compile "com.mogobiz.rivers:mogobiz-http-client:${version}"
-    compile "com.mogobiz.rivers:mogobiz-spi:${version}"
+    compile project(':elasticsearch-mappings')
+    compile project(':http-client')
+    compile project(':spi')
     compile "org.reactivestreams:reactive-streams:1.0.0"
     compile "io.reactivex:rxjava-reactive-streams:1.0.1"
     compile "io.reactivex:rxjava:1.0.17"
     compile "io.reactivex:rxgroovy:1.0.3"    
     compile "org.scala-lang:scala-library:2.11.8"
     compile "com.typesafe.akka:akka-actor_2.11:2.3.12"
-    compile "net.sourceforge.nekohtml:nekohtml:1.9.15"
+    compile("net.sourceforge.nekohtml:nekohtml:1.9.15"){
+        exclude group: "xerces", module: "xercesImpl"
+    }
 
     runtime "org.codehaus.groovy:groovy-all:${groovyVersion}"
     runtime "org.slf4j:slf4j-api:1.7.21"

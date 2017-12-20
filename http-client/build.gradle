@@ -3,8 +3,12 @@ apply plugin: 'GroovyEclipseCompiler'
 dependencies {
     compile "com.mogobiz:mogobiz-tools:${version}"
     compile "jakarta-regexp:jakarta-regexp:1.4"
-    compile "net.sourceforge.nekohtml:nekohtml:1.9.15"
-    runtime "xerces:xercesImpl:2.8.1"
+    compile("net.sourceforge.nekohtml:nekohtml:1.9.15"){
+        exclude group: "xerces", module: "xercesImpl"
+    }
+    runtime('xerces:xercesImpl:2.8.1'){
+        exclude group: "xml-apis", module: "xml-apis"
+    }
     runtime "commons-codec:commons-codec:1.8"
     runtime "org.codehaus.groovy:groovy-all:${groovyVersion}"
     runtime "org.slf4j:slf4j-log4j12:1.7.21" // FIXME

@@ -2,7 +2,7 @@ apply plugin: 'scala'
 apply plugin: 'GroovyEclipseCompiler'
 
 dependencies {
-    compile "com.mogobiz.rivers:mogobiz-common:${version}"
+    compile project(':common')
     compile "org.reactivestreams:reactive-streams:1.0.0"
     compile "io.reactivex:rxjava-reactive-streams:1.0.1"
     compile "io.reactivex:rxjava:1.0.17"

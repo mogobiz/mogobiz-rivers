@@ -6,19 +6,3 @@ dependencies {
     runtime "org.codehaus.groovy:groovy-all:${groovyVersion}"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
-
-publishing {
-    publications{
-        library(MavenPublication) {
-            groupId "com.mogobiz.rivers"
-            artifactId "mogobiz-common"
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            // TODO replace with remote repository
-            url "$buildDir/repo"
-        }
-    }
-}

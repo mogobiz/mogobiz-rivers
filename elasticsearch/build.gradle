@@ -1,6 +1,10 @@
 apply plugin: 'scala'
 apply plugin: 'GroovyEclipseCompiler'
 
+test {
+    ignoreFailures = true
+}
+
 dependencies {
     compile "com.mogobiz.rivers:mogobiz-elasticsearch-mappings:${version}"
     compile "com.mogobiz.rivers:mogobiz-http-client:${version}"
@@ -20,18 +24,3 @@ dependencies {
     testCompile "log4j:log4j:1.2.17"
 }
 
-publishing {
-    publications{
-        library(MavenPublication) {
-            groupId "com.mogobiz.rivers"
-            artifactId "mogobiz-spi"
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            // TODO replace with remote repository
-            url "$buildDir/repo"
-        }
-    }
-}

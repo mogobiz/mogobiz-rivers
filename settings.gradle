@@ -1,0 +1,1 @@
+include 'http-client', 'common', 'spi', 'elasticsearch-mappings', 'elasticsearch', 'google-shopping', 'cfp', 'mirakl'

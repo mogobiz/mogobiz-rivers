@@ -9,7 +9,9 @@ dependencies {
     compile "io.reactivex:rxgroovy:1.0.3"    
     compile "org.scala-lang:scala-library:2.11.8"
     compile "com.typesafe.akka:akka-actor_2.11:2.3.12"
-    compile "net.sourceforge.nekohtml:nekohtml:1.9.15"
+    compile("net.sourceforge.nekohtml:nekohtml:1.9.15"){
+        exclude group: "xerces", module: "xercesImpl"
+    }
     compile "jakarta-regexp:jakarta-regexp:1.4"
 
     runtime "org.codehaus.groovy:groovy-all:${groovyVersion}"

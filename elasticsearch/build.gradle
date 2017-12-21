@@ -6,9 +6,9 @@ test {
 }
 
 dependencies {
-    compile project(':elasticsearch-mappings')
-    compile project(':http-client')
-    compile project(':spi')
+    compile project(':mogobiz-rivers:elasticsearch-mappings')
+    compile project(':mogobiz-rivers:http-client')
+    compile project(':mogobiz-rivers:spi')
     compile "org.reactivestreams:reactive-streams:1.0.0"
     compile "io.reactivex:rxjava-reactive-streams:1.0.1"
     compile "io.reactivex:rxjava:1.0.17"

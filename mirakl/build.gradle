@@ -172,8 +172,8 @@ test {
 }
 
 dependencies {
-    compile project(':http-client')
-    compile project(':spi')
+    compile project(':mogobiz-rivers:http-client')
+    compile project(':mogobiz-rivers:spi')
     compile "com.mogobiz:mogobiz-tools:${version}"
     compile "org.reactivestreams:reactive-streams:1.0.0"
     compile "io.reactivex:rxjava-reactive-streams:1.0.1"

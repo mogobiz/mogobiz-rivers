@@ -2,7 +2,7 @@ apply plugin: 'scala'
 apply plugin: 'GroovyEclipseCompiler'
 
 dependencies {
-    compile "org.scala-lang:scala-library:2.11.8"
-    runtime "org.codehaus.groovy:groovy-all:${groovyVersion}"
+    compile _scala
+    runtime _groovy
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

@@ -3,18 +3,22 @@ apply plugin: 'GroovyEclipseCompiler'
 dependencies {
     compile project(':mogobiz-rivers:http-client')
     compile project(':mogobiz-rivers:spi')
-    compile "org.reactivestreams:reactive-streams:1.0.0"
-    compile "io.reactivex:rxjava-reactive-streams:1.0.1"
-    compile "io.reactivex:rxjava:1.0.17"
-    compile "io.reactivex:rxgroovy:1.0.3"    
-    compile "org.scala-lang:scala-library:2.11.8"
-    compile "com.typesafe.akka:akka-actor_2.11:2.3.12"
+    compile "org.reactivestreams:reactive-streams:$rsVersion"
+    compile("io.reactivex:rxjava-reactive-streams:$rxJavaRsVersion"){
+        exclude group: "io.reactivex", module: "rxjava"
+    }
+    compile("io.reactivex:rxgroovy:$rxGroovyVersion"){
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
+    }
+    compile "io.reactivex:rxgroovy:$rxGroovyVersion"    
+    compile _scala
+    compile _akka
     compile("net.sourceforge.nekohtml:nekohtml:1.9.15"){
         exclude group: "xerces", module: "xercesImpl"
     }
     compile "jakarta-regexp:jakarta-regexp:1.4"
 
-    runtime "org.codehaus.groovy:groovy-all:${groovyVersion}"
+    runtime _groovy
     runtime "org.slf4j:slf4j-api:1.7.21"
     runtime "commons-codec:commons-codec:1.8"
 

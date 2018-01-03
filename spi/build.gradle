@@ -10,6 +10,7 @@ dependencies {
     compile "io.reactivex:rxjava:$rxJavaVersion"
     compile("io.reactivex:rxgroovy:$rxGroovyVersion"){
         exclude group: "org.codehaus.groovy", module: "groovy-all"
+        exclude group: "io.reactivex", module: "rxjava"
     }
     compile _scala
     compile _akka

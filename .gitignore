@@ -8,3 +8,4 @@ mirakl/postman
 */tmp
 build
 .gradle
+bin
